@@ -1,0 +1,43 @@
+name: CI — API
+
+on:
+  push:
+    branches: [main, 'feature/*']
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/ci-api.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Test
+        run: npm run test
+
+      - name: Verify build
+        run: npm run build

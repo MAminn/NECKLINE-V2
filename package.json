@@ -1,0 +1,29 @@
+{
+  "name": "neckline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NECKLINE — Solid scent brand storefront (MERN)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev": "npm run dev:api & npm run dev:web",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "test:api": "npm run test --workspace=apps/api",
+    "test:web": "npm run test --workspace=apps/web",
+    "lint:api": "npm run lint --workspace=apps/api",
+    "lint:web": "npm run lint --workspace=apps/web",
+    "test": "npm run test:api && npm run test:web",
+    "lint": "npm run lint:api && npm run lint:web"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

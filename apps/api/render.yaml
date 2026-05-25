@@ -1,0 +1,31 @@
+# Render Blueprint — NECKLINE API
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: neckline-api
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    rootDir: apps/api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "10000"
+      - key: MONGODB_URI
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: LOG_LEVEL
+        value: info
+      - key: IDEMPOTENCY_TTL_HOURS
+        value: "24"
+      - key: FEATURE_FLAG_CACHE_SECONDS
+        value: "30"

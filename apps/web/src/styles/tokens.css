@@ -1,0 +1,158 @@
+/* ============================================================
+   NECKLINE — Design Tokens (code-consumable baseline)
+   Source of truth: design/DESIGN_TOKENS.md (Constitution §2.1).
+   Components consume these variables — NO ad-hoc values.
+   Any change to a COLOR is a /clarify gate (§2.1).
+
+   COLORS below are locked from the provided design images.
+   SPACING / RADII / TYPE-SCALE / SHADOWS are a baseline —
+   confirm exact values against the design source before Phase 1 sign-off.
+   ============================================================ */
+
+:root {
+  /* ---------- Brand / Primary ---------- */
+  --color-primary: #E0242A;
+  --color-primary-hover: #FF2D34;
+
+  /* ---------- Status ---------- */
+  --color-success: #22C55E;
+  --color-success-hover: #4ADE80;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  --color-error: #EF4444;
+
+  /* ---------- Accent ---------- */
+  --color-live: #22C55E;          /* live indicator */
+  --color-notification: #E0242A;  /* notification dot */
+
+  /* ---------- Surfaces / Neutrals ---------- */
+  --color-bg: #0B0D10;            /* background (primary) */
+  --color-bg-secondary: #111418;
+  --color-surface: #1A1D22;       /* tertiary surface */
+  --color-surface-elevated: #23262D;
+  --color-border: #2F333B;        /* subtle */
+  --color-border-strong: #3C4048;
+  --color-divider: #24282F;
+
+  /* ---------- Text ---------- */
+  --color-text: #FFFFFF;          /* primary */
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
+  --color-text-muted: #52525B;
+  --color-text-disabled: #3F3F46;
+  --color-text-inverse: #0B0D10;
+
+  /* ---------- Semantic foreground + dark bg tint ----------
+     (bg tints to verify against the palette image — §2.1) */
+  --color-success-fg: #22C55E;
+  --color-success-bg: #052E16;
+  --color-error-fg: #EF4444;
+  --color-error-bg: #450A0A;
+  --color-warning-fg: #F59E0B;
+  --color-warning-bg: #451A03;
+  --color-info-fg: #3B82F6;
+  --color-info-bg: #0B2A4A;
+
+  /* ---------- Chart palette ---------- */
+  --chart-1: #E0242A; /* red */
+  --chart-2: #22C55E; /* green */
+  --chart-3: #3B82F6; /* blue */
+  --chart-4: #F59E0B; /* yellow */
+  --chart-5: #A855F7; /* purple (approx) */
+  --chart-6: #06B6D4; /* cyan (approx) */
+
+  /* ---------- Typography ----------
+     Exact font files come from the design source (§2.1) — families below
+     are placeholders with safe fallbacks. Swap when confirmed. */
+  --font-display: "Anton", "Oswald", "Arial Narrow", system-ui, sans-serif; /* heavy condensed uppercase headings */
+  --font-body: "Inter", "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-xs: 0.75rem;    /* 12 */
+  --fs-sm: 0.875rem;   /* 14 */
+  --fs-base: 1rem;     /* 16 */
+  --fs-lg: 1.125rem;   /* 18 */
+  --fs-xl: 1.25rem;    /* 20 */
+  --fs-2xl: 1.5rem;    /* 24 */
+  --fs-3xl: 1.875rem;  /* 30 */
+  --fs-4xl: 2.25rem;   /* 36 */
+  --fs-5xl: 3rem;      /* 48 */
+  --fs-6xl: 4rem;      /* 64 — hero */
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;     /* display headings */
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.7;
+
+  --ls-tight: -0.02em;
+  --ls-normal: 0;
+  --ls-wide: 0.04em;   /* uppercase display tracking */
+
+  /* ---------- Spacing (4px base) ---------- */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4 */
+  --space-2: 0.5rem;   /* 8 */
+  --space-3: 0.75rem;  /* 12 */
+  --space-4: 1rem;     /* 16 */
+  --space-5: 1.25rem;  /* 20 */
+  --space-6: 1.5rem;   /* 24 */
+  --space-8: 2rem;     /* 32 */
+  --space-10: 2.5rem;  /* 40 */
+  --space-12: 3rem;    /* 48 */
+  --space-16: 4rem;    /* 64 */
+  --space-20: 5rem;    /* 80 */
+  --space-24: 6rem;    /* 96 */
+
+  /* ---------- Radii ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ---------- Shadows (dark theme) ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-focus: 0 0 0 3px rgba(224, 36, 42, 0.45); /* primary focus ring */
+
+  /* ---------- Z-index ---------- */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+
+  /* ---------- Motion (permitted enhancements §2.1) ---------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---------- Layout ---------- */
+  --container-max: 1280px;
+  --sidebar-width: 256px;  /* admin dashboard */
+
+  /* ---------- Breakpoints (reference — use in @media, not var()) ----------
+     sm 640px · md 768px · lg 1024px · xl 1280px · 2xl 1536px */
+
+  /* ---------- Locale / currency (from dashboard) ----------
+     Base currency EGP; switcher EGP / USD / SAR.
+     Default timezone GMT+02:00 Cairo. Markets: Egypt + GCC. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}

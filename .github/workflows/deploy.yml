@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        run: echo 'Vercel deploy triggered via Git integration'
+        # Production deploys are handled by Vercel's Git integration.
+        # Instant rollback available in Vercel dashboard.
+
+  deploy-api:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Render
+        run: echo 'Render deploy triggered via deploy hook'
+        # Render deploy hook URL should be stored as RENDER_DEPLOY_HOOK in GitHub secrets.
+        # curl "$RENDER_DEPLOY_HOOK"
