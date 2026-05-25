@@ -11,8 +11,8 @@ const server = app.listen(env.PORT, async () => {
     await connect();
     logger.info(`API server listening on port ${env.PORT} [${env.NODE_ENV}]`);
   } catch (err) {
-    logger.warn({ err }, 'MongoDB not available — running in demo mode');
-    logger.info(`API server listening on port ${env.PORT} [${env.NODE_ENV}] (demo mode)`);
+    logger.fatal({ err }, 'Failed to start server');
+    process.exit(1);
   }
 });
 
