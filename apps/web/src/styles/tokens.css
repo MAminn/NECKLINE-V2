@@ -4,15 +4,17 @@
    Components consume these variables — NO ad-hoc values.
    Any change to a COLOR is a /clarify gate (§2.1).
 
-   COLORS below are locked from the provided design images.
-   SPACING / RADII / TYPE-SCALE / SHADOWS are a baseline —
-   confirm exact values against the design source before Phase 1 sign-off.
+   Synced with DESIGN_TOKENS.md — extracted from src/index.css
+   and component source. v2.0
    ============================================================ */
 
 :root {
   /* ---------- Brand / Primary ---------- */
-  --color-primary: #E0242A;
-  --color-primary-hover: #FF2D34;
+  --color-primary: #D21B27;
+  --color-primary-hover: #E32B37;
+  --color-primary-pressed: #B0151E;
+  --color-primary-glow: rgba(210, 27, 39, 0.3);
+  --color-gold: #C29F68;
 
   /* ---------- Status ---------- */
   --color-success: #22C55E;
@@ -22,50 +24,75 @@
   --color-error: #EF4444;
 
   /* ---------- Accent ---------- */
-  --color-live: #22C55E;          /* live indicator */
-  --color-notification: #E0242A;  /* notification dot */
+  --color-live: #22C55E;          /* live indicator (emerald-500) */
+  --color-live-fg: #34D399;       /* emerald-400 variant */
+  --color-notification: #D21B27;  /* notification dot */
 
-  /* ---------- Surfaces / Neutrals ---------- */
-  --color-bg: #0B0D10;            /* background (primary) */
-  --color-bg-secondary: #111418;
-  --color-surface: #1A1D22;       /* tertiary surface */
-  --color-surface-elevated: #23262D;
-  --color-border: #2F333B;        /* subtle */
-  --color-border-strong: #3C4048;
-  --color-divider: #24282F;
+  /* ---------- Surfaces / Neutrals — Storefront ---------- */
+  --color-bg: #070606;            /* background (primary) */
+  --color-bg-deep: #0A0203;       /* deepest dark */
+  --color-bg-secondary: #1F0D0F;  /* warm dark tint */
+  --color-surface: #090909;       /* card backgrounds */
+  --color-surface-alt: #0a0607;   /* product card backgrounds */
+  --color-surface-input: #040404; /* feature strip / pill backgrounds */
+  --color-surface-overlay: rgba(0, 0, 0, 0.4);
+
+  /* ---------- Surfaces / Neutrals — Admin ---------- */
+  --color-admin-bg: #09090b;                 /* zinc-950 */
+  --color-admin-surface: #18181b;            /* zinc-900 */
+  --color-admin-surface-elevated: #27272a;   /* zinc-800 */
+  --color-admin-border: rgba(255, 255, 255, 0.05);
+  --color-admin-border-subtle: rgba(255, 255, 255, 0.04);
+  --color-admin-border-strong: rgba(255, 255, 255, 0.08);
+  --color-login-overlay: #090203;
+  --color-login-card: rgba(9, 9, 11, 0.6);
 
   /* ---------- Text ---------- */
   --color-text: #FFFFFF;          /* primary */
-  --color-text-secondary: #A1A1AA;
-  --color-text-tertiary: #71717A;
-  --color-text-muted: #52525B;
-  --color-text-disabled: #3F3F46;
-  --color-text-inverse: #0B0D10;
+  --color-text-secondary: #E7E5E4; /* stone-200 */
+  --color-text-secondary-alt: #D6D3D1; /* stone-300 */
+  --color-text-tertiary: #A3A3A3; /* neutral-400 */
+  --color-text-muted: #737373;    /* neutral-500 */
+  --color-text-disabled: #44403C; /* stone-700 */
+  --color-text-inverse: #070606;
+  --color-text-brand: #D21B27;
+  --color-text-live: #34D399;     /* emerald-400 */
+  --color-text-warning: #F59E0B;  /* amber-500 */
 
-  /* ---------- Semantic foreground + dark bg tint ----------
-     (bg tints to verify against the palette image — §2.1) */
+  /* ---------- Border & Divider ---------- */
+  --color-border: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.08);
+  --color-border-card-hover: rgba(210, 27, 39, 0.25);
+  --color-border-input-focus: #D21B27;
+  --color-divider: rgba(255, 255, 255, 0.06);
+
+  /* ---------- Semantic foreground + bg tint ---------- */
   --color-success-fg: #22C55E;
-  --color-success-bg: #052E16;
+  --color-success-bg: rgba(34, 197, 94, 0.1);
   --color-error-fg: #EF4444;
-  --color-error-bg: #450A0A;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
+  --color-error-border: rgba(239, 68, 68, 0.2);
   --color-warning-fg: #F59E0B;
-  --color-warning-bg: #451A03;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
   --color-info-fg: #3B82F6;
-  --color-info-bg: #0B2A4A;
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-brand-alert-fg: #D21B27;
+  --color-brand-alert-bg: rgba(210, 27, 39, 0.1);
+  --color-brand-alert-border: rgba(210, 27, 39, 0.2);
 
   /* ---------- Chart palette ---------- */
-  --chart-1: #E0242A; /* red */
+  --chart-1: #D21B27; /* red */
   --chart-2: #22C55E; /* green */
   --chart-3: #3B82F6; /* blue */
   --chart-4: #F59E0B; /* yellow */
   --chart-5: #A855F7; /* purple (approx) */
   --chart-6: #06B6D4; /* cyan (approx) */
 
-  /* ---------- Typography ----------
-     Exact font files come from the design source (§2.1) — families below
-     are placeholders with safe fallbacks. Swap when confirmed. */
-  --font-display: "Anton", "Oswald", "Arial Narrow", system-ui, sans-serif; /* heavy condensed uppercase headings */
-  --font-body: "Inter", "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* ---------- Typography ---------- */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Oswald", "Arial Narrow", system-ui, sans-serif;
+  --font-serif: "Cinzel", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
   --fs-xs: 0.75rem;    /* 12 */
   --fs-sm: 0.875rem;   /* 14 */
@@ -92,6 +119,8 @@
   --ls-tight: -0.02em;
   --ls-normal: 0;
   --ls-wide: 0.04em;   /* uppercase display tracking */
+  --ls-wider: 0.2em;   /* CTA buttons */
+  --ls-widest: 0.3em;  /* section labels / eyebrows */
 
   /* ---------- Spacing (4px base) ---------- */
   --space-0: 0;
@@ -109,18 +138,19 @@
   --space-24: 6rem;    /* 96 */
 
   /* ---------- Radii ---------- */
-  --radius-sm: 4px;
+  --radius-sm: 3px;    /* storefront CTA */
   --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-lg: 12px;   /* cards, inputs */
   --radius-xl: 16px;
-  --radius-2xl: 24px;
+  --radius-2xl: 24px;  /* 1.5rem — product/admin cards */
   --radius-full: 9999px;
 
   /* ---------- Shadows (dark theme) ---------- */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --shadow-focus: 0 0 0 3px rgba(224, 36, 42, 0.45); /* primary focus ring */
+  --shadow-focus: 0 0 0 3px rgba(210, 27, 39, 0.45); /* primary focus ring */
+  --shadow-glow: 0 4px 20px rgba(210, 27, 39, 0.3);  /* CTA hover glow */
 
   /* ---------- Z-index ---------- */
   --z-base: 0;
@@ -130,7 +160,7 @@
   --z-modal: 1300;
   --z-toast: 1400;
 
-  /* ---------- Motion (permitted enhancements §2.1) ---------- */
+  /* ---------- Motion ---------- */
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
@@ -141,18 +171,92 @@
   --container-max: 1280px;
   --sidebar-width: 256px;  /* admin dashboard */
 
-  /* ---------- Breakpoints (reference — use in @media, not var()) ----------
-     sm 640px · md 768px · lg 1024px · xl 1280px · 2xl 1536px */
-
-  /* ---------- Locale / currency (from dashboard) ----------
-     Base currency EGP; switcher EGP / USD / SAR.
-     Default timezone GMT+02:00 Cairo. Markets: Egypt + GCC. */
+  /* ---------- Scrollbar ---------- */
+  --scrollbar-width: 6px;
+  --scrollbar-thumb: #D21B27;
+  --scrollbar-thumb-hover: #B0151E;
+  --scrollbar-track: #0A0203;
 }
 
+/* ============================================================
+   Custom Keyframe Animations
+   ============================================================ */
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(210, 27, 39, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(210, 27, 39, 0.3); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes pulse-intense {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.4; }
+}
+
+/* Utility classes for animations */
+.animate-pulse-glow {
+  animation: pulse-glow 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-marquee {
+  animation: marquee 45s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-pulse-intense {
+  animation: pulse-intense 4s ease-in-out infinite;
+}
+
+/* Scrollbar styling (WebKit) */
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ---------- Compatibility aliases (deprecated — migrate to canonical names) ---------- */
+--color-surface-elevated: var(--color-surface-alt);
+--font-body: var(--font-sans);
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
+  }
+
+  .animate-pulse-glow,
+  .animate-spin-slow,
+  .animate-marquee,
+  .animate-pulse-intense {
+    animation: none;
   }
 }
