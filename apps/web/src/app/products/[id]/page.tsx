@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import ImageGallery from '../../../components/ImageGallery';
 import PriceDisplay from '../../../components/PriceDisplay';
-import QuantityStepper from '../../../components/QuantityStepper';
 import ProductGrid from '../../../components/ProductGrid';
+import ProductActions from '../../../components/ProductActions';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
@@ -101,14 +101,8 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
 
             {/* Actions */}
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <QuantityStepper disabled={isOutOfStock} />
-              <button
-                disabled={isOutOfStock}
-                className="rounded-md bg-primary px-8 py-3 font-medium uppercase tracking-wide text-text-inverse transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Add to Cart
-              </button>
+            <div className="mt-8">
+              <ProductActions productId={product._id} disabled={isOutOfStock} />
             </div>
 
             {isOutOfStock && (

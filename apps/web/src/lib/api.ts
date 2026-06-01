@@ -28,6 +28,7 @@ async function apiClient(path: string, options: ApiOptions = {}) {
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
