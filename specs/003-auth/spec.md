@@ -28,7 +28,7 @@ A guest visits the store and decides to create an account so they can view their
 
 ### User Story 2 - Log In and Out (Priority: P1)
 
-A returning customer logs into their account using their email and password. The system authenticates them and restores their session. They can browse the store while authenticated, and log out when done, which terminates their session on all devices.
+A returning customer logs into their account using their email and password. The system authenticates them and restores their session. They can browse the store while authenticated, and log out when done, which terminates their session on the current device.
 
 **Why this priority**: Login is the primary recurring interaction for returning customers. Logout is the security-critical counterpart.
 
@@ -60,7 +60,7 @@ A guest has added items to their cart. When they log in, the system merges their
 
 ### User Story 4 - View Account & Order History Scaffold (Priority: P2)
 
-An authenticated customer navigates to their account page to see their profile information and a list of their past orders. The order history displays order numbers, dates, totals, and status. Order detail views are deferred to Phase 4.
+An authenticated customer navigates to their account page to see their profile information, update their name and password, and view a list of their past orders. The order history displays order numbers, dates, totals, and status. Order detail views and email changes are deferred to Phase 4.
 
 **Why this priority**: Order history is the primary value proposition for creating an account. The scaffold in this phase prepares the data structure and UI shell.
 
@@ -68,7 +68,7 @@ An authenticated customer navigates to their account page to see their profile i
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated customer on the account page, **Then** they see their name, email, and a list of their orders sorted by date descending.
+1. **Given** an authenticated customer on the account page, **Then** they see their name, email, a list of their orders sorted by date descending, and options to update their name and password.
 2. **Given** a customer with no orders, **When** they view their account page, **Then** they see an empty state message and a prompt to shop.
 3. **Given** a guest visitor, **When** they attempt to access the account page, **Then** they are redirected to the login page with a return URL.
 
@@ -106,6 +106,10 @@ A customer who forgot their password requests a reset link by entering their ema
 - **Q**: Require email verification before login, or allow immediate login after registration? → **A**: Allow immediate login after registration. Email verification status is tracked but does not block authentication.
 - **Q**: Send real transactional emails for password reset, or log to console/DB for development? → **A**: Log to console/DB with a debug endpoint. Real email delivery deferred to a future phase.
 - **Q**: Support social login (OAuth2 via Google/Facebook) in this phase, or defer? → **A**: Defer OAuth to a future phase. Email/password authentication only for this phase.
+- **Q**: What are the lifetimes for access and refresh tokens? → **A**: Access tokens expire after 15 minutes. Refresh tokens expire after 7 days.
+- **Q**: Should logout terminate all devices or just the current device? → **A**: Log out this device only (current session). Other active sessions remain valid.
+- **Q**: Should an authenticated user's cart persist across logout and re-login? → **A**: Yes. The cart is permanently associated with the user account and survives logout.
+- **Q**: Should the account page allow profile updates? → **A**: Yes. Users can update their name and password from the account page. Email changes are deferred to a future phase.
 
 ## Requirements *(mandatory)*
 
