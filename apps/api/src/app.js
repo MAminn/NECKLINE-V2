@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const pinoHttp = require('pino-http');
 
 const env = require('./config/env');
@@ -22,6 +23,7 @@ function createApp() {
     })
   );
   app.use(express.json());
+  app.use(cookieParser());
   app.use(requestIdMiddleware);
   app.use(
     pinoHttp({

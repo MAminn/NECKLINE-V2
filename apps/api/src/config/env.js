@@ -9,6 +9,8 @@ const envSchema = z.object({
   FEATURE_CHECKOUT_V2: z.string().transform((v) => v === 'true').default('false'),
   IDEMPOTENCY_TTL_HOURS: z.string().transform(Number).default('24'),
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
+  CART_TTL_DAYS: z.string().transform(Number).default('7'),
+  RESERVATION_TTL_MINUTES: z.string().transform(Number).default('15'),
 });
 
 const parsed = envSchema.safeParse(process.env);
