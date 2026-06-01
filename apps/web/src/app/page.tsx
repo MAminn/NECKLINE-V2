@@ -50,22 +50,25 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-bg">
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center px-4 py-24 text-center">
-        <h1 className="font-display text-5xl uppercase tracking-wide text-primary sm:text-6xl md:text-7xl">
-          NECKLINE
-        </h1>
-        <p className="mt-4 max-w-xl text-lg text-text-secondary">
-          A concentrated solid fragrance that melts with your pulse points.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <div className="h-3 w-3 rounded-full bg-primary" />
-          <div className="h-3 w-3 rounded-full bg-surface" />
-          <div className="h-3 w-3 rounded-full bg-surface-elevated" />
+      <section className="relative h-[60vh] min-h-[400px] w-full overflow-hidden">
+        <img
+          src="/images/hero.png"
+          alt="NECKLINE Solid Perfume"
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 text-center">
+          <h1 className="font-display text-5xl uppercase tracking-wider text-text-primary sm:text-6xl md:text-7xl">
+            NECKLINE
+          </h1>
+          <p className="mt-3 max-w-xl text-lg text-text-secondary">
+            A concentrated solid fragrance that melts with your pulse points.
+          </p>
         </div>
       </section>
 
       {/* Catalog */}
-      <section className="mx-auto max-w-container px-4 pb-24">
+      <section className="mx-auto max-w-container px-4 py-16">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="font-display text-2xl uppercase tracking-wide text-text-primary">
             The Collection
