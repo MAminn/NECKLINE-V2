@@ -79,6 +79,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **Q**: If a product's price changes while it's in the cart, should the cart reflect the original price or the new price? → **A**: Snapshot price locked (Option A). Items in cart keep their original price at time of add; price changes only affect future additions. The server computes subtotal from stored snapshot prices — prices are never accepted from the client.
 - **Q**: What concurrency control should protect cart mutations when a guest has multiple tabs? → **A**: Atomic MongoDB operators only (Option B). Cart mutations use `$inc`, `$pull`, and `$set` on embedded line items; no version field is needed on the Cart document.
 - **Q**: What guardrails should protect against cart abuse (unbounded line items, endpoint hammering)? → **A**: Maximum of 20 line items per cart and 50 cart mutations per minute per cart ID (Option A).
+- **Q**: How should reservation documents be structured relative to cart line items? → **A**: One reservation document per (cart, product) pair, updated in place (Option A). The idempotency key belongs to the add-to-cart API request layer, not the reservation document. Availability queries sum `qty` across reservations per product.
 
 ## Requirements *(mandatory)*
 
@@ -107,7 +108,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 
 - **Cart**: Represents a guest's shopping cart. Key attributes: unique cart ID, list of line items, created/updated timestamps, expiration.
 - **CartLineItem**: A single product within a cart. Key attributes: product reference, quantity, unit price (snapshot), currency.
-- **Reservation**: A temporary stock hold associated with a cart. Key attributes: cart ID, product ID, quantity, idempotency key, expiry timestamp.
+- **Reservation**: A temporary stock hold associated with a cart. One document per (cart, product) pair. Key attributes: cart ID, product ID, quantity, expiry timestamp. The idempotency key is handled at the API request layer, not stored in the reservation document.
 - **Product** (existing): Referenced by cart line items for name, image, and current stock/price validation.
 
 ## Success Criteria *(mandatory)*
