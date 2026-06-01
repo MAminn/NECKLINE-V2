@@ -2,8 +2,11 @@ const { Router } = require('express');
 const cartService = require('../../services/cartService');
 const idempotencyMiddleware = require('../../middleware/idempotency');
 const rateLimitCart = require('../../middleware/rateLimitCart');
+const maybeAuthenticate = require('../../middleware/maybeAuthenticate');
 
 const router = Router();
+
+router.use(maybeAuthenticate);
 
 function getCartId(req) {
   return req.cookies?.cartId || null;
@@ -21,6 +24,10 @@ function setCartCookie(res, cartId) {
 // GET /api/v1/cart
 router.get('/', async (req, res, next) => {
   try {
+    if (req.user?.id) {
+      const cart = await cartService.getCart(null, req.user.id);
+      if (cart) return res.json(cart);
+    }
     const cartId = getCartId(req);
     if (!cartId) {
       return res.json({ cartId: null, items: [], itemCount: 0, subtotal: null });
@@ -44,14 +51,16 @@ router.post(
   async (req, res, next) => {
     try {
       const { productId, quantity = 1 } = req.body;
+      const userId = req.user?.id || null;
       const cartId = getCartId(req);
 
-      const result = await cartService.addItem(cartId, productId, Number(quantity), {
+      const result = await cartService.addItem(cartId || null, productId, Number(quantity), {
         requestId: req.id,
         ip: req.ip,
         userAgent: req.get('user-agent'),
+        userId,
       });
-      setCartCookie(res, result.cartId);
+      if (!userId) setCartCookie(res, result.cartId);
 
       res.json(result);
     } catch (err) {
@@ -64,15 +73,18 @@ router.post(
 router.patch('/items/:productId', rateLimitCart, async (req, res, next) => {
   try {
     const { quantity } = req.body;
+    const userId = req.user?.id || null;
     const cartId = getCartId(req);
-    if (!cartId) {
+
+    if (!cartId && !userId) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const result = await cartService.updateItem(cartId, req.params.productId, Number(quantity), {
+    const result = await cartService.updateItem(cartId || null, req.params.productId, Number(quantity), {
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),
+      userId,
     });
     res.json(result);
   } catch (err) {
@@ -83,15 +95,18 @@ router.patch('/items/:productId', rateLimitCart, async (req, res, next) => {
 // DELETE /api/v1/cart/items/:productId
 router.delete('/items/:productId', rateLimitCart, async (req, res, next) => {
   try {
+    const userId = req.user?.id || null;
     const cartId = getCartId(req);
-    if (!cartId) {
+
+    if (!cartId && !userId) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const result = await cartService.removeItem(cartId, req.params.productId, {
+    const result = await cartService.removeItem(cartId || null, req.params.productId, {
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),
+      userId,
     });
     res.json(result);
   } catch (err) {
@@ -102,15 +117,18 @@ router.delete('/items/:productId', rateLimitCart, async (req, res, next) => {
 // DELETE /api/v1/cart
 router.delete('/', rateLimitCart, async (req, res, next) => {
   try {
+    const userId = req.user?.id || null;
     const cartId = getCartId(req);
-    if (!cartId) {
+
+    if (!cartId && !userId) {
       return res.json({ cartId: null, items: [], itemCount: 0, subtotal: null });
     }
 
-    const result = await cartService.clearCart(cartId, {
+    const result = await cartService.clearCart(cartId || null, {
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),
+      userId,
     });
     res.clearCookie('cartId');
     res.json(result);
@@ -122,12 +140,14 @@ router.delete('/', rateLimitCart, async (req, res, next) => {
 // POST /api/v1/cart/refresh
 router.post('/refresh', async (req, res, next) => {
   try {
+    const userId = req.user?.id || null;
     const cartId = getCartId(req);
-    if (!cartId) {
+
+    if (!cartId && !userId) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const result = await cartService.refreshCart(cartId);
+    const result = await cartService.refreshCart(cartId || null, userId);
     res.json(result);
   } catch (err) {
     next(err);

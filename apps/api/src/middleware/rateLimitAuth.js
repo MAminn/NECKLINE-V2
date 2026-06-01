@@ -5,10 +5,10 @@ const rateLimitLogin = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { ip: false },
+  validate: false,
   skipSuccessfulRequests: false,
   keyGenerator(req) {
-    return req.ip;
+    return req.cookies?.cartId || req.ip;
   },
   handler(req, res) {
     res.status(429).json({
@@ -23,9 +23,9 @@ const rateLimitRegister = rateLimit({
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { ip: false },
+  validate: false,
   keyGenerator(req) {
-    return req.ip;
+    return req.cookies?.cartId || req.ip;
   },
   handler(req, res) {
     res.status(429).json({
@@ -40,9 +40,9 @@ const rateLimitReset = rateLimit({
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { ip: false },
+  validate: false,
   keyGenerator(req) {
-    return req.ip;
+    return req.cookies?.cartId || req.ip;
   },
   handler(req, res) {
     res.status(429).json({

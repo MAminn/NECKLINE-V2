@@ -74,7 +74,12 @@ async function buildAvailabilityMap(cart) {
   return map;
 }
 
-async function getOrCreateCart(cartId) {
+async function getOrCreateCart(cartId, userId = null) {
+  if (userId) {
+    const userCart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+    if (userCart) return userCart;
+    return Cart.create({ userId, items: [] });
+  }
   if (cartId && mongoose.Types.ObjectId.isValid(cartId)) {
     const existing = await Cart.findById(cartId);
     if (existing) return existing;
@@ -82,9 +87,14 @@ async function getOrCreateCart(cartId) {
   return Cart.create({ items: [] });
 }
 
-async function getCart(cartId) {
-  if (!cartId || !mongoose.Types.ObjectId.isValid(cartId)) return null;
-  const cart = await Cart.findById(cartId);
+async function getCart(cartId, userId = null) {
+  let cart = null;
+  if (userId) {
+    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+  }
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
   if (!cart) return null;
   const availabilityMap = await buildAvailabilityMap(cart);
   return formatCartResponse(cart, availabilityMap);
@@ -103,7 +113,7 @@ async function addItem(cartId, productId, quantity, meta = {}) {
     throw new CartError('Product is not available', 409);
   }
 
-  const cart = await getOrCreateCart(cartId);
+  const cart = await getOrCreateCart(cartId, meta.userId || null);
   const existingIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
   const currentQty = existingIndex >= 0 ? cart.items[existingIndex].quantity : 0;
   const newTotalQty = currentQty + quantity;
@@ -156,9 +166,6 @@ async function addItem(cartId, productId, quantity, meta = {}) {
 }
 
 async function updateItem(cartId, productId, quantity, meta = {}) {
-  if (!cartId || !mongoose.Types.ObjectId.isValid(cartId)) {
-    throw new CartError('Cart not found', 404);
-  }
   if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
     throw new CartError('Invalid productId', 400);
   }
@@ -166,7 +173,13 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
     throw new CartError('Quantity must be between 1 and 99', 400);
   }
 
-  const cart = await Cart.findById(cartId);
+  let cart = null;
+  if (meta.userId) {
+    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
+  }
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
   if (!cart) throw new CartError('Cart not found', 404);
 
   const itemIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
@@ -207,14 +220,17 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
 }
 
 async function removeItem(cartId, productId, meta = {}) {
-  if (!cartId || !mongoose.Types.ObjectId.isValid(cartId)) {
-    throw new CartError('Cart not found', 404);
-  }
   if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
     throw new CartError('Invalid productId', 400);
   }
 
-  const cart = await Cart.findById(cartId);
+  let cart = null;
+  if (meta.userId) {
+    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
+  }
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
   if (!cart) throw new CartError('Cart not found', 404);
 
   const itemIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
@@ -248,11 +264,13 @@ async function removeItem(cartId, productId, meta = {}) {
 }
 
 async function clearCart(cartId, meta = {}) {
-  if (!cartId || !mongoose.Types.ObjectId.isValid(cartId)) {
-    return { cartId: null, items: [], itemCount: 0, subtotal: null };
+  let cart = null;
+  if (meta.userId) {
+    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
   }
-
-  const cart = await Cart.findById(cartId);
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
   if (!cart) return { cartId: null, items: [], itemCount: 0, subtotal: null };
 
   const beforeCount = cart.items.reduce((s, i) => s + i.quantity, 0);
@@ -278,12 +296,14 @@ async function clearCart(cartId, meta = {}) {
   return { cartId: cart._id.toString(), items: [], itemCount: 0, subtotal: null };
 }
 
-async function refreshCart(cartId) {
-  if (!cartId || !mongoose.Types.ObjectId.isValid(cartId)) {
-    throw new CartError('Cart not found', 404);
+async function refreshCart(cartId, userId = null) {
+  let cart = null;
+  if (userId) {
+    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
   }
-
-  const cart = await Cart.findById(cartId);
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
   if (!cart) throw new CartError('Cart not found', 404);
 
   for (const item of cart.items) {
@@ -303,6 +323,61 @@ async function refreshCart(cartId) {
   return formatCartResponse(cart, availabilityMap);
 }
 
+async function mergeGuestCart(guestCartId, userId) {
+  if (!guestCartId || !mongoose.Types.ObjectId.isValid(guestCartId)) {
+    return null;
+  }
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  const guestCart = await Cart.findById(guestCartId);
+  if (!guestCart || guestCart.items.length === 0) {
+    return null;
+  }
+
+  let userCart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+  if (!userCart) {
+    userCart = await Cart.create({ userId, items: [] });
+  }
+
+  for (const guestItem of guestCart.items) {
+    const existingIndex = userCart.items.findIndex(
+      (i) => i.productId.toString() === guestItem.productId.toString()
+    );
+
+    if (existingIndex >= 0) {
+      const combinedQty = userCart.items[existingIndex].quantity + guestItem.quantity;
+      userCart.items[existingIndex].quantity = Math.min(combinedQty, 99);
+    } else if (userCart.items.length < 20) {
+      userCart.items.push({
+        productId: guestItem.productId,
+        name: guestItem.name,
+        sku: guestItem.sku,
+        image: guestItem.image,
+        quantity: guestItem.quantity,
+        unitPrice: guestItem.unitPrice,
+        addedAt: new Date(),
+      });
+    }
+  }
+
+  userCart.updatedAt = new Date();
+  await userCart.save();
+
+  // Transfer reservations from guest cart to user cart
+  await reservationService.releaseAll(guestCart._id);
+  for (const item of userCart.items) {
+    await reservationService.reserve(userCart._id, item.productId, item.quantity);
+  }
+
+  // Delete guest cart
+  await Cart.findByIdAndDelete(guestCart._id);
+
+  const availabilityMap = await buildAvailabilityMap(userCart);
+  return formatCartResponse(userCart, availabilityMap);
+}
+
 module.exports = {
   getCart,
   addItem,
@@ -311,5 +386,6 @@ module.exports = {
   clearCart,
   refreshCart,
   computeSubtotal,
+  mergeGuestCart,
   CartError,
 };
