@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import PriceDisplay from './PriceDisplay';
+import AddToCartButton from './AddToCartButton';
 
 interface Product {
   _id: string;
@@ -46,8 +47,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         <h3 className="mt-1 font-display text-lg uppercase tracking-wide text-text-primary line-clamp-2">
           {product.name}
         </h3>
-        <div className="mt-auto pt-3">
+        <div className="mt-auto flex items-center justify-between pt-3">
           <PriceDisplay amount={product.price} currency={product.currency} />
+          {!isOutOfStock && (
+            <div onClick={(e) => e.preventDefault()}>
+              <AddToCartButton productId={product._id} quantity={1} />
+            </div>
+          )}
         </div>
       </div>
     </Link>
