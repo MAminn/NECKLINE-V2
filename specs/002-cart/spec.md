@@ -56,7 +56,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 **Acceptance Scenarios**:
 
 1. **Given** a guest has items in their cart, **When** they refresh the browser page, **Then** the cart restores with identical items and quantities.
-2. **Given** a guest's cart has been idle beyond the reservation TTL, **When** they return to the site, **Then** the cart still displays the items but availability is rechecked; items that are no longer available show a warning.
+2. **Given** a guest's cart has been idle beyond the reservation TTL, **When** they return to the site, **Then** the cart still displays the items with a "Stock not reserved" warning; the guest can click "Refresh Availability" to revalidate stock and create new reservations.
 3. **Given** a guest's cart contains a product that has since gone out of stock, **When** they view their cart, **Then** the item is marked as unavailable and cannot proceed to checkout.
 
 ---
@@ -67,7 +67,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **Concurrent cart updates from same guest**: Multiple tabs updating the same cart line — atomic MongoDB operators (`$inc`/`$pull`) ensure correct final state without overwriting.
 - **Product deleted/inactivated while in cart**: Cart displays the item with an "unavailable" marker; it cannot be purchased.
 - **Price changed while in cart**: Cart line items retain the snapshot price from time of add. The subtotal uses these stored prices. Price changes only affect new additions; checkout (Phase 4) will revalidate and snapshot prices are captured in the order.
-- **Reservation expiry during session**: Cart UI shows items but availability badges warn when stock is no longer reserved.
+- **Reservation expiry during session**: Cart UI shows items with a "Stock not reserved" warning. The guest can click "Refresh Availability" to revalidate stock and create new reservations.
 - **Maximum quantity enforcement**: Each line item has a reasonable upper bound (e.g., 99 units per product) to prevent abuse.
 - **Empty cart state**: Cart page shows a friendly empty-state message with a link back to the catalog.
 - **Cart ID collision**: Server generates sufficiently random cart IDs to prevent guessing.
@@ -80,6 +80,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **Q**: What concurrency control should protect cart mutations when a guest has multiple tabs? → **A**: Atomic MongoDB operators only (Option B). Cart mutations use `$inc`, `$pull`, and `$set` on embedded line items; no version field is needed on the Cart document.
 - **Q**: What guardrails should protect against cart abuse (unbounded line items, endpoint hammering)? → **A**: Maximum of 20 line items per cart and 50 cart mutations per minute per cart ID (Option A).
 - **Q**: How should reservation documents be structured relative to cart line items? → **A**: One reservation document per (cart, product) pair, updated in place (Option A). The idempotency key belongs to the add-to-cart API request layer, not the reservation document. Availability queries sum `qty` across reservations per product.
+- **Q**: How should the cart page handle items whose reservations have expired? → **A**: Warn + manual re-reserve (Option B). Items remain in cart with a warning badge; the guest clicks "Refresh Availability" to validate stock and create new reservations.
 
 ## Requirements *(mandatory)*
 
