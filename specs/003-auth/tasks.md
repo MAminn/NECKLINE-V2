@@ -167,7 +167,7 @@
 - [ ] T051 [US5] Implement `resetPassword` in `apps/api/src/services/authService.js` — verify token hash, check expiry/used, update password hash, mark token used, revoke all refresh tokens
 - [ ] T052 [US5] Add `POST /api/v1/auth/forgot-password` route
 - [ ] T053 [US5] Add `POST /api/v1/auth/reset-password` route
-- [ ] T054 [US5] Add debug endpoint `GET /api/v1/auth/debug/reset-tokens` (development only, or behind admin check) — list recent reset tokens with raw values for testing
+- [ ] T054 [US5] Add debug endpoint `GET /api/v1/auth/debug/reset-tokens` — list recent reset tokens with raw values for testing. **MUST be disabled in production** (`NODE_ENV !== 'production'` check or admin-only gate).
 
 ### Frontend
 

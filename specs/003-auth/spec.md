@@ -121,7 +121,7 @@ A customer who forgot their password requests a reset link by entering their ema
 - **FR-004**: The system MUST authenticate users via short-lived access tokens and rotating refresh tokens.
 - **FR-005**: Tokens MUST be transmitted in httpOnly, secure, sameSite cookies.
 - **FR-006**: Refresh tokens MUST be individually revocable and tracked server-side.
-- **FR-007**: Password changes, resets, and suspicious activity MUST invalidate all active refresh tokens for that account.
+- **FR-007**: Password changes and resets MUST invalidate all active refresh tokens for that account.
 - **FR-008**: The system MUST rate-limit login, registration, and password-reset endpoints to prevent brute-force attacks.
 - **FR-009**: The system MUST prevent account enumeration by returning identical error messages and response timing for existing and non-existing emails on login and password-reset requests.
 - **FR-010**: When an authenticated user logs in, the system MUST merge their current guest cart into their account cart, combining quantities for duplicate products and respecting stock and cart limits.
