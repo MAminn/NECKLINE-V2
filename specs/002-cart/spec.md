@@ -78,6 +78,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 
 - **Q**: If a product's price changes while it's in the cart, should the cart reflect the original price or the new price? → **A**: Snapshot price locked (Option A). Items in cart keep their original price at time of add; price changes only affect future additions. The server computes subtotal from stored snapshot prices — prices are never accepted from the client.
 - **Q**: What concurrency control should protect cart mutations when a guest has multiple tabs? → **A**: Atomic MongoDB operators only (Option B). Cart mutations use `$inc`, `$pull`, and `$set` on embedded line items; no version field is needed on the Cart document.
+- **Q**: What guardrails should protect against cart abuse (unbounded line items, endpoint hammering)? → **A**: Maximum of 20 line items per cart and 50 cart mutations per minute per cart ID (Option A).
 
 ## Requirements *(mandatory)*
 
@@ -99,6 +100,8 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **FR-014**: The reservation endpoint MUST be idempotent — re-adding the same product with the same idempotency key extends the existing reservation rather than creating a duplicate.
 - **FR-015**: The system MUST expose a cart summary (item count + subtotal) that can be displayed in the site header.
 - **FR-016**: Cart quantity updates and removals MUST use atomic database operations to prevent race conditions during concurrent access.
+- **FR-017**: The system MUST reject adding a product to cart if the cart already contains 20 line items.
+- **FR-018**: Cart mutation endpoints MUST be rate-limited to 50 requests per minute per cart ID.
 
 ### Key Entities
 
@@ -123,6 +126,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - Cart persistence uses a server-side cart document referenced by a cookie-stored cart ID. LocalStorage may be used as a client-side cache for instant UI updates, but the server cart is the source of truth.
 - Guest checkout remains available; account merging of carts is a Phase 3 concern.
 - Cart subtotal is the sum of (quantity × unit price) for all line items. Shipping, taxes, and discounts are Phase 4+ concerns.
-- A reasonable maximum of 99 units per product per cart prevents abuse.
+- A maximum of 20 line items per cart and 99 units per product per line item prevents abuse.
+- Cart mutation endpoints are rate-limited to 50 requests per minute per cart ID.
 - Cart documents are stored in MongoDB with a TTL index for automatic cleanup of stale carts.
 - The reservation TTL (15 minutes) and cart TTL (7 days) are configurable via environment variables.
