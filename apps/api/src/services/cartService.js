@@ -115,7 +115,8 @@ async function addItem(cartId, productId, quantity, meta = {}) {
   const otherReserved = await reservationService.getAvailability(productId, cart._id);
   const available = product.stockOnHand - otherReserved;
   if (newTotalQty > available) {
-    throw new CartError(`Only ${available} units available`, 409);
+    const remaining = available - currentQty;
+    throw new CartError(`Only ${Math.max(0, remaining)} more units available`, 409);
   }
 
   if (existingIndex >= 0) {
