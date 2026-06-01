@@ -13,12 +13,14 @@ This document records all Personally Identifiable Information (PII) collected by
 | Field | Purpose | Legal Basis | Retention Period |
 |-------|---------|-------------|-----------------|
 | email | Order communication, account login | Contract / Consent | 7 years (tax records) |
+| name | Account profile, personalization | Consent | 7 years |
 | phone | Shipping coordination | Contract | 7 years |
 | fullName | Order fulfillment, delivery | Contract | 7 years |
 | shippingAddress | Product delivery | Contract | 7 years |
 | ipAddress | Fraud prevention, abuse detection | Legitimate Interest | 90 days |
 | userAgent | Security auditing | Legitimate Interest | 90 days |
 | cookieId | Session management | Consent (essential) | Session + 30 days |
+| passwordHash | Authentication | Contract | 7 years |
 
 ## User Rights (§9.2)
 
@@ -34,8 +36,9 @@ All deletion workflows must be audit-logged (§8.3).
 
 | Cookie | Type | Purpose | Duration |
 |--------|------|---------|----------|
-| session | Essential | Authentication | Session |
-| refresh | Essential | Token rotation | 7 days |
+| access_token | Essential | JWT access token | 15 minutes |
+| refresh_token | Essential | JWT refresh token | 7 days |
+| cartId | Essential | Guest cart identification | 30 days |
 | consent | Essential | Consent preferences | 1 year |
 | _analytics | Non-essential | Usage analytics | 90 days |
 

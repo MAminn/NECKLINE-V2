@@ -1,9 +1,10 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PasswordResetConfirmForm from '../../components/PasswordResetConfirmForm';
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
 
@@ -25,5 +26,13 @@ export default function ResetPasswordPage() {
       </h1>
       <PasswordResetConfirmForm token={token} />
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 py-12"><p className="text-text-secondary">Loading...</p></div>}>
+      <ResetPasswordPageContent />
+    </Suspense>
   );
 }
