@@ -28,6 +28,12 @@ const cartLineItemSchema = new mongoose.Schema(
 
 const cartSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+      default: null,
+    },
     items: {
       type: [cartLineItemSchema],
       default: [],

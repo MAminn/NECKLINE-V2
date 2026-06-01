@@ -11,6 +11,10 @@ const envSchema = z.object({
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
   CART_TTL_DAYS: z.string().transform(Number).default('7'),
   RESERVATION_TTL_MINUTES: z.string().transform(Number).default('15'),
+  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required').default('dev-secret-change-me'),
+  JWT_ACCESS_EXPIRY: z.string().default('15m'),
+  JWT_REFRESH_EXPIRY: z.string().default('7d'),
+  BCRYPT_ROUNDS: z.string().transform(Number).default('10'),
 });
 
 const parsed = envSchema.safeParse(process.env);
