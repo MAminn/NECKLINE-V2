@@ -64,6 +64,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 ### Edge Cases
 
 - **Concurrent add-to-cart**: Two guests attempt to purchase the last unit simultaneously — one succeeds, the other is blocked by availability guard.
+- **Concurrent cart updates from same guest**: Multiple tabs updating the same cart line — atomic MongoDB operators (`$inc`/`$pull`) ensure correct final state without overwriting.
 - **Product deleted/inactivated while in cart**: Cart displays the item with an "unavailable" marker; it cannot be purchased.
 - **Price changed while in cart**: Cart line items retain the snapshot price from time of add. The subtotal uses these stored prices. Price changes only affect new additions; checkout (Phase 4) will revalidate and snapshot prices are captured in the order.
 - **Reservation expiry during session**: Cart UI shows items but availability badges warn when stock is no longer reserved.
@@ -76,6 +77,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 ### Session 2026-05-25
 
 - **Q**: If a product's price changes while it's in the cart, should the cart reflect the original price or the new price? → **A**: Snapshot price locked (Option A). Items in cart keep their original price at time of add; price changes only affect future additions. The server computes subtotal from stored snapshot prices — prices are never accepted from the client.
+- **Q**: What concurrency control should protect cart mutations when a guest has multiple tabs? → **A**: Atomic MongoDB operators only (Option B). Cart mutations use `$inc`, `$pull`, and `$set` on embedded line items; no version field is needed on the Cart document.
 
 ## Requirements *(mandatory)*
 
@@ -96,6 +98,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **FR-013**: The system MUST remove the reservation when a line item is removed or its quantity is decreased.
 - **FR-014**: The reservation endpoint MUST be idempotent — re-adding the same product with the same idempotency key extends the existing reservation rather than creating a duplicate.
 - **FR-015**: The system MUST expose a cart summary (item count + subtotal) that can be displayed in the site header.
+- **FR-016**: Cart quantity updates and removals MUST use atomic database operations to prevent race conditions during concurrent access.
 
 ### Key Entities
 
