@@ -216,12 +216,14 @@ async function removeItem(cartId, productId, meta = {}) {
   const cart = await Cart.findById(cartId);
   if (!cart) throw new CartError('Cart not found', 404);
 
-  const beforeLength = cart.items.length;
-  cart.items = cart.items.filter((i) => i.productId.toString() !== productId);
-  if (cart.items.length === beforeLength) {
+  const itemIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
+  if (itemIndex < 0) {
     throw new CartError('Item not found in cart', 404);
   }
 
+  const beforeLength = cart.items.length;
+  cart.items.splice(itemIndex, 1);
+  cart.markModified('items');
   cart.updatedAt = new Date();
   await cart.save();
   await reservationService.release(cart._id, productId);

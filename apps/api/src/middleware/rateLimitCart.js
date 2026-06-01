@@ -5,6 +5,7 @@ const rateLimitCart = rateLimit({
   max: 50,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { ip: false },
   keyGenerator(req) {
     return req.cookies?.cartId || req.ip;
   },
