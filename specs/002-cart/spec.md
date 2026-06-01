@@ -65,11 +65,17 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 
 - **Concurrent add-to-cart**: Two guests attempt to purchase the last unit simultaneously — one succeeds, the other is blocked by availability guard.
 - **Product deleted/inactivated while in cart**: Cart displays the item with an "unavailable" marker; it cannot be purchased.
-- **Price changed while in cart**: Cart shows the current price at time of add; price is always re-fetched server-side at checkout (Phase 4 concern), but cart subtotal reflects the price as stored in the cart line.
+- **Price changed while in cart**: Cart line items retain the snapshot price from time of add. The subtotal uses these stored prices. Price changes only affect new additions; checkout (Phase 4) will revalidate and snapshot prices are captured in the order.
 - **Reservation expiry during session**: Cart UI shows items but availability badges warn when stock is no longer reserved.
 - **Maximum quantity enforcement**: Each line item has a reasonable upper bound (e.g., 99 units per product) to prevent abuse.
 - **Empty cart state**: Cart page shows a friendly empty-state message with a link back to the catalog.
 - **Cart ID collision**: Server generates sufficiently random cart IDs to prevent guessing.
+
+## Clarifications
+
+### Session 2026-05-25
+
+- **Q**: If a product's price changes while it's in the cart, should the cart reflect the original price or the new price? → **A**: Snapshot price locked (Option A). Items in cart keep their original price at time of add; price changes only affect future additions. The server computes subtotal from stored snapshot prices — prices are never accepted from the client.
 
 ## Requirements *(mandatory)*
 
@@ -80,7 +86,7 @@ A guest's cart survives page refreshes and browser restarts. When they return la
 - **FR-003**: The system MUST support updating the quantity of any line item in the cart.
 - **FR-004**: The system MUST support removing individual line items from the cart.
 - **FR-005**: The system MUST support clearing the entire cart in one action.
-- **FR-006**: The system MUST compute and display a running cart subtotal based on current line-item prices, read from the database server-side.
+- **FR-006**: The system MUST compute and display a running cart subtotal from the stored snapshot prices in each cart line item, calculated server-side. Prices are never accepted from the client.
 - **FR-007**: The system MUST validate that requested quantities do not exceed available stock at every add/update operation.
 - **FR-008**: The system MUST block adding out-of-stock or inactive products to the cart.
 - **FR-009**: The system MUST create a time-bound reservation (default 15 minutes, configurable) when a product is added to cart, reducing effective availability.
