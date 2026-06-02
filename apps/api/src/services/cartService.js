@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const reservationService = require('./reservationService');
+const discountService = require('./discountService');
+const shippingService = require('./shippingService');
 const { createAuditEvent } = require('../domain/audit');
 const logger = require('../config/logger');
 
@@ -25,7 +27,60 @@ function computeSubtotal(items) {
   return { amount: total, currency };
 }
 
-function formatCartResponse(cart, availabilityMap = {}) {
+async function getDefaultShippingCost(currency) {
+  try {
+    const method = await shippingService.getDefaultShippingMethod();
+    if (method) return { amount: method.cost, currency: method.currency };
+  } catch (err) {
+    logger.error({ err }, 'Failed to get default shipping method');
+  }
+  return { amount: 0, currency: currency || 'EGP' };
+}
+
+async function computeCartDiscount(cart) {
+  const subtotal = computeSubtotal(cart.items);
+  if (!subtotal) return { discount: null, shipping: await getDefaultShippingCost(), total: null };
+
+  try {
+    const shipping = await getDefaultShippingCost(subtotal.currency);
+    const discount = await discountService.findBestDiscount({
+      subtotal: subtotal.amount,
+      shippingCost: shipping.amount,
+      currency: subtotal.currency,
+      manualCode: cart.appliedPromoCode,
+    });
+
+    const discountAmount = discount?.amount || 0;
+    const total = Math.max(0, subtotal.amount - discountAmount) + shipping.amount;
+
+    return { discount, shipping, total: { amount: total, currency: subtotal.currency } };
+  } catch (err) {
+    logger.error({ err }, 'Failed to compute cart discount');
+    const shipping = await getDefaultShippingCost(subtotal.currency);
+    return {
+      discount: null,
+      shipping,
+      total: { amount: subtotal.amount + shipping.amount, currency: subtotal.currency },
+    };
+  }
+}
+
+async function clearInvalidPromoCode(cart) {
+  if (!cart.appliedPromoCode) return;
+  const subtotal = computeSubtotal(cart.items);
+  if (!subtotal) {
+    cart.appliedPromoCode = null;
+    return;
+  }
+  try {
+    await discountService.validatePromoCode(cart.appliedPromoCode, subtotal.amount, subtotal.currency);
+  } catch {
+    cart.appliedPromoCode = null;
+    cart.markModified('appliedPromoCode');
+  }
+}
+
+function formatCartResponse(cart, availabilityMap = {}, discountInfo = null) {
   const items = cart.items.map((item) => {
     const reserved = availabilityMap[item.productId.toString()]?.reserved ?? false;
     const available = availabilityMap[item.productId.toString()]?.available ?? false;
@@ -45,12 +100,22 @@ function formatCartResponse(cart, availabilityMap = {}) {
     };
   });
 
-  return {
+  const subtotal = computeSubtotal(items);
+  const result = {
     cartId: cart._id.toString(),
     items,
     itemCount: items.reduce((sum, i) => sum + i.quantity, 0),
-    subtotal: computeSubtotal(items),
+    subtotal,
+    appliedPromoCode: cart.appliedPromoCode || null,
   };
+
+  if (discountInfo) {
+    result.discount = discountInfo.discount;
+    result.shipping = discountInfo.shipping;
+    result.total = discountInfo.total;
+  }
+
+  return result;
 }
 
 async function buildAvailabilityMap(cart) {
@@ -97,7 +162,8 @@ async function getCart(cartId, userId = null) {
   }
   if (!cart) return null;
   const availabilityMap = await buildAvailabilityMap(cart);
-  return formatCartResponse(cart, availabilityMap);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
 }
 
 async function addItem(cartId, productId, quantity, meta = {}) {
@@ -147,6 +213,9 @@ async function addItem(cartId, productId, quantity, meta = {}) {
   await cart.save();
   await reservationService.extend(cart._id, productId, newTotalQty);
 
+  await clearInvalidPromoCode(cart);
+  if (cart.isModified('appliedPromoCode')) await cart.save();
+
   if (meta.requestId) {
     createAuditEvent({
       actor: 'guest',
@@ -162,7 +231,8 @@ async function addItem(cartId, productId, quantity, meta = {}) {
   }
 
   const availabilityMap = await buildAvailabilityMap(cart);
-  return formatCartResponse(cart, availabilityMap);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
 }
 
 async function updateItem(cartId, productId, quantity, meta = {}) {
@@ -201,6 +271,9 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
 
   await reservationService.extend(cart._id, productId, quantity);
 
+  await clearInvalidPromoCode(cart);
+  if (cart.isModified('appliedPromoCode')) await cart.save();
+
   if (meta.requestId) {
     createAuditEvent({
       actor: 'guest',
@@ -216,7 +289,8 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
   }
 
   const availabilityMap = await buildAvailabilityMap(cart);
-  return formatCartResponse(cart, availabilityMap);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
 }
 
 async function removeItem(cartId, productId, meta = {}) {
@@ -245,6 +319,9 @@ async function removeItem(cartId, productId, meta = {}) {
   await cart.save();
   await reservationService.release(cart._id, productId);
 
+  await clearInvalidPromoCode(cart);
+  if (cart.isModified('appliedPromoCode')) await cart.save();
+
   if (meta.requestId) {
     createAuditEvent({
       actor: 'guest',
@@ -260,7 +337,8 @@ async function removeItem(cartId, productId, meta = {}) {
   }
 
   const availabilityMap = await buildAvailabilityMap(cart);
-  return formatCartResponse(cart, availabilityMap);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
 }
 
 async function clearCart(cartId, meta = {}) {
@@ -275,6 +353,7 @@ async function clearCart(cartId, meta = {}) {
 
   const beforeCount = cart.items.reduce((s, i) => s + i.quantity, 0);
   cart.items = [];
+  cart.appliedPromoCode = null;
   cart.updatedAt = new Date();
   await cart.save();
   await reservationService.releaseAll(cart._id);
@@ -293,7 +372,16 @@ async function clearCart(cartId, meta = {}) {
     }).catch((err) => logger.error({ err }, 'Audit event failed'));
   }
 
-  return { cartId: cart._id.toString(), items: [], itemCount: 0, subtotal: null };
+  const shipping = await getDefaultShippingCost();
+  return {
+    cartId: cart._id.toString(),
+    items: [],
+    itemCount: 0,
+    subtotal: null,
+    discount: null,
+    shipping,
+    total: { amount: shipping.amount, currency: shipping.currency },
+  };
 }
 
 async function refreshCart(cartId, userId = null) {
@@ -320,7 +408,54 @@ async function refreshCart(cartId, userId = null) {
   await cart.save();
 
   const availabilityMap = await buildAvailabilityMap(cart);
-  return formatCartResponse(cart, availabilityMap);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
+}
+
+async function applyPromoCode(cartId, userId, code) {
+  let cart = null;
+  if (userId) {
+    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+  }
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
+  if (!cart) throw new CartError('Cart not found', 404);
+
+  const subtotal = computeSubtotal(cart.items);
+  if (!subtotal) {
+    throw new CartError('Cart is empty', 400);
+  }
+
+  // Validate the code
+  await discountService.validatePromoCode(code, subtotal.amount, subtotal.currency);
+
+  cart.appliedPromoCode = code.toUpperCase().trim();
+  cart.updatedAt = new Date();
+  await cart.save();
+
+  const availabilityMap = await buildAvailabilityMap(cart);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
+}
+
+async function removePromoCode(cartId, userId) {
+  let cart = null;
+  if (userId) {
+    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+  }
+  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    cart = await Cart.findById(cartId);
+  }
+  if (!cart) throw new CartError('Cart not found', 404);
+
+  cart.appliedPromoCode = null;
+  cart.updatedAt = new Date();
+  await cart.save();
+
+  const availabilityMap = await buildAvailabilityMap(cart);
+  const discountInfo = await computeCartDiscount(cart);
+  return formatCartResponse(cart, availabilityMap, discountInfo);
 }
 
 async function mergeGuestCart(guestCartId, userId) {
@@ -385,6 +520,8 @@ module.exports = {
   removeItem,
   clearCart,
   refreshCart,
+  applyPromoCode,
+  removePromoCode,
   computeSubtotal,
   mergeGuestCart,
   CartError,

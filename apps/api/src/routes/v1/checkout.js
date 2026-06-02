@@ -28,7 +28,7 @@ router.post(
   validate(checkoutSchema),
   async (req, res, next) => {
     try {
-      const { cartId, contact, shippingAddress } = req.body;
+      const { cartId, contact, shippingAddress, promoCode } = req.body;
       const userId = req.user?.id || null;
 
       const result = await checkoutService.createCheckoutSession({
@@ -36,6 +36,7 @@ router.post(
         userId,
         contact,
         shippingAddress,
+        promoCode: promoCode || null,
       });
 
       res.json(result);

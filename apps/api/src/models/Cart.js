@@ -44,6 +44,12 @@ const cartSchema = new mongoose.Schema(
         message: 'Cart cannot hold more than 20 items',
       },
     },
+    appliedPromoCode: {
+      type: String,
+      default: null,
+      trim: true,
+      uppercase: true,
+    },
   },
   {
     timestamps: true,

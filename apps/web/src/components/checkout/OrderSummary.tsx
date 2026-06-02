@@ -11,15 +11,24 @@ interface LineItem {
   lineTotal: number;
 }
 
+interface DiscountInfo {
+  code: string | null;
+  type: string;
+  value: number;
+  amount: number;
+  currency: string;
+}
+
 interface OrderSummaryProps {
   lineItems: LineItem[];
   subtotal: number;
+  discount?: DiscountInfo | null;
   shipping: { method: string; cost: number; currency: string };
   total: number;
   currency: string;
 }
 
-export default function OrderSummary({ lineItems, subtotal, shipping, total, currency }: OrderSummaryProps) {
+export default function OrderSummary({ lineItems, subtotal, discount, shipping, total, currency }: OrderSummaryProps) {
   return (
     <div className="rounded-lg bg-surface-alt p-6">
       <h3 className="font-display text-lg uppercase tracking-wide">Order Summary</h3>
@@ -41,9 +50,19 @@ export default function OrderSummary({ lineItems, subtotal, shipping, total, cur
           <span className="text-text-secondary">Subtotal</span>
           <span className="font-display">{formatPrice(subtotal, currency)}</span>
         </div>
+        {discount && discount.amount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-text-secondary">
+              Discount {discount.code ? `(${discount.code})` : ''}
+            </span>
+            <span className="font-display text-primary">-{formatPrice(discount.amount, discount.currency)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-text-secondary">Shipping ({shipping.method})</span>
-          <span className="font-display">{formatPrice(shipping.cost, shipping.currency)}</span>
+          <span className="font-display">
+            {shipping.cost === 0 ? 'Free' : formatPrice(shipping.cost, shipping.currency)}
+          </span>
         </div>
         <div className="flex justify-between border-t border-border pt-2 text-lg">
           <span className="font-display uppercase tracking-wide">Total</span>

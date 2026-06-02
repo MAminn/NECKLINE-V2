@@ -86,9 +86,21 @@ export default function OrderConfirmationClient() {
                 <span className="text-text-secondary">Subtotal</span>
                 <span className="font-display">{formatPrice(order.subtotal, order.currency)}</span>
               </div>
+              {order.discount && order.discount.amountApplied > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-text-secondary">
+                    Discount {order.discount.code ? `(${order.discount.code})` : ''}
+                  </span>
+                  <span className="font-display text-primary">
+                    -{formatPrice(order.discount.amountApplied, order.discount.currency || order.currency)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-text-secondary">Shipping</span>
-                <span className="font-display">{formatPrice(order.shippingCost, order.currency)}</span>
+                <span className="font-display">
+                  {order.shippingCost === 0 ? 'Free' : formatPrice(order.shippingCost, order.currency)}
+                </span>
               </div>
               <div className="flex justify-between border-t border-border pt-2 text-lg">
                 <span className="font-display uppercase tracking-wide">Total</span>

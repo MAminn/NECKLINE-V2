@@ -45,7 +45,7 @@ export default function AccountPage() {
           <h2 className="mb-4 font-display text-lg uppercase tracking-widest text-text-primary">
             Order History
           </h2>
-          <OrderHistoryList orders={orders} />
+          <OrderHistoryList />
         </div>
       </div>
     </div>

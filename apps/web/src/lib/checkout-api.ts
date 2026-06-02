@@ -62,10 +62,12 @@ export async function createCheckoutSession({
   cartId,
   contact,
   shippingAddress,
+  promoCode,
 }: {
   cartId?: string | null;
   contact: CheckoutContact;
   shippingAddress: ShippingAddress;
+  promoCode?: string | null;
 }) {
   return checkoutClient('/checkout', {
     method: 'POST',
@@ -74,6 +76,7 @@ export async function createCheckoutSession({
       cartId: cartId || null,
       contact,
       shippingAddress,
+      promoCode: promoCode || null,
     }),
   });
 }
@@ -104,6 +107,15 @@ export async function getOrder(orderNumber: string, email?: string) {
 
 export async function getShippingMethods() {
   return checkoutClient('/checkout/shipping-methods', {
+    method: 'GET',
+  });
+}
+
+export async function validatePromoCode(code: string, subtotal?: number, currency?: string) {
+  const query = new URLSearchParams();
+  if (subtotal !== undefined) query.set('subtotal', String(subtotal));
+  if (currency) query.set('currency', currency);
+  return checkoutClient(`/promo-codes/${encodeURIComponent(code)}/validate?${query.toString()}`, {
     method: 'GET',
   });
 }

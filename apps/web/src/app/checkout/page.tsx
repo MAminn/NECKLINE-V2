@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
 import { createCheckoutSession, createOrder } from '../../lib/checkout-api';
+import PromoCodeInput from '../../components/checkout/PromoCodeInput';
 import ShippingStep from '../../components/checkout/ShippingStep';
 import ReviewStep from '../../components/checkout/ReviewStep';
 import PaymentStep from '../../components/checkout/PaymentStep';
@@ -14,7 +15,7 @@ type Step = 'shipping' | 'review' | 'payment';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, isLoading } = useCart();
+  const { cart, isLoading, applyPromoCode, removePromoCode } = useCart();
   const { user } = useAuth();
   const [step, setStep] = useState<Step>('shipping');
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export default function CheckoutPage() {
           governorate: data.governorate,
           postalCode: data.postalCode,
         },
+        promoCode: cart.appliedPromoCode || null,
       });
 
       setCheckoutToken(result.checkoutToken);
@@ -115,6 +117,27 @@ export default function CheckoutPage() {
                 preview={preview}
                 contact={contact}
                 shippingAddress={shippingAddress}
+                appliedPromoCode={cart.appliedPromoCode}
+                onApplyPromo={async (code) => {
+                  await applyPromoCode(code);
+                  // Refresh checkout preview with new promo
+                  const refreshed = await createCheckoutSession({
+                    cartId: cart.cartId,
+                    contact,
+                    shippingAddress,
+                    promoCode: code,
+                  });
+                  setPreview(refreshed.orderPreview);
+                }}
+                onRemovePromo={async () => {
+                  await removePromoCode();
+                  const refreshed = await createCheckoutSession({
+                    cartId: cart.cartId,
+                    contact,
+                    shippingAddress,
+                  });
+                  setPreview(refreshed.orderPreview);
+                }}
                 onConfirm={handlePay}
                 onBack={() => setStep('shipping')}
               />
@@ -145,24 +168,52 @@ export default function CheckoutPage() {
             )}
 
             {!preview && cart.items.length > 0 && (
-              <div className="rounded-lg bg-surface-alt p-6">
-                <h3 className="font-display text-lg uppercase tracking-wide">Cart Summary</h3>
-                <div className="mt-4 space-y-2">
-                  {cart.items.map((item: any) => (
-                    <div key={item.productId} className="flex justify-between text-sm">
-                      <span>{item.name} × {item.quantity}</span>
-                      <span className="font-display">
-                        {item.lineTotal?.amount} {item.lineTotal?.currency}
+              <div className="space-y-4">
+                <div className="rounded-lg bg-surface-alt p-6">
+                  <h3 className="font-display text-lg uppercase tracking-wide">Cart Summary</h3>
+                  <div className="mt-4 space-y-2">
+                    {cart.items.map((item: any) => (
+                      <div key={item.productId} className="flex justify-between text-sm">
+                        <span>{item.name} × {item.quantity}</span>
+                        <span className="font-display">
+                          {item.lineTotal?.amount} {item.lineTotal?.currency}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {cart.discount && cart.discount.amount > 0 && (
+                    <div className="mt-2 flex justify-between text-sm text-primary">
+                      <span>Discount {cart.discount.code ? `(${cart.discount.code})` : ''}</span>
+                      <span className="font-display">-{cart.discount.amount} {cart.discount.currency}</span>
+                    </div>
+                  )}
+                  <div className="mt-4 border-t border-border pt-2 flex justify-between font-display">
+                    <span>Subtotal</span>
+                    <span>
+                      {cart.subtotal?.amount} {cart.subtotal?.currency}
+                    </span>
+                  </div>
+                  {cart.shipping && (
+                    <div className="mt-1 flex justify-between text-sm text-text-secondary">
+                      <span>Shipping</span>
+                      <span>
+                        {cart.shipping.amount === 0 ? 'Free' : `${cart.shipping.amount} ${cart.shipping.currency}`}
                       </span>
                     </div>
-                  ))}
+                  )}
+                  {cart.total && (
+                    <div className="mt-2 flex justify-between font-display text-gold">
+                      <span>Total</span>
+                      <span>{cart.total.amount} {cart.total.currency}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-4 border-t border-border pt-2 flex justify-between font-display">
-                  <span>Subtotal</span>
-                  <span>
-                    {cart.subtotal?.amount} {cart.subtotal?.currency}
-                  </span>
-                </div>
+                <PromoCodeInput
+                  appliedCode={cart.appliedPromoCode}
+                  onApply={applyPromoCode}
+                  onRemove={removePromoCode}
+                  isLoading={isLoading}
+                />
               </div>
             )}
           </div>

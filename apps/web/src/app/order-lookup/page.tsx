@@ -85,6 +85,12 @@ export default function OrderLookupPage() {
                 </div>
               ))}
             </div>
+            {order.discount && order.discount.amountApplied > 0 && (
+              <div className="mt-2 flex justify-between text-sm text-primary">
+                <span>Discount {order.discount.code ? `(${order.discount.code})` : ''}</span>
+                <span className="font-display">-{formatPrice(order.discount.amountApplied, order.discount.currency || order.currency)}</span>
+              </div>
+            )}
             <div className="mt-3 border-t border-border pt-2 flex justify-between font-display">
               <span>Total</span>
               <span className="text-gold">{formatPrice(order.total, order.currency)}</span>

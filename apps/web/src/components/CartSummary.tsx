@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useCart } from '../hooks/useCart';
 import { formatPrice } from '../lib/formatPrice';
+import PromoCodeInput from './checkout/PromoCodeInput';
 
 export default function CartSummary() {
-  const { cart, isLoading } = useCart();
+  const { cart, isLoading, applyPromoCode, removePromoCode } = useCart();
 
   const hasUnavailable = cart.items.some((i: any) => !i.available);
 
@@ -17,6 +18,31 @@ export default function CartSummary() {
           {cart.subtotal ? formatPrice(cart.subtotal.amount, cart.subtotal.currency) : '—'}
         </span>
       </div>
+
+      {cart.discount && cart.discount.amount > 0 && (
+        <div className="flex items-center justify-between text-sm text-primary">
+          <span>Discount {cart.discount.code ? `(${cart.discount.code})` : ''}</span>
+          <span className="font-display">-{formatPrice(cart.discount.amount, cart.discount.currency)}</span>
+        </div>
+      )}
+
+      {cart.shipping && (
+        <div className="flex items-center justify-between text-sm text-text-secondary">
+          <span>Shipping</span>
+          <span className="font-display">
+            {cart.shipping.amount === 0 ? 'Free' : formatPrice(cart.shipping.amount, cart.shipping.currency)}
+          </span>
+        </div>
+      )}
+
+      {cart.total && (
+        <div className="flex items-center justify-between border-t border-border pt-2">
+          <span className="font-display uppercase tracking-wide">Total</span>
+          <span className="font-display text-gold">
+            {formatPrice(cart.total.amount, cart.total.currency)}
+          </span>
+        </div>
+      )}
 
       <Link
         href="/checkout"
@@ -39,6 +65,13 @@ export default function CartSummary() {
           Remove unavailable items to proceed.
         </p>
       )}
+
+      <PromoCodeInput
+        appliedCode={cart.appliedPromoCode}
+        onApply={applyPromoCode}
+        onRemove={removePromoCode}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

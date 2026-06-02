@@ -15,11 +15,23 @@ export interface CartItem {
   reserved: boolean;
 }
 
+export interface CartDiscount {
+  code: string | null;
+  type: 'percentage' | 'fixed' | 'free_shipping';
+  value: number;
+  amount: number;
+  currency: string;
+}
+
 export interface Cart {
   cartId: string | null;
   items: CartItem[];
   itemCount: number;
   subtotal: { amount: number; currency: string } | null;
+  discount: CartDiscount | null;
+  shipping: { amount: number; currency: string } | null;
+  total: { amount: number; currency: string } | null;
+  appliedPromoCode: string | null;
 }
 
 interface CartContextValue {
@@ -30,12 +42,14 @@ interface CartContextValue {
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
+  applyPromoCode: (code: string) => Promise<void>;
+  removePromoCode: () => Promise<void>;
   refresh: () => Promise<void>;
   openDrawer: () => void;
   closeDrawer: () => void;
 }
 
-const emptyCart: Cart = { cartId: null, items: [], itemCount: 0, subtotal: null };
+const emptyCart: Cart = { cartId: null, items: [], itemCount: 0, subtotal: null, discount: null, shipping: null, total: null, appliedPromoCode: null };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
@@ -116,6 +130,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const applyPromoCode = useCallback(async (code: string) => {
+    setIsLoading(true);
+    try {
+      const data = await apiClient('/cart/apply-promo', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+        idempotencyKey: `promo-${code}-${generateCorrelationId()}`,
+      });
+      setCart(data);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const removePromoCode = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await apiClient('/cart/promo', { method: 'DELETE' });
+      setCart(data);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -139,6 +177,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         removeItem,
         clearCart,
+        applyPromoCode,
+        removePromoCode,
         refresh,
         openDrawer,
         closeDrawer,

@@ -37,6 +37,20 @@ const shippingMethodSnapshotSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const discountSnapshotSchema = new mongoose.Schema(
+  {
+    code: { type: String },
+    type: {
+      type: String,
+      enum: ['percentage', 'fixed', 'free_shipping'],
+    },
+    value: { type: Number, min: 0 },
+    amountApplied: { type: Number, min: 0 },
+    currency: { type: String },
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     orderNumber: { type: String, required: true, unique: true, index: true },
@@ -59,6 +73,7 @@ const orderSchema = new mongoose.Schema(
     lineItems: { type: [orderLineItemSchema], required: true, validate: [(arr) => arr.length > 0, 'Order must have at least one line item'] },
     subtotal: { type: Number, required: true, min: 0 },
     shippingCost: { type: Number, required: true, min: 0 },
+    discount: { type: discountSnapshotSchema, default: null },
     total: { type: Number, required: true, min: 0 },
     currency: { type: String, required: true },
     paymentStatus: {

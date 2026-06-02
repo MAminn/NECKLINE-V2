@@ -9,6 +9,8 @@ const { generateOrderNumber } = require('../utils/generateOrderNumber');
 const { getDefaultShippingMethod } = require('./shippingService');
 const reservationService = require('./reservationService');
 const cartService = require('./cartService');
+const discountService = require('./discountService');
+const { DiscountError } = require('./discountService');
 const { createAuditEvent } = require('../domain/audit');
 const logger = require('../config/logger');
 
@@ -55,7 +57,7 @@ async function validateCheckout({ cartId, userId }) {
   return cart;
 }
 
-async function createCheckoutSession({ cartId, userId, contact, shippingAddress }) {
+async function createCheckoutSession({ cartId, userId, contact, shippingAddress, promoCode }) {
   const cart = await validateCheckout({ cartId, userId });
 
   const shippingMethod = await getDefaultShippingMethod();
@@ -64,9 +66,20 @@ async function createCheckoutSession({ cartId, userId, contact, shippingAddress 
   }
 
   const subtotal = cart.subtotal?.amount || 0;
-  const shippingCost = shippingMethod.cost;
-  const total = subtotal + shippingCost;
   const currency = cart.subtotal?.currency || 'EGP';
+  const shippingCost = shippingMethod.cost;
+
+  // Compute discount
+  const discount = await discountService.findBestDiscount({
+    subtotal,
+    shippingCost,
+    currency,
+    manualCode: promoCode || cart.appliedPromoCode || null,
+  });
+
+  const discountAmount = discount?.amount || 0;
+  const finalShippingCost = discount?.type === 'free_shipping' ? 0 : shippingCost;
+  const total = Math.max(0, subtotal - discountAmount) + finalShippingCost;
 
   const token = createCheckoutToken();
   checkoutSessions.set(token, {
@@ -77,9 +90,12 @@ async function createCheckoutSession({ cartId, userId, contact, shippingAddress 
     shippingMethod,
     lineItems: cart.items,
     subtotal,
-    shippingCost,
+    shippingCost: finalShippingCost,
+    originalShippingCost: shippingCost,
+    discount,
     total,
     currency,
+    promoCode: promoCode || cart.appliedPromoCode || null,
     createdAt: Date.now(),
   });
 
@@ -95,9 +111,10 @@ async function createCheckoutSession({ cartId, userId, contact, shippingAddress 
         lineTotal: item.lineTotal.amount,
       })),
       subtotal,
+      discount,
       shipping: {
         method: shippingMethod.name,
-        cost: shippingCost,
+        cost: finalShippingCost,
         currency: shippingMethod.currency,
       },
       total,
@@ -123,8 +140,11 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     lineItems,
     subtotal,
     shippingCost,
+    originalShippingCost,
+    discount,
     total,
     currency,
+    promoCode,
   } = session;
 
   // Re-validate stock before processing
@@ -137,6 +157,32 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
   if (unavailableItems.length > 0) {
     const names = unavailableItems.map((i) => i.name).join(', ');
     throw new CheckoutError(`The following items are no longer available: ${names}`, 409, 'STOCK_UNAVAILABLE');
+  }
+
+  // Re-validate discount before payment
+  if (promoCode) {
+    try {
+      const freshDiscount = await discountService.findBestDiscount({
+        subtotal,
+        shippingCost: originalShippingCost || shippingCost,
+        currency,
+        manualCode: promoCode,
+      });
+      if (!freshDiscount || freshDiscount.code !== discount?.code) {
+        throw new CheckoutError(
+          'This promo code is no longer available',
+          409,
+          'PROMO_INVALID'
+        );
+      }
+    } catch (err) {
+      if (err instanceof CheckoutError) throw err;
+      throw new CheckoutError(
+        'This promo code is no longer available',
+        409,
+        'PROMO_INVALID'
+      );
+    }
   }
 
   const provider = createPaymentProvider();
@@ -219,7 +265,12 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
         }
       }
 
-      // 3b. Create order
+      // 3b. Increment promo code usage count (if applicable)
+      if (promoCode && discount) {
+        await discountService.incrementUsageCount(promoCode, mongoSession);
+      }
+
+      // 3c. Create order
       const orderNumber = generateOrderNumber();
       order = await Order.create(
         [
@@ -233,7 +284,7 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
             shippingAddress,
             shippingMethod: {
               name: shippingMethod.name,
-              cost: shippingMethod.cost,
+              cost: shippingCost,
               currency: shippingMethod.currency,
             },
             lineItems: lineItems.map((item) => ({
@@ -247,6 +298,15 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
             })),
             subtotal,
             shippingCost,
+            discount: discount
+              ? {
+                  code: discount.code,
+                  type: discount.type,
+                  value: discount.value,
+                  amountApplied: discount.amount,
+                  currency: discount.currency,
+                }
+              : null,
             total,
             currency,
             paymentStatus: 'succeeded',
@@ -285,7 +345,9 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
       const cartDoc = await Cart.findById(cartId).session(mongoSession);
       if (cartDoc) {
         cartDoc.items = [];
+        cartDoc.appliedPromoCode = null;
         cartDoc.markModified('items');
+        cartDoc.markModified('appliedPromoCode');
         await cartDoc.save({ session: mongoSession });
       }
 
@@ -296,6 +358,10 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     // If it's already a CheckoutError, rethrow it
     if (err instanceof CheckoutError) {
       throw err;
+    }
+    // If it's a DiscountError (e.g., promo code exhausted), convert to CheckoutError
+    if (err instanceof DiscountError) {
+      throw new CheckoutError(err.message, 409, err.code);
     }
     logger.error({ err, checkoutToken }, 'Checkout transaction failed');
     throw new CheckoutError('Order creation failed. Please try again.', 500, 'ORDER_CREATION_FAILED');

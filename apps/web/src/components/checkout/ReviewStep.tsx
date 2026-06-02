@@ -1,22 +1,27 @@
 'use client';
 
 import OrderSummary from './OrderSummary';
+import PromoCodeInput from './PromoCodeInput';
 
 interface ReviewStepProps {
   preview: {
     lineItems: { sku: string; title: string; unitPrice: number; currency: string; quantity: number; lineTotal: number }[];
     subtotal: number;
+    discount?: { code: string | null; type: string; value: number; amount: number; currency: string } | null;
     shipping: { method: string; cost: number; currency: string };
     total: number;
     currency: string;
   };
   contact: { name: string; email: string; phone: string };
   shippingAddress: { street: string; city: string; governorate: string; postalCode: string };
+  appliedPromoCode?: string | null;
+  onApplyPromo: (code: string) => Promise<void>;
+  onRemovePromo: () => Promise<void>;
   onConfirm: () => void;
   onBack: () => void;
 }
 
-export default function ReviewStep({ preview, contact, shippingAddress, onConfirm, onBack }: ReviewStepProps) {
+export default function ReviewStep({ preview, contact, shippingAddress, appliedPromoCode, onApplyPromo, onRemovePromo, onConfirm, onBack }: ReviewStepProps) {
   return (
     <div className="space-y-6">
       <h2 className="font-display text-xl uppercase tracking-wide">Review Your Order</h2>
@@ -33,9 +38,16 @@ export default function ReviewStep({ preview, contact, shippingAddress, onConfir
         </div>
       </div>
 
+      <PromoCodeInput
+        appliedCode={appliedPromoCode}
+        onApply={onApplyPromo}
+        onRemove={onRemovePromo}
+      />
+
       <OrderSummary
         lineItems={preview.lineItems}
         subtotal={preview.subtotal}
+        discount={preview.discount}
         shipping={preview.shipping}
         total={preview.total}
         currency={preview.currency}

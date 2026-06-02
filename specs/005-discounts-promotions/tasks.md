@@ -30,13 +30,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 [P] Create `PromoCode` Mongoose model in `apps/api/src/models/PromoCode.js`
-- [ ] T003 [P] Add `appliedPromoCode` field to `Cart` model in `apps/api/src/models/Cart.js`
-- [ ] T004 [P] Add `discount` snapshot subdocument to `Order` model in `apps/api/src/models/Order.js`
-- [ ] T005 Create `discountService.js` in `apps/api/src/services/discountService.js` (validation + computation engine; on DB errors, silently skip discount and log — never block cart read)
-- [ ] T006 Create Zod validation schemas for promo codes in `apps/api/src/validators/promoCodeSchemas.js`
-- [ ] T007 Add rate limit middleware for promo code validation endpoint in `apps/api/src/middleware/rateLimitPromo.js`
-- [ ] T008 Add composite indexes on `PromoCode` collection (`code` sparse unique, `isAutomatic+active+dates`)
+- [x] T002 [P] Create `PromoCode` Mongoose model in `apps/api/src/models/PromoCode.js`
+- [x] T003 [P] Add `appliedPromoCode` field to `Cart` model in `apps/api/src/models/Cart.js`
+- [x] T004 [P] Add `discount` snapshot subdocument to `Order` model in `apps/api/src/models/Order.js`
+- [x] T005 Create `discountService.js` in `apps/api/src/services/discountService.js` (validation + computation engine; on DB errors, silently skip discount and log — never block cart read)
+- [x] T006 Create Zod validation schemas for promo codes in `apps/api/src/validators/promoCodeSchemas.js`
+- [x] T007 Add rate limit middleware for promo code validation endpoint in `apps/api/src/middleware/rateLimitPromo.js`
+- [x] T008 Add composite indexes on `PromoCode` collection (`code` sparse unique, `isAutomatic+active+dates`)
 
 **Checkpoint**: Foundation ready — PromoCode model, discount engine, and updated Cart/Order schemas are in place.
 
@@ -50,22 +50,22 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Implement `POST /cart/apply-promo` route in `apps/api/src/routes/v1/cart.js`
-- [ ] T010 [P] [US1] Implement `DELETE /cart/promo` route in `apps/api/src/routes/v1/cart.js`
-- [ ] T011 [US1] Update `cartService.js` to recompute and clear discount on `addItem`, `updateItem`, `removeItem`, `clearCart`
-- [ ] T012 [US1] Update `formatCartResponse` in `apps/api/src/services/cartService.js` to include `discount`, `shipping`, and `total` (GET /cart automatically returns these via the existing handler)
-- [ ] T014 [US1] Update `checkoutService.createCheckoutSession` in `apps/api/src/services/checkoutService.js` to accept optional `promoCode`
-- [ ] T015 [US1] Update `checkoutService.processOrder` to re-validate promo code atomically in transaction and snapshot discount in Order
-- [ ] T016 [US1] Add `usageCount` atomic increment in checkout transaction using `$inc` with pre-check
-- [ ] T017 [US1] Update `POST /checkout` route in `apps/api/src/routes/v1/checkout.js` to accept optional `promoCode` in body
-- [ ] T018 [P] [US1] Create `PromoCodeInput.tsx` component in `apps/web/src/components/checkout/PromoCodeInput.tsx`
-- [ ] T019 [P] [US1] Update `ReviewStep.tsx` in `apps/web/src/components/checkout/ReviewStep.tsx` to display discount breakdown
-- [ ] T020 [US1] Update `checkout-api.ts` in `apps/web/src/lib/checkout-api.ts` with `applyPromo`, `removePromo`, and updated `createCheckoutSession`
-- [ ] T021 [US1] Update `apps/web/src/app/checkout/page.tsx` to manage promo code state and pass to checkout API
-- [ ] T022 [P] [US1] Update `CartSummary.tsx` in `apps/web/src/components/CartSummary.tsx` to show applied discount and allow code entry
-- [ ] T023 [US1] Update `OrderConfirmation` page in `apps/web/src/app/order-confirmation/[orderNumber]/page.tsx` to display discount snapshot
-- [ ] T024 [US1] Update `OrderLookupForm` / order display to show discount line item
-- [ ] T025 [P] [US1] Update `OrderHistoryList.tsx` in `apps/web/src/components/OrderHistoryList.tsx` to show discount in order cards
+- [x] T009 [P] [US1] Implement `POST /cart/apply-promo` route in `apps/api/src/routes/v1/cart.js`
+- [x] T010 [P] [US1] Implement `DELETE /cart/promo` route in `apps/api/src/routes/v1/cart.js`
+- [x] T011 [US1] Update `cartService.js` to recompute and clear discount on `addItem`, `updateItem`, `removeItem`, `clearCart`
+- [x] T012 [US1] Update `formatCartResponse` in `apps/api/src/services/cartService.js` to include `discount`, `shipping`, and `total` (GET /cart automatically returns these via the existing handler)
+- [x] T014 [US1] Update `checkoutService.createCheckoutSession` in `apps/api/src/services/checkoutService.js` to accept optional `promoCode`
+- [x] T015 [US1] Update `checkoutService.processOrder` to re-validate promo code atomically in transaction and snapshot discount in Order
+- [x] T016 [US1] Add `usageCount` atomic increment in checkout transaction using `$inc` with pre-check
+- [x] T017 [US1] Update `POST /checkout` route in `apps/api/src/routes/v1/checkout.js` to accept optional `promoCode` in body
+- [x] T018 [P] [US1] Create `PromoCodeInput.tsx` component in `apps/web/src/components/checkout/PromoCodeInput.tsx`
+- [x] T019 [P] [US1] Update `ReviewStep.tsx` in `apps/web/src/components/checkout/ReviewStep.tsx` to display discount breakdown
+- [x] T020 [US1] Update `checkout-api.ts` in `apps/web/src/lib/checkout-api.ts` with `applyPromo`, `removePromo`, and updated `createCheckoutSession`
+- [x] T021 [US1] Update `apps/web/src/app/checkout/page.tsx` to manage promo code state and pass to checkout API
+- [x] T022 [P] [US1] Update `CartSummary.tsx` in `apps/web/src/components/CartSummary.tsx` to show applied discount and allow code entry
+- [x] T023 [US1] Update `OrderConfirmation` page in `apps/web/src/app/order-confirmation/[orderNumber]/page.tsx` to display discount snapshot
+- [x] T024 [US1] Update `OrderLookupForm` / order display to show discount line item
+- [x] T025 [P] [US1] Update `OrderHistoryList.tsx` in `apps/web/src/components/OrderHistoryList.tsx` to show discount in order cards
 
 **Checkpoint**: User Story 1 is fully functional — promo codes apply at cart/checkout, validate server-side, and snapshot in orders.
 
@@ -79,11 +79,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Update `discountService.js` to evaluate all active automatic offers and return the best one
-- [ ] T027 [US2] Update `cartService.js` `formatCartResponse` to evaluate automatic offers when no manual code is applied
-- [ ] T028 [P] [US2] Create `PromoCodeBanner.tsx` in `apps/web/src/components/PromoCodeBanner.tsx` to display active automatic offer in cart
-- [ ] T029 [US2] Update `CartSummary.tsx` to show automatic offer discount and messaging
-- [ ] T030 [US2] Update checkout page to carry automatic offer through to order preview
+- [x] T026 [US2] Update `discountService.js` to evaluate all active automatic offers and return the best one
+- [x] T027 [US2] Update `cartService.js` `formatCartResponse` to evaluate automatic offers when no manual code is applied
+- [x] T028 [P] [US2] Create `PromoCodeBanner.tsx` in `apps/web/src/components/PromoCodeBanner.tsx` to display active automatic offer in cart
+- [x] T029 [US2] Update `CartSummary.tsx` to show automatic offer discount and messaging
+- [x] T030 [US2] Update checkout page to carry automatic offer through to order preview
 
 **Checkpoint**: User Stories 1 AND 2 both work — manual codes and automatic offers apply correctly, with manual codes taking precedence when both are eligible ("best discount wins").
 
@@ -97,11 +97,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Verify `discountService.js` correctly handles `type: 'free_shipping'` (sets shipping to 0, discount amount = original shipping cost)
-- [ ] T032 [US3] Update `checkoutService.createCheckoutSession` to handle free shipping in preview totals
-- [ ] T033 [US3] Update `checkoutService.processOrder` to snapshot free shipping correctly (shippingCost = 0, discount amount = original shipping)
-- [ ] T034 [P] [US3] Update frontend order summary components to display "Free Shipping" when shipping is 0
-- [ ] T035 [US3] Update order confirmation and lookup to display free shipping indicator
+- [x] T031 [US3] Verify `discountService.js` correctly handles `type: 'free_shipping'` (sets shipping to 0, discount amount = original shipping cost)
+- [x] T032 [US3] Update `checkoutService.createCheckoutSession` to handle free shipping in preview totals
+- [x] T033 [US3] Update `checkoutService.processOrder` to snapshot free shipping correctly (shippingCost = 0, discount amount = original shipping)
+- [x] T034 [P] [US3] Update frontend order summary components to display "Free Shipping" when shipping is 0
+- [x] T035 [US3] Update order confirmation and lookup to display free shipping indicator
 
 **Checkpoint**: All three discount types (percentage, fixed, free shipping) work correctly across cart, checkout, and order records.
 
@@ -115,13 +115,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T036 [P] [US4] Implement `GET /admin/promo-codes` route in `apps/api/src/routes/v1/admin/promoCodes.js`
-- [ ] T037 [P] [US4] Implement `POST /admin/promo-codes` route with validation
-- [ ] T038 [P] [US4] Implement `GET /admin/promo-codes/:id` route
-- [ ] T039 [P] [US4] Implement `PATCH /admin/promo-codes/:id` route with restrictions (no usageCount change, no code change if used)
-- [ ] T040 [US4] Implement `DELETE /admin/promo-codes/:id` route (soft delete via `active: false`)
-- [ ] T041 [US4] Wire admin promo code routes into `apps/api/src/routes/v1/admin/index.js`
-- [ ] T042 [US4] Create `apps/api/src/routes/v1/promoCodes.js` with `GET /promo-codes/:code/validate` public route and wire it in `apps/api/src/routes/v1/index.js`
+- [x] T036 [P] [US4] Implement `GET /admin/promo-codes` route in `apps/api/src/routes/v1/admin/promoCodes.js`
+- [x] T037 [P] [US4] Implement `POST /admin/promo-codes` route with validation
+- [x] T038 [P] [US4] Implement `GET /admin/promo-codes/:id` route
+- [x] T039 [P] [US4] Implement `PATCH /admin/promo-codes/:id` route with restrictions (no usageCount change, no code change if used)
+- [x] T040 [US4] Implement `DELETE /admin/promo-codes/:id` route (soft delete via `active: false`)
+- [x] T041 [US4] Wire admin promo code routes into `apps/api/src/routes/v1/admin/index.js`
+- [x] T042 [US4] Create `apps/api/src/routes/v1/promoCodes.js` with `GET /promo-codes/:code/validate` public route and wire it in `apps/api/src/routes/v1/index.js`
 
 **Checkpoint**: Admin can fully manage promo codes; customers can validate codes in real-time.
 
@@ -131,11 +131,11 @@
 
 **Purpose**: Improvements that affect multiple user stories — seed data, docs, audit, and validation.
 
-- [ ] T043 [P] Create `seedPromoCodes.js` script in `apps/api/scripts/seedPromoCodes.js`
+- [x] T043 [P] Create `seedPromoCodes.js` script in `apps/api/scripts/seedPromoCodes.js`
 - [ ] T044 [P] Add audit events for promo code creation, update, and deactivation in admin routes
 - [ ] T045 [P] Add audit event for `promo.applied` when a code is successfully used in an order
 - [ ] T046 Update `PRIVACY.md` to document any new PII-related tracking (promo code usage does not add PII)
-- [ ] T047 Verify frontend build passes with `npm run build` in `apps/web`
+- [x] T047 Verify frontend build passes with `npm run build` in `apps/web`
 - [ ] T048 Run quickstart.md validation scenarios manually (seed codes, apply, checkout, verify snapshot); verify promo code responses are under 1s
 - [ ] T049 Verify concurrent usage exhaustion: create code with `usageLimit: 1`, run two simultaneous checkouts
 - [ ] T050 Verify "best discount wins" logic: create overlapping automatic + manual offers
