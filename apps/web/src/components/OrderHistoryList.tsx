@@ -1,21 +1,62 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { formatPrice } from '../lib/formatPrice';
+
 interface Order {
-  id: string;
   orderNumber: string;
-  total: { amount: number; currency: string };
   status: string;
+  total: number;
+  currency: string;
   createdAt: string;
+  lineItems: { title: string; quantity: number }[];
 }
 
-export default function OrderHistoryList({ orders }: { orders: Order[] }) {
+export default function OrderHistoryList() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/orders`, {
+      credentials: 'include',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load orders');
+        return res.json();
+      })
+      .then((data) => {
+        setOrders(data.orders || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-surface-alt" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p className="text-sm text-primary">{error}</p>;
+  }
+
   if (orders.length === 0) {
     return (
-      <div className="rounded-md border border-border bg-muted px-4 py-8 text-center">
+      <div className="rounded-lg bg-surface-alt p-6 text-center">
         <p className="text-text-secondary">No orders yet.</p>
-        <a href="/" className="mt-2 inline-block text-sm text-text-primary underline">
-          Start shopping
-        </a>
+        <Link href="/" className="mt-2 inline-block text-sm text-gold underline">
+          Start Shopping
+        </Link>
       </div>
     );
   }
@@ -23,23 +64,20 @@ export default function OrderHistoryList({ orders }: { orders: Order[] }) {
   return (
     <div className="space-y-3">
       {orders.map((order) => (
-        <div
-          key={order.id}
-          className="flex items-center justify-between rounded-md border border-border px-4 py-3"
-        >
-          <div>
-            <p className="text-sm font-medium text-text-primary">#{order.orderNumber}</p>
-            <p className="text-xs text-text-secondary">
-              {new Date(order.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium text-text-primary">
-              {order.total.currency} {(order.total.amount / 100).toFixed(2)}
-            </p>
-            <span className="inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-text-secondary">
-              {order.status}
-            </span>
+        <div key={order.orderNumber} className="rounded-lg bg-surface-alt p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-display text-sm uppercase tracking-wide">{order.orderNumber}</p>
+              <p className="text-xs text-text-secondary">
+                {new Date(order.createdAt).toLocaleDateString()} · {order.lineItems.length} item(s)
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-display text-gold">{formatPrice(order.total, order.currency)}</p>
+              <span className="inline-block rounded-full bg-gold/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-gold">
+                {order.status}
+              </span>
+            </div>
           </div>
         </div>
       ))}

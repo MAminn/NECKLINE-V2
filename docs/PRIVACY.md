@@ -1,8 +1,8 @@
 # NECKLINE — Privacy Registry
 
 **Jurisdiction**: Egypt + GCC markets  
-**Last Updated**: 2026-05-25  
-**Status**: Phase 0 template — populate as features ship.
+**Last Updated**: 2026-06-02  
+**Status**: Phase 4 complete — checkout & orders PII fields documented.
 
 ## Purpose
 
@@ -15,8 +15,10 @@ This document records all Personally Identifiable Information (PII) collected by
 | email | Order communication, account login | Contract / Consent | 7 years (tax records) |
 | name | Account profile, personalization | Consent | 7 years |
 | phone | Shipping coordination | Contract | 7 years |
-| fullName | Order fulfillment, delivery | Contract | 7 years |
+| customerName | Order fulfillment, delivery | Contract | 7 years |
+| customerPhone | Shipping coordination, delivery contact | Contract | 7 years |
 | shippingAddress | Product delivery | Contract | 7 years |
+| orderNotes | Customer delivery instructions | Contract | 7 years |
 | ipAddress | Fraud prevention, abuse detection | Legitimate Interest | 90 days |
 | userAgent | Security auditing | Legitimate Interest | 90 days |
 | cookieId | Session management | Consent (essential) | Session + 30 days |
