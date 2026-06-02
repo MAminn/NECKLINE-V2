@@ -1,21 +1,68 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Scent, HeaderSlide } from '../../types/nickline';
 import { useCart } from '../../hooks/useCart';
 import { apiClient } from '../../lib/api';
 import { mapProductToScent, LocalProduct } from '../../lib/mapProductToScent';
-import Hero from '../../components/nickline/Hero';
 import Features from '../../components/nickline/Features';
-import Collection from '../../components/nickline/Collection';
 import HowToApply from '../../components/nickline/HowToApply';
-import ScentQuiz from '../../components/nickline/ScentQuiz';
 import QuoteBanner from '../../components/nickline/QuoteBanner';
-import Reviews from '../../components/nickline/Reviews';
-import ShopPage from '../../components/nickline/ShopPage';
-import ProductPage from '../../components/nickline/ProductPage';
-import { Sparkles, X, Heart, ShieldCheck, Mail, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, X, Heart, ShieldCheck, ArrowRight } from 'lucide-react';
+
+const Hero = dynamic(() => import('../../components/nickline/Hero'));
+const Collection = dynamic(() => import('../../components/nickline/Collection'));
+const Reviews = dynamic(() => import('../../components/nickline/Reviews'));
+
+const ScentQuiz = dynamic(() => import('../../components/nickline/ScentQuiz'), { ssr: false });
+const ShopPage = dynamic(() => import('../../components/nickline/ShopPage'), { ssr: false });
+const ProductPage = dynamic(() => import('../../components/nickline/ProductPage'), { ssr: false });
+
+function ToastItem({ toast, onDismiss }: { toast: { id: string; message: string; sub: string }; onDismiss: () => void }) {
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // Trigger enter animation
+    requestAnimationFrame(() => setVisible(true));
+    // Auto dismiss
+    timerRef.current = setTimeout(() => {
+      setVisible(false);
+      setTimeout(onDismiss, 200);
+    }, 3300);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [onDismiss]);
+
+  return (
+    <div
+      className={`bg-neutral-950 border border-[#D21B27]/30 text-white p-4 flex items-center justify-between gap-4 shadow-2xl rounded-none pointer-events-auto transition-all duration-200 ${
+        visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
+      }`}
+    >
+      <div className="text-left">
+        <div className="flex items-center gap-1.5">
+          <Heart className="w-3.5 h-3.5 text-[#D21B27] fill-[#D21B27]" />
+          <span className="text-xs font-serif font-bold tracking-wider uppercase">
+            {toast.message}
+          </span>
+        </div>
+        <p className="text-[10px] text-neutral-400 font-light mt-0.5">{toast.sub}</p>
+      </div>
+      <button
+        onClick={() => {
+          setVisible(false);
+          setTimeout(onDismiss, 200);
+        }}
+        className="text-neutral-500 hover:text-white p-0.5 cursor-pointer"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
 
 interface CatalogResponse {
   data: LocalProduct[];
@@ -227,13 +274,9 @@ export default function LandingPage() {
             </p>
 
             {newsletterSuccess ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-[#D21B27] font-serif tracking-wider font-semibold py-2"
-              >
+              <div className="text-xs text-[#D21B27] font-serif tracking-wider font-semibold py-2 animate-fade-in">
                 Welcome to the Aura circle. Scent details sent.
-              </motion.div>
+              </div>
             ) : (
               <form
                 onSubmit={handleNewsletterJoin}
@@ -271,33 +314,9 @@ export default function LandingPage() {
 
       {/* Toasts */}
       <div className="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none max-w-sm w-full">
-        <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-              className="bg-neutral-950 border border-[#D21B27]/30 text-white p-4 flex items-center justify-between gap-4 shadow-2xl rounded-none pointer-events-auto"
-            >
-              <div className="text-left">
-                <div className="flex items-center gap-1.5">
-                  <Heart className="w-3.5 h-3.5 text-[#D21B27] fill-[#D21B27]" />
-                  <span className="text-xs font-serif font-bold tracking-wider uppercase">
-                    {toast.message}
-                  </span>
-                </div>
-                <p className="text-[10px] text-neutral-400 font-light mt-0.5">{toast.sub}</p>
-              </div>
-              <button
-                onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-                className="text-neutral-500 hover:text-white p-0.5 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {toasts.map((toast) => (
+          <ToastItem key={toast.id} toast={toast} onDismiss={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
+        ))}
       </div>
     </div>
   );

@@ -74,7 +74,7 @@ export default function CartDrawer() {
           {/* Footer */}
           {cart.items.length > 0 && (
             <div className="border-t border-border px-6 py-4">
-              <CartSummary />
+              <CartSummary onCheckout={closeDrawer} />
               <button
                 onClick={clearCart}
                 disabled={isLoading}

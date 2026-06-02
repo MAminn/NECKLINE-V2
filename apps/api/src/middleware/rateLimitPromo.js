@@ -5,7 +5,6 @@ const rateLimitPromo = rateLimit({
   max: 30, // 30 requests per minute per IP
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip,
   handler: (req, res) => {
     res.status(429).json({
       error: true,

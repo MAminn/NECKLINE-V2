@@ -5,7 +5,11 @@ import { useCart } from '../hooks/useCart';
 import { formatPrice } from '../lib/formatPrice';
 import PromoCodeInput from './checkout/PromoCodeInput';
 
-export default function CartSummary() {
+interface CartSummaryProps {
+  onCheckout?: () => void;
+}
+
+export default function CartSummary({ onCheckout }: CartSummaryProps) {
   const { cart, isLoading, applyPromoCode, removePromoCode } = useCart();
 
   const hasUnavailable = cart.items.some((i: any) => !i.available);
@@ -49,7 +53,9 @@ export default function CartSummary() {
         onClick={(e) => {
           if (isLoading || hasUnavailable || cart.items.length === 0) {
             e.preventDefault();
+            return;
           }
+          onCheckout?.();
         }}
         className={`block w-full rounded-md py-3 text-center font-medium uppercase tracking-wide transition-colors ${
           isLoading || hasUnavailable || cart.items.length === 0

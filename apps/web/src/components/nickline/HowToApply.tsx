@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as LucideIcons from "lucide-react";
+import { Fingerprint, CircleDot, Flame, Feather, Infinity } from "lucide-react";
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: string | number; style?: React.CSSProperties }>> = {
+  Fingerprint,
+  CircleDot,
+  Flame,
+  Feather,
+  Infinity,
+};
 
 interface HowToApplyProps {
   config?: {
@@ -88,10 +96,10 @@ export default function HowToApply({ config }: HowToApplyProps) {
         <div className="bg-[#111111] border border-white/[0.04] rounded-3xl p-8 md:p-12 mb-10 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-y-12 md:gap-y-0 md:divide-x divide-white/[0.05]">
             {stepsData.map((step) => {
-              // Dynamically resolve the preset Lucide icon
+              // Resolve the preset Lucide icon
               const PresetIcon = step.presetName 
-                ? ((LucideIcons as any)[step.presetName] || LucideIcons.Fingerprint)
-                : LucideIcons.Fingerprint;
+                ? (ICON_MAP[step.presetName] || Fingerprint)
+                : Fingerprint;
 
               return (
                 <div key={step.num} className="flex flex-col items-center text-center md:px-6 first:pl-0 last:pr-0">
