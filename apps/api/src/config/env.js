@@ -7,6 +7,10 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   FEATURE_CHECKOUT_V2: z.string().transform((v) => v === 'true').default('false'),
+  CHECKOUT_ENABLED: z.string().transform((v) => v === 'true').default('true'),
+  STUB_PAYMENT_LATENCY_MS: z.string().transform(Number).default('500'),
+  STUB_PAYMENT_FAILURE_RATE: z.string().transform(Number).default('0'),
+  STUB_PAYMENT_DECLINE_EMAILS: z.string().default(''),
   IDEMPOTENCY_TTL_HOURS: z.string().transform(Number).default('24'),
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
   CART_TTL_DAYS: z.string().transform(Number).default('7'),
@@ -15,6 +19,8 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   BCRYPT_ROUNDS: z.string().transform(Number).default('10'),
+  SHIPPING_STANDARD_COST: z.string().transform(Number).default('5000'),
+  SHIPPING_CURRENCY: z.string().default('EGP'),
 });
 
 const parsed = envSchema.safeParse(process.env);
