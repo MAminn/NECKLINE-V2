@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useCart } from '../hooks/useCart';
 import { formatPrice } from '../lib/formatPrice';
 
 export default function CartSummary() {
   const { cart, isLoading } = useCart();
 
-  const hasUnavailable = cart.items.some((i) => !i.available);
+  const hasUnavailable = cart.items.some((i: any) => !i.available);
 
   return (
     <div className="space-y-3">
@@ -17,12 +18,21 @@ export default function CartSummary() {
         </span>
       </div>
 
-      <button
-        disabled={isLoading || hasUnavailable || cart.items.length === 0}
-        className="w-full rounded-md bg-gold py-3 font-medium uppercase tracking-wide text-bg transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+      <Link
+        href="/checkout"
+        onClick={(e) => {
+          if (isLoading || hasUnavailable || cart.items.length === 0) {
+            e.preventDefault();
+          }
+        }}
+        className={`block w-full rounded-md py-3 text-center font-medium uppercase tracking-wide transition-colors ${
+          isLoading || hasUnavailable || cart.items.length === 0
+            ? 'cursor-not-allowed bg-gold/50 text-bg/70'
+            : 'bg-gold text-bg hover:brightness-110'
+        }`}
       >
         Checkout
-      </button>
+      </Link>
 
       {hasUnavailable && (
         <p className="text-center text-xs text-primary">
