@@ -49,6 +49,7 @@
 - [ ] T013 Create `generateOrderNumber` utility in `apps/api/src/utils/generateOrderNumber.js`
 - [ ] T014 Create `requireCheckoutEnabled` middleware in `apps/api/src/middleware/requireCheckoutEnabled.js`
 - [ ] T015 Create `rateLimitCheckout` middleware in `apps/api/src/middleware/rateLimitCheckout.js` (5 req/min POST /orders, 10 req/min POST /checkout)
+- [ ] T064 [P] Verify `Idempotency-Key` middleware works on `POST /orders` (reuse existing `IdempotencyKey` collection from Phase 0 or create if missing)
 
 ### Shared Services
 
@@ -71,7 +72,7 @@
 
 - [ ] T018 [P] Implement `checkoutService.validateCheckout()` in `apps/api/src/services/checkoutService.js` (cart non-empty, stock check)
 - [ ] T019 [P] Implement `checkoutService.createCheckoutSession()` in `apps/api/src/services/checkoutService.js` (returns preview + checkoutToken)
-- [ ] T020 Implement `checkoutService.processOrder()` in `apps/api/src/services/checkoutService.js` (atomic: payment → order → stock → clear cart)
+- [ ] T020 Implement `checkoutService.processOrder()` in `apps/api/src/services/checkoutService.js` (atomic via MongoDB `startSession()` transaction: payment → order → stock → clear cart)
 - [ ] T021 Add optimistic locking stock decrement inside `checkoutService.processOrder()` using `Product.version` + `$gte` guard in MongoDB transaction
 - [ ] T022 Write unit tests for `checkoutService` in `apps/api/tests/unit/checkoutService.test.js`
 
@@ -181,7 +182,6 @@
 - [ ] T061 Add loading skeleton states to checkout steps
 - [ ] T062 Add form validation error messages (Zod errors mapped to Arabic-friendly field names)
 - [ ] T063 Add responsive layout for checkout on mobile
-- [ ] T064 Verify `Idempotency-Key` middleware works on `POST /orders` (reuse existing or create if missing)
 - [ ] T065 Run quickstart.md validation: complete full guest checkout via API, verify stock decrement
 - [ ] T066 Run frontend build (`npm run build` in apps/web) and fix any errors
 - [ ] T067 Commit all changes and push `004-checkout-orders` branch to GitHub
@@ -274,10 +274,10 @@ Follow sequential priority order (US1 → US2 → US3 → US5) because later sto
 | Phase | Tasks | Story |
 |-------|-------|-------|
 | Setup | 4 | — |
-| Foundational | 13 | — |
+| Foundational | 14 | — |
 | US1 Guest Checkout | 19 | US1 |
 | US2 Authenticated | 7 | US2 |
 | US3 Confirmation/Lookup | 8 | US3 |
 | US5 Payment Failure | 6 | US5 |
-| Polish | 10 | — |
+| Polish | 9 | — |
 | **Total** | **67** | |

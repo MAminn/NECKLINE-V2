@@ -62,7 +62,7 @@ Represents a completed purchase. Immutable after creation (except status transit
 | `currency` | String | yes | ISO 4217 code (e.g., `EGP`). All amounts share one currency per order. |
 | `paymentStatus` | String | yes | Enum: `['pending', 'succeeded', 'failed']`. Default: `pending` |
 | `paymentTransactionId` | ObjectId | no | Ref: `PaymentTransaction`. Set after successful payment. |
-| `idempotencyKey` | String | yes | The key used for this order creation. Unique index with TTL. |
+| `idempotencyKey` | String | no | Reference to the idempotency key used for this order creation. Canonical storage is the existing `IdempotencyKey` collection (AD-3). |
 | `notes` | String | no | Optional customer notes |
 | `createdAt` | Date | auto | UTC |
 | `updatedAt` | Date | auto | UTC |
@@ -73,7 +73,7 @@ Represents a completed purchase. Immutable after creation (except status transit
 - `userId`: single (for authenticated order history)
 - `customerEmail`: single (for guest order lookup)
 - `createdAt`: single (for sorting, pagination)
-- `idempotencyKey`: unique, TTL 24h (reuses existing IdempotencyKey collection)
+- `idempotencyKey`: single (for reference/lookup only; canonical storage and TTL are in the existing `IdempotencyKey` collection per AD-3)
 
 ### Address Subdocument
 
