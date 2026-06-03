@@ -1,4 +1,4 @@
-import { ArrowRight, Compass, Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Compass, Flame, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import { HeaderSlide } from "../../types/nickline";
@@ -231,7 +231,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
         </div>
       )}
 
-      {/* ROTATING BADGE STAMP */}
+      {/* ROTATING BADGE STAMP — Desktop only */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-44 z-20 cursor-pointer hidden lg:block" id="hero-stamp-badge" onClick={onOpenQuiz}>
         <div className="relative w-32 h-32 md:w-36 md:h-36">
           <svg className="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100">
@@ -251,6 +251,17 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* MOBILE QUIZ CTA — Visible on smaller screens */}
+      <div className="lg:hidden absolute bottom-8 right-4 z-20">
+        <button
+          onClick={onOpenQuiz}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#D21B27]/90 hover:bg-[#D21B27] text-white text-[11px] tracking-[0.2em] font-bold uppercase rounded-full backdrop-blur-md border border-[#D21B27]/50 shadow-lg transition-all duration-300 active:scale-95"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Scent Finder
+        </button>
       </div>
     </section>
   );

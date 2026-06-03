@@ -23,18 +23,32 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
 
   useEffect(() => {
     if (isOpen && quizQuestions.length === 0) {
-      fetch("/api/quiz")
+      fetch("/api/v1/quiz")
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
             setQuizQuestions(data);
           } else {
             console.error("Invalid quiz data format", data);
+            setQuizQuestions([]);
           }
         })
-        .catch(err => console.error("Error fetching quiz data:", err));
+        .catch(err => {
+          console.error("Error fetching quiz data:", err);
+          setQuizQuestions([]);
+        });
     }
   }, [isOpen]);
+
+  // Escape key to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Deterministic scoring algorithm to recommend a matched Neckline Scent Aura
   const calculateResult = (userAnswers: Record<number, string>) => {
@@ -153,15 +167,15 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                   </div>
                 </div>
 
-                <span className="text-[10px] font-bold tracking-[0.3em] text-[#C29F68] uppercase block">
+                <span className="text-xs font-bold tracking-[0.3em] text-[#C29F68] uppercase block">
                   Match Compatibility: 98% Match
                 </span>
                 
-                <h3 className="text-3xl font-serif tracking-[0.1em] font-semibold text-neutral-900 dark:text-white mt-1 uppercase">
+                <h3 className="text-2xl md:text-3xl font-serif tracking-[0.08em] font-semibold text-neutral-900 dark:text-white mt-2 uppercase">
                   Scent Match: {resultScent.name}
                 </h3>
                 
-                <p className="text-xs text-[#D21B27] italic tracking-wider mb-6">
+                <p className="text-sm text-[#D21B27] italic tracking-wider mb-6 mt-1">
                   {resultScent.subtitle}
                 </p>
 
@@ -196,70 +210,75 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                     }}
                     className="w-full py-3 bg-[#D21B27] hover:bg-[#B0151E] text-white text-xs tracking-[0.25em] font-extrabold uppercase transition-all duration-300 shadow-lg cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5" /> Claim matched aura & add
+                    <ShoppingBag className="w-4 h-4" /> Claim Matched Aura & Add
                   </button>
                   
                   <button
                     onClick={resetQuiz}
                     className="w-full py-2 bg-transparent hover:bg-neutral-500/10 text-neutral-400 hover:text-white text-[10px] tracking-[0.2em] font-semibold uppercase transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <RefreshCw className="w-3 h-3" /> Re-take sensory quiz
+                    <RefreshCw className="w-3.5 h-3.5" /> Re-take Sensory Quiz
                   </button>
                 </div>
               </motion.div>
             ) : (
               /* ACTIVE QUIZ STEP */
               <div id="quiz-active-step">
-                {quizQuestions.length > 0 && (
+                {quizQuestions.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <div className="w-10 h-10 mx-auto mb-4 rounded-full border-2 border-[#D21B27]/30 border-t-[#D21B27] animate-spin" />
+                    <p className="text-sm text-neutral-400 tracking-wide">Loading your scent profile...</p>
+                  </div>
+                ) : (
                   <>
                     {/* Progress bar info */}
                     <div className="mb-6 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900/40 pb-4">
-                      <div>
-                        <span className="text-[#D21B27] font-serif text-lg mr-2">✦</span>
-                        <span className="text-[10px] font-bold tracking-[0.25em] text-neutral-400 uppercase">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#D21B27] font-serif text-xl">✦</span>
+                        <span className="text-xs font-bold tracking-[0.25em] text-neutral-400 uppercase">
                           Neckline Aura Finder
                         </span>
                       </div>
-                      <span className="text-[10px] whitespace-nowrap font-mono text-neutral-500">
+                      <span className="text-xs whitespace-nowrap font-mono text-neutral-500">
                         Question {currentStep + 1} of {quizQuestions.length}
                       </span>
                     </div>
 
                     {/* Progress bar visual */}
-                    <div className="w-full bg-zinc-900 h-1 mb-8 overflow-hidden rounded-full">
+                    <div className="w-full bg-zinc-900 h-1.5 mb-8 overflow-hidden rounded-full">
                       <div 
-                        className="bg-[#D21B27] h-full transition-all duration-300"
+                        className="bg-gradient-to-r from-[#D21B27] to-[#E32B37] h-full transition-all duration-500 ease-out"
                         style={{ width: `${((currentStep + 1) / quizQuestions.length) * 100}%` }}
                       />
                     </div>
 
                     {/* Display Question */}
-                    <h4 className="text-xl md:text-2xl font-serif text-neutral-900 dark:text-white tracking-wide mb-6">
+                    <h4 className="text-xl md:text-2xl font-serif text-neutral-900 dark:text-white tracking-wide mb-8 leading-snug">
                       {quizQuestions[currentStep].question}
                     </h4>
 
                     {/* List Options */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {quizQuestions[currentStep].options.map((opt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleOptionSelect(opt.value)}
-                      className="w-full p-4 border text-left rounded-xl cursor-pointer flex justify-between items-center transition-all duration-300
-                        dark:bg-white/[0.02] dark:backdrop-blur-md dark:border-white/[0.05] dark:hover:border-[#D21B27]/50 dark:hover:bg-red-950/10
-                        light:bg-stone-50/70 light:backdrop-blur-md light:border-stone-200 light:hover:border-stone-400 light:hover:bg-stone-100/50"
-                      id={`quiz-opt-${idx}`}
-                    >
-                      <div>
-                        <span className="text-xs uppercase tracking-widest text-[#D21B27] block mb-1">
-                          0{idx + 1}. {opt.label}
-                        </span>
-                        <p className="text-[11px] dark:text-neutral-400 light:text-stone-600 font-light font-sans max-w-sm">
-                          {opt.description}
-                        </p>
-                      </div>
-                      <div className="w-2 h-2 rounded-full bg-transparent border border-neutral-400 dark:group-hover:bg-[#D21B27]" />
-                    </button>
-                  ))}
+                        <button
+                          key={idx}
+                          onClick={() => handleOptionSelect(opt.value)}
+                          className="group w-full p-4 border text-left rounded-xl cursor-pointer flex justify-between items-center transition-all duration-300
+                            dark:bg-white/[0.02] dark:backdrop-blur-md dark:border-white/[0.06] dark:hover:border-[#D21B27]/60 dark:hover:bg-red-950/10
+                            light:bg-stone-50/70 light:backdrop-blur-md light:border-stone-200 light:hover:border-stone-400 light:hover:bg-stone-100/50"
+                          id={`quiz-opt-${idx}`}
+                        >
+                          <div>
+                            <span className="text-sm uppercase tracking-widest text-[#D21B27] block mb-1.5 font-semibold">
+                              0{idx + 1}. {opt.label}
+                            </span>
+                            <p className="text-xs dark:text-neutral-400 light:text-stone-600 font-light font-sans max-w-sm leading-relaxed">
+                              {opt.description}
+                            </p>
+                          </div>
+                          <div className="w-3 h-3 rounded-full bg-transparent border border-neutral-500 group-hover:border-[#D21B27] group-hover:bg-[#D21B27]/20 transition-all duration-200 shrink-0 ml-4" />
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}

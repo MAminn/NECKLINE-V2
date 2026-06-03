@@ -8,6 +8,7 @@ const ordersRoutes = require('./orders');
 const featureRoutes = require('./admin/features');
 const promoCodeRoutes = require('./promoCodes');
 const adminPromoCodeRoutes = require('./admin/promoCodes');
+const quizRoutes = require('./quiz');
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/orders', ordersRoutes);
 router.use('/promo-codes', promoCodeRoutes);
 router.use('/admin/features', featureRoutes);
 router.use('/admin/promo-codes', adminPromoCodeRoutes);
+router.use('/quiz', quizRoutes);
 
 module.exports = router;

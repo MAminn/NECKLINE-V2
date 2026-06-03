@@ -5,7 +5,7 @@
 
 import { useState, useMemo } from "react";
 import { Scent } from "../../types/nickline";
-import { ArrowRight, Compass, Shield, ShoppingBag, X, Search, Filter } from "lucide-react";
+import { ArrowRight, Compass, Flame, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CollectionProps {
@@ -83,13 +83,25 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
               </div>
               
               <div className="pt-6 lg:pt-0">
-                <button
-                  onClick={onOpenShop || onOpenQuiz}
-                  className="py-2.5 px-4 bg-[#D21B27] hover:bg-[#E32B37] text-white text-[9.5px] tracking-[0.2em] font-bold uppercase transition-all duration-300 rounded-[3px] hover:shadow-[0_0_24px_rgba(210,27,39,0.35)] cursor-pointer transform active:scale-95 w-full flex items-center justify-center font-sans"
-                  id="btn-explore-scents"
-                >
-                  EXPLORE ALL SCENTS
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={onOpenShop}
+                    className="py-2.5 px-4 bg-[#D21B27] hover:bg-[#E32B37] text-white text-[10px] tracking-[0.2em] font-bold uppercase transition-all duration-300 rounded-[3px] hover:shadow-[0_0_24px_rgba(210,27,39,0.35)] cursor-pointer transform active:scale-95 w-full flex items-center justify-center font-sans animate-glow-pulse"
+                    id="btn-explore-scents"
+                  >
+                    EXPLORE ALL SCENTS
+                  </button>
+                  {onOpenQuiz && (
+                    <button
+                      onClick={onOpenQuiz}
+                      className="py-2 px-4 bg-transparent border border-white/10 hover:border-[#D21B27]/50 text-neutral-300 hover:text-white text-[10px] tracking-[0.2em] font-bold uppercase transition-all duration-300 rounded-[3px] cursor-pointer w-full flex items-center justify-center gap-1.5 font-sans"
+                      id="btn-find-scent"
+                    >
+                      <Sparkles className="w-3 h-3 text-[#D21B27]" />
+                      FIND YOUR SCENT
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
