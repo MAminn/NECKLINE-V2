@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useMemo } from "react";
 import { Scent } from "../../types/nickline";
-import { ArrowRight, Compass, Flame, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CollectionProps {
   onAddToCart: (scent: Scent) => void;
@@ -18,33 +17,6 @@ interface CollectionProps {
 
 export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop, onOpenProduct }: CollectionProps) {
   const displayScents = scents || [];
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAccent, setSelectedAccent] = useState("ALL");
-
-  // Dynamically filter matching scents using search querying & tag selection
-  const filteredScents = useMemo(() => {
-    return displayScents.filter(scent => {
-      const query = searchQuery.toLowerCase().trim();
-      const matchesSearch = 
-        scent.name.toLowerCase().includes(query) ||
-        scent.subtitle.toLowerCase().includes(query) ||
-        scent.description.toLowerCase().includes(query) ||
-        scent.longDescription.toLowerCase().includes(query) ||
-        scent.notes.top.toLowerCase().includes(query) ||
-        scent.notes.heart.toLowerCase().includes(query) ||
-        scent.notes.base.toLowerCase().includes(query);
-
-      const matchesAccent = 
-        selectedAccent === "ALL" ||
-        (selectedAccent === "SPICY" && scent.subtitle.toLowerCase().includes("spicy")) ||
-        (selectedAccent === "MUSKY" && scent.subtitle.toLowerCase().includes("musky")) ||
-        (selectedAccent === "FLORAL" && scent.subtitle.toLowerCase().includes("floral")) ||
-        (selectedAccent === "SMOKY" && scent.subtitle.toLowerCase().includes("smoky"));
-
-      return matchesSearch && matchesAccent;
-    });
-  }, [displayScents, searchQuery, selectedAccent]);
 
   return (
     <section 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent, useRef } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { Scent, HeaderSlide } from '../types/nickline';
 import { useCart } from '../hooks/useCart';
@@ -9,7 +9,7 @@ import { mapProductToScent, LocalProduct } from '../lib/mapProductToScent';
 import Features from '../components/nickline/Features';
 import HowToApply from '../components/nickline/HowToApply';
 import QuoteBanner from '../components/nickline/QuoteBanner';
-import { Sparkles, X, Heart, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
 
 const Hero = dynamic(() => import('../components/nickline/Hero'));
 const Collection = dynamic(() => import('../components/nickline/Collection'));
@@ -19,50 +19,7 @@ const ScentQuiz = dynamic(() => import('../components/nickline/ScentQuiz'), { ss
 const ShopPage = dynamic(() => import('../components/nickline/ShopPage'), { ssr: false });
 const ProductPage = dynamic(() => import('../components/nickline/ProductPage'), { ssr: false });
 
-function ToastItem({ toast, onDismiss }: { toast: { id: string; message: string; sub: string }; onDismiss: () => void }) {
-  const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    // Trigger enter animation
-    requestAnimationFrame(() => setVisible(true));
-    // Auto dismiss
-    timerRef.current = setTimeout(() => {
-      setVisible(false);
-      setTimeout(onDismiss, 200);
-    }, 3300);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [onDismiss]);
-
-  return (
-    <div
-      className={`bg-neutral-950 border border-[#D21B27]/30 text-white p-4 flex items-center justify-between gap-4 shadow-2xl rounded-none pointer-events-auto transition-all duration-200 ${
-        visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
-      }`}
-    >
-      <div className="text-left">
-        <div className="flex items-center gap-1.5">
-          <Heart className="w-3.5 h-3.5 text-[#D21B27] fill-[#D21B27]" />
-          <span className="text-xs font-serif font-bold tracking-wider uppercase">
-            {toast.message}
-          </span>
-        </div>
-        <p className="text-[10px] text-neutral-400 font-light mt-0.5">{toast.sub}</p>
-      </div>
-      <button
-        onClick={() => {
-          setVisible(false);
-          setTimeout(onDismiss, 200);
-        }}
-        className="text-neutral-500 hover:text-white p-0.5 cursor-pointer"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
+import ToastItem from '../components/ToastItem';
 
 interface CatalogResponse {
   data: LocalProduct[];

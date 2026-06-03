@@ -50,54 +50,33 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Deterministic scoring algorithm to recommend a matched Neckline Scent Aura
+  // Simple scoring: match answers against scent keywords
   const calculateResult = (userAnswers: Record<number, string>) => {
-    if (!scents || scents.length === 0) return null;
+    if (!scents?.length) return null;
 
-    let bestMatch = scents[0];
-    let highestScore = -1;
+    const answers = Object.values(userAnswers).map(v => v.toLowerCase());
+    const keywords = (s: Scent) =>
+      `${s.name} ${s.subtitle} ${s.vibe} ${s.category} ${s.tag} ${Object.values(s.notes).join(' ')}`.toLowerCase();
 
-    const answerValues = Object.values(userAnswers).map(v => v.toLowerCase());
+    let best = scents[0];
+    let bestScore = -1;
 
-    scents.forEach(scent => {
+    for (const scent of scents) {
       let score = 0;
-      
-      const searchableText = [
-        scent.name,
-        scent.subtitle,
-        scent.description,
-        scent.longDescription,
-        scent.vibe,
-        scent.category,
-        scent.tag,
-        ...(scent.notes ? Object.values(scent.notes) : []),
-        ...(scent.ingredients || [])
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      answerValues.forEach(val => {
-        if (searchableText.includes(val)) {
-          score += 3;
-        }
-        
-        if (scent.id.toLowerCase().includes(val)) {
-          score += 5; 
-        }
-
-        if (val === "low" && scent.intensity <= 2) score += 2;
-        if (val === "medium" && scent.intensity === 3) score += 2;
-        if (val === "high" && scent.intensity >= 4) score += 2;
-      });
-
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = scent;
+      const text = keywords(scent);
+      for (const ans of answers) {
+        if (text.includes(ans)) score += 3;
+        if (scent.id.toLowerCase().includes(ans)) score += 5;
+        if (ans === 'low' && scent.intensity <= 2) score += 2;
+        if (ans === 'medium' && scent.intensity === 3) score += 2;
+        if (ans === 'high' && scent.intensity >= 4) score += 2;
       }
-    });
-
-    return bestMatch;
+      if (score > bestScore) {
+        bestScore = score;
+        best = scent;
+      }
+    }
+    return best;
   };
 
   const handleOptionSelect = (optionValue: string) => {
