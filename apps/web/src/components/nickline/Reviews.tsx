@@ -135,8 +135,8 @@ export default function Reviews() {
               {reviewsList.map((rev) => (
                 <div
                   key={`marq-1-${rev.id}`}
-                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-all duration-500 rounded-2xl relative
-                    bg-white/[0.015] backdrop-blur-xl border-white/[0.05] hover:border-[#D21B27]/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm"
+                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-colors duration-500 rounded-2xl relative
+                    bg-white/[0.02] border-white/[0.05] hover:border-[#D21B27]/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm gpu-layer"
                 >
                   <div>
                     <div className="flex justify-between items-center mb-4">
@@ -171,8 +171,8 @@ export default function Reviews() {
               {reviewsList.map((rev) => (
                 <div
                   key={`marq-2-${rev.id}`}
-                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-all duration-500 rounded-2xl relative
-                    bg-white/[0.015] backdrop-blur-xl border-white/[0.05] hover:border-[#D21B27]/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm"
+                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-colors duration-500 rounded-2xl relative
+                    bg-white/[0.02] border-white/[0.05] hover:border-[#D21B27]/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm gpu-layer"
                 >
                   <div>
                     <div className="flex justify-between items-center mb-4">
@@ -225,7 +225,7 @@ export default function Reviews() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="mt-12 max-w-lg mx-auto overflow-hidden border p-6 md:p-8 rounded-2xl
-                dark:bg-zinc-950/80 dark:backdrop-blur-xl dark:border-white/[0.08] light:bg-white/80 light:backdrop-blur-md light:border-stone-300"
+                dark:bg-zinc-950/95 dark:border-white/[0.08] light:bg-white/95 light:border-stone-300"
               id="write-review-drawer"
             >
               <h4 className="text-xl font-serif text-neutral-900 dark:text-white mb-6 uppercase tracking-wider text-left flex items-center gap-2">

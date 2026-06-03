@@ -33,7 +33,7 @@ export default function Features() {
     <section className="py-12 bg-[#070606]" id="features-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
-          className="border border-white/5 bg-[#040404] backdrop-blur-xl rounded-2xl py-8 px-2 grid grid-cols-1 md:grid-cols-4 gap-y-6 md:gap-y-0 md:divide-x divide-white/[0.06]" 
+          className="border border-white/5 bg-[#040404] rounded-2xl py-8 px-2 grid grid-cols-1 md:grid-cols-4 gap-y-6 md:gap-y-0 md:divide-x divide-white/[0.06]" 
           id="features-banner-container"
         >
           {list.map((feat, index) => (
