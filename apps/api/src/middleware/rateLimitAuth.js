@@ -8,7 +8,7 @@ const rateLimitLogin = rateLimit({
   validate: false,
   skipSuccessfulRequests: false,
   keyGenerator(req) {
-    return req.cookies?.cartId || req.ip;
+    return req.ip;
   },
   handler(req, res) {
     res.status(429).json({
@@ -25,7 +25,7 @@ const rateLimitRegister = rateLimit({
   legacyHeaders: false,
   validate: false,
   keyGenerator(req) {
-    return req.cookies?.cartId || req.ip;
+    return req.ip;
   },
   handler(req, res) {
     res.status(429).json({
@@ -42,7 +42,7 @@ const rateLimitReset = rateLimit({
   legacyHeaders: false,
   validate: false,
   keyGenerator(req) {
-    return req.cookies?.cartId || req.ip;
+    return req.ip;
   },
   handler(req, res) {
     res.status(429).json({

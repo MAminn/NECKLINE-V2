@@ -4,10 +4,10 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const PaymentTransaction = require('../models/PaymentTransaction');
+const PromoCode = require('../models/PromoCode');
 const { createPaymentProvider } = require('./payment/PaymentProviderFactory');
 const { generateOrderNumber } = require('../utils/generateOrderNumber');
 const { getDefaultShippingMethod } = require('./shippingService');
-const reservationService = require('./reservationService');
 const cartService = require('./cartService');
 const discountService = require('./discountService');
 const { DiscountError } = require('./discountService');
@@ -79,7 +79,9 @@ async function createCheckoutSession({ cartId, userId, contact, shippingAddress,
 
   const discountAmount = discount?.amount || 0;
   const finalShippingCost = discount?.type === 'free_shipping' ? 0 : shippingCost;
-  const total = Math.max(0, subtotal - discountAmount) + finalShippingCost;
+  // free_shipping savings are captured by zeroing finalShippingCost; don't also subtract from subtotal
+  const effectiveSubtotalDiscount = discount?.type === 'free_shipping' ? 0 : discountAmount;
+  const total = Math.max(0, subtotal - effectiveSubtotalDiscount) + finalShippingCost;
 
   const token = createCheckoutToken();
   checkoutSessions.set(token, {
@@ -121,6 +123,33 @@ async function createCheckoutSession({ cartId, userId, contact, shippingAddress,
       currency,
     },
   };
+}
+
+async function compensateFailedPayment({ order, lineItems, promoCode }) {
+  const mongoSession = await mongoose.startSession();
+  try {
+    await mongoSession.withTransaction(async () => {
+      await Order.findByIdAndUpdate(order._id, { paymentStatus: 'failed' }, { session: mongoSession });
+      for (const item of lineItems) {
+        await Product.findByIdAndUpdate(
+          item.productId,
+          { $inc: { stockOnHand: item.quantity, version: 1 } },
+          { session: mongoSession }
+        );
+      }
+      if (promoCode) {
+        await PromoCode.findOneAndUpdate(
+          { code: promoCode.toUpperCase().trim() },
+          { $inc: { usageCount: -1 } },
+          { session: mongoSession }
+        );
+      }
+    });
+  } catch (err) {
+    logger.error({ err, orderId: order._id }, 'Payment compensation failed — manual intervention required');
+  } finally {
+    await mongoSession.endSession();
+  }
 }
 
 async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotencyKey, meta = {} }) {
@@ -187,7 +216,7 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
 
   const provider = createPaymentProvider();
 
-  // Step 1: Create payment intent
+  // Step 1: Create payment intent (no charge yet)
   const intent = await provider.createPaymentIntent({
     orderNumber: 'pending',
     total,
@@ -195,40 +224,14 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     customerEmail: contact.email,
   });
 
-  // Step 2: Confirm payment
-  const paymentResult = await provider.confirmPayment(intent.id);
-
-  if (!paymentResult.success) {
-    // Audit: payment failed
-    if (meta.requestId) {
-      createAuditEvent({
-        actor: userId || 'guest',
-        action: 'order.payment_failed',
-        target: checkoutToken,
-        targetType: 'CheckoutSession',
-        before: { total, currency },
-        after: { errorCode: paymentResult.errorCode, errorMessage: paymentResult.errorMessage },
-        requestId: meta.requestId,
-        ip: meta.ip,
-        userAgent: meta.userAgent,
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
-    }
-
-    throw new CheckoutError(
-      paymentResult.errorMessage || 'Payment failed',
-      402,
-      paymentResult.errorCode || 'PAYMENT_FAILED'
-    );
-  }
-
-  // Step 3: Atomic transaction — order creation + stock decrement
+  // Step 2: Atomic transaction — stock decrement + promo + order (pending payment) + cart clear
+  // Payment has NOT been captured yet, so failures here are safe to rethrow.
   const mongoSession = await mongoose.startSession();
   let order = null;
-  let paymentTransaction = null;
 
   try {
     await mongoSession.withTransaction(async () => {
-      // 3a. Decrement stock with optimistic locking
+      // 2a. Decrement stock with optimistic locking
       for (const item of lineItems) {
         const product = await Product.findOne({
           _id: item.productId,
@@ -265,18 +268,18 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
         }
       }
 
-      // 3b. Increment promo code usage count (if applicable)
+      // 2b. Increment promo code usage count (if applicable)
       if (promoCode && discount) {
         await discountService.incrementUsageCount(promoCode, mongoSession);
       }
 
-      // 3c. Create order
+      // 2c. Create order with paymentStatus 'pending' — confirmed after payment succeeds
       const orderNumber = generateOrderNumber();
       order = await Order.create(
         [
           {
             orderNumber,
-            status: 'confirmed',
+            status: 'pending',
             userId: userId || null,
             customerEmail: contact.email,
             customerName: contact.name,
@@ -309,7 +312,7 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
               : null,
             total,
             currency,
-            paymentStatus: 'succeeded',
+            paymentStatus: 'pending',
             idempotencyKey: idempotencyKey || null,
           },
         ],
@@ -317,7 +320,58 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
       );
       order = order[0];
 
-      // 3c. Create payment transaction record
+      // 2d. Clear cart
+      const cartDoc = await Cart.findById(cartId).session(mongoSession);
+      if (cartDoc) {
+        cartDoc.items = [];
+        cartDoc.appliedPromoCode = null;
+        cartDoc.markModified('items');
+        cartDoc.markModified('appliedPromoCode');
+        await cartDoc.save({ session: mongoSession });
+      }
+
+      // 2e. Release reservations
+      await mongoose.model('Reservation').deleteMany({ cartId }).session(mongoSession);
+    });
+  } catch (err) {
+    if (err instanceof CheckoutError) throw err;
+    if (err instanceof DiscountError) throw new CheckoutError(err.message, 409, err.code);
+    logger.error({ err, checkoutToken }, 'Checkout transaction failed');
+    throw new CheckoutError('Order creation failed. Please try again.', 500, 'ORDER_CREATION_FAILED');
+  } finally {
+    await mongoSession.endSession();
+  }
+
+  // Step 3: Confirm payment — order exists in DB but is pending; if this fails we compensate
+  const paymentResult = await provider.confirmPayment(intent.id);
+
+  if (!paymentResult.success) {
+    if (meta.requestId) {
+      createAuditEvent({
+        actor: userId || 'guest',
+        action: 'order.payment_failed',
+        target: order._id.toString(),
+        targetType: 'Order',
+        before: { total, currency },
+        after: { errorCode: paymentResult.errorCode, errorMessage: paymentResult.errorMessage },
+        requestId: meta.requestId,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+      }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    }
+    await compensateFailedPayment({ order, lineItems, promoCode });
+    throw new CheckoutError(
+      paymentResult.errorMessage || 'Payment failed',
+      402,
+      paymentResult.errorCode || 'PAYMENT_FAILED'
+    );
+  }
+
+  // Step 4: Record payment + confirm order
+  const confirmSession = await mongoose.startSession();
+  let paymentTransaction = null;
+  try {
+    await confirmSession.withTransaction(async () => {
       paymentTransaction = await PaymentTransaction.create(
         [
           {
@@ -330,43 +384,21 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
             status: 'succeeded',
           },
         ],
-        { session: mongoSession }
+        { session: confirmSession }
       );
       paymentTransaction = paymentTransaction[0];
 
-      // 3d. Update order with payment transaction reference
       await Order.findByIdAndUpdate(
         order._id,
-        { paymentTransactionId: paymentTransaction._id },
-        { session: mongoSession }
+        { status: 'confirmed', paymentStatus: 'succeeded', paymentTransactionId: paymentTransaction._id },
+        { session: confirmSession }
       );
-
-      // 3e. Clear cart
-      const cartDoc = await Cart.findById(cartId).session(mongoSession);
-      if (cartDoc) {
-        cartDoc.items = [];
-        cartDoc.appliedPromoCode = null;
-        cartDoc.markModified('items');
-        cartDoc.markModified('appliedPromoCode');
-        await cartDoc.save({ session: mongoSession });
-      }
-
-      // 3f. Release reservations
-      await mongoose.model('Reservation').deleteMany({ cartId }).session(mongoSession);
     });
   } catch (err) {
-    // If it's already a CheckoutError, rethrow it
-    if (err instanceof CheckoutError) {
-      throw err;
-    }
-    // If it's a DiscountError (e.g., promo code exhausted), convert to CheckoutError
-    if (err instanceof DiscountError) {
-      throw new CheckoutError(err.message, 409, err.code);
-    }
-    logger.error({ err, checkoutToken }, 'Checkout transaction failed');
-    throw new CheckoutError('Order creation failed. Please try again.', 500, 'ORDER_CREATION_FAILED');
+    logger.error({ err, orderId: order._id }, 'Failed to confirm order after payment — manual intervention required');
+    throw new CheckoutError('Order confirmation failed. Please contact support.', 500, 'ORDER_CONFIRMATION_FAILED');
   } finally {
-    await mongoSession.endSession();
+    await confirmSession.endSession();
   }
 
   // Remove checkout session

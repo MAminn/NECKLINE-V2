@@ -226,11 +226,7 @@ async function requestPasswordReset(email) {
     expiresAt,
   });
 
-  // Log token for development (real email deferred)
-  logger.info(
-    { email: user.email, resetToken: rawToken, expiresAt },
-    'Password reset token generated'
-  );
+  logger.info({ email: user.email, expiresAt }, 'Password reset token generated');
 
   return { success: true };
 }

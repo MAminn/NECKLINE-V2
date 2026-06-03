@@ -97,7 +97,7 @@ function buildDiscountResult(promo, subtotal, shippingCost) {
     type: promo.type,
     value: promo.value,
     amount,
-    currency: promo.currency || 'EGP',
+    currency: 'EGP',
   };
 }
 
@@ -126,8 +126,10 @@ async function findBestDiscount({ subtotal, shippingCost, currency, manualCode }
     const autoOffers = await PromoCode.find({
       isAutomatic: true,
       active: true,
-      $or: [{ startDate: null }, { startDate: { $lte: now } }],
-      $or: [{ endDate: null }, { endDate: { $gte: now } }],
+      $and: [
+        { $or: [{ startDate: null }, { startDate: { $lte: now } }] },
+        { $or: [{ endDate: null }, { endDate: { $gte: now } }] },
+      ],
     }).lean();
 
     for (const offer of autoOffers) {
@@ -170,18 +172,23 @@ async function incrementUsageCount(code, session = null) {
   const normalizedCode = code.toUpperCase().trim();
   const updateOptions = session ? { session, new: true } : { new: true };
 
+  // Conditional $inc: only increments if there is remaining capacity
   const updated = await PromoCode.findOneAndUpdate(
-    { code: normalizedCode },
+    {
+      code: normalizedCode,
+      $or: [
+        { usageLimit: null },
+        { $expr: { $lt: ['$usageCount', '$usageLimit'] } },
+      ],
+    },
     { $inc: { usageCount: 1 } },
     updateOptions
   );
 
   if (!updated) {
-    throw new DiscountError('This promo code is no longer available', 'PROMO_INVALID');
-  }
-
-  if (updated.usageLimit !== null && updated.usageLimit !== undefined && updated.usageCount > updated.usageLimit) {
-    throw new DiscountError('This promo code is no longer available', 'PROMO_EXHAUSTED');
+    const exists = await PromoCode.exists({ code: normalizedCode });
+    if (!exists) throw new DiscountError('This promo code is no longer available', 'PROMO_INVALID');
+    throw new DiscountError('This promo code has reached its usage limit', 'PROMO_EXHAUSTED');
   }
 
   return true;

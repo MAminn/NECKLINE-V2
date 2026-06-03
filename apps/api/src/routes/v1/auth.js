@@ -191,22 +191,5 @@ router.post('/reset-password', rateLimitReset, async (req, res, next) => {
   }
 });
 
-// GET /api/v1/auth/debug/reset-tokens (development only)
-router.get('/debug/reset-tokens', async (req, res, next) => {
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(404).json({ error: true, message: 'Not found' });
-    }
-    const PasswordResetToken = require('../../models/PasswordResetToken');
-    const tokens = await PasswordResetToken.find()
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .populate('userId', 'email')
-      .lean();
-    res.status(200).json({ success: true, data: { tokens } });
-  } catch (err) {
-    next(err);
-  }
-});
 
 module.exports = router;

@@ -19,6 +19,7 @@ const checkoutSchema = z.object({
     cartId: z.string().optional().nullable(),
     contact: contactSchema,
     shippingAddress: shippingAddressSchema,
+    promoCode: z.string().max(50).trim().optional().nullable(),
   }),
 });
 

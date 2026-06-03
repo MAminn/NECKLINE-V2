@@ -56,6 +56,7 @@ router.post(
 router.get(
   '/:orderNumber',
   validate(orderLookupSchema),
+  maybeAuthenticate,
   async (req, res, next) => {
     try {
       const { orderNumber } = req.params;
@@ -67,16 +68,14 @@ router.get(
         return res.status(404).json({ error: true, message: 'Order not found' });
       }
 
-      // For guest orders, verify email matches
-      if (!order.userId && email) {
-        if (order.customerEmail.toLowerCase() !== email.toLowerCase()) {
+      if (order.userId) {
+        // Authenticated order: caller must be logged in and own it
+        if (!req.user?.id || order.userId.toString() !== req.user.id) {
           return res.status(404).json({ error: true, message: 'Order not found' });
         }
-      }
-
-      // For authenticated orders, user can view their own
-      if (order.userId && req.user?.id) {
-        if (order.userId.toString() !== req.user.id) {
+      } else {
+        // Guest order: email is required and must match
+        if (!email || order.customerEmail.toLowerCase() !== email.toLowerCase()) {
           return res.status(404).json({ error: true, message: 'Order not found' });
         }
       }

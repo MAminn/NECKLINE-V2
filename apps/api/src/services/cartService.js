@@ -497,6 +497,11 @@ async function mergeGuestCart(guestCartId, userId) {
     }
   }
 
+  // Carry over the guest's applied promo code if the user cart has none
+  if (!userCart.appliedPromoCode && guestCart.appliedPromoCode) {
+    userCart.appliedPromoCode = guestCart.appliedPromoCode;
+  }
+
   userCart.updatedAt = new Date();
   await userCart.save();
 
