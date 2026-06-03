@@ -40,11 +40,12 @@ async function getProduct(id: string): Promise<ProductDetailResponse | null> {
 }
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const data = await getProduct(params.id);
+  const { id } = await params;
+  const data = await getProduct(id);
   if (!data) notFound();
 
   const { product, related } = data;
