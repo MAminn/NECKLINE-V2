@@ -16,6 +16,4 @@ const idempotencyKeySchema = new mongoose.Schema(
   }
 );
 
-idempotencyKeySchema.index({ key: 1 });
-
 module.exports = mongoose.model('IdempotencyKey', idempotencyKeySchema);
