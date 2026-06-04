@@ -88,6 +88,12 @@ const orderSchema = new mongoose.Schema(
     },
     idempotencyKey: { type: String },
     notes: { type: String, trim: true },
+    fulfillmentStatus: {
+      type: String,
+      enum: ['unfulfilled', 'processing', 'shipped', 'delivered'],
+      default: 'unfulfilled',
+    },
+    trackingNumber: { type: String, trim: true, default: null },
   },
   { timestamps: true }
 );
@@ -95,6 +101,7 @@ const orderSchema = new mongoose.Schema(
 // Indexes
 orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ customerEmail: 1 });
+orderSchema.index({ fulfillmentStatus: 1, createdAt: -1 });
 orderSchema.index({ createdAt: -1 });
 // Defense-in-depth: at most one order per idempotency key. Partial filter so the many
 // guest orders with a null key (no key supplied) don't collide on the unique constraint.

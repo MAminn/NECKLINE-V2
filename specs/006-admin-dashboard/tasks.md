@@ -20,8 +20,8 @@
 
 **Purpose**: Token and type foundations required by every subsequent phase.
 
-- [ ] T001 Add admin CSS custom properties to `apps/web/src/styles/globals.css` (`--admin-bg: #090203`, `--admin-accent: #D21B27`, `--admin-gold: #C29F68`, `--admin-border`, `--admin-surface`)
-- [ ] T002 Add TypeScript types `Testimonial`, `HowToApply`, `AdminMetrics`, `ActivityEvent`, `HeaderSlide` (extends existing) to `apps/web/src/types/nickline.ts`
+- [X] T001 Add admin CSS custom properties to `apps/web/src/styles/globals.css` (`--admin-bg: #090203`, `--admin-accent: #D21B27`, `--admin-gold: #C29F68`, `--admin-border`, `--admin-surface`)
+- [X] T002 Add TypeScript types `Testimonial`, `HowToApply`, `AdminMetrics`, `ActivityEvent`, `HeaderSlide` (extends existing) to `apps/web/src/types/nickline.ts`
 
 **Checkpoint**: `npm run build:web` still succeeds; no new lint errors.
 
@@ -35,54 +35,54 @@
 
 ### 2A — Backend Models (parallelizable)
 
-- [ ] T003 [P] Create `apps/api/src/models/Testimonial.js` (name, product, rating 1–5, comment, verified, date, deletedAt, timestamps; indexes `{deletedAt:1,createdAt:-1}`)
-- [ ] T004 [P] Create `apps/api/src/models/HeaderSlide.js` (image URL, title, subtitle, description, buttonText, linkTo enum, order, active, timestamps; index `{active:1,order:1}`)
-- [ ] T005 [P] Create `apps/api/src/models/HowToApply.js` (configKey unique default 'default', color hex, steps[], timestamps; unique index on configKey)
-- [ ] T006 [P] Add `fulfillmentStatus` enum `['unfulfilled','processing','shipped','delivered']` default `'unfulfilled'` and `trackingNumber` String fields to `apps/api/src/models/Order.js`; add index `{fulfillmentStatus:1,createdAt:-1}`
-- [ ] T007 [P] Add `views Number default 0`, `sales Number default 0`, `subtitle String default ''` fields to `apps/api/src/models/Product.js`; add index `{deletedAt:1,sales:-1}`
+- [X] T003 [P] Create `apps/api/src/models/Testimonial.js` (name, product, rating 1–5, comment, verified, date, deletedAt, timestamps; indexes `{deletedAt:1,createdAt:-1}`)
+- [X] T004 [P] Create `apps/api/src/models/HeaderSlide.js` (image URL, title, subtitle, description, buttonText, linkTo enum, order, active, timestamps; index `{active:1,order:1}`)
+- [X] T005 [P] Create `apps/api/src/models/HowToApply.js` (configKey unique default 'default', color hex, steps[], timestamps; unique index on configKey)
+- [X] T006 [P] Add `fulfillmentStatus` enum `['unfulfilled','processing','shipped','delivered']` default `'unfulfilled'` and `trackingNumber` String fields to `apps/api/src/models/Order.js`; add index `{fulfillmentStatus:1,createdAt:-1}`
+- [X] T007 [P] Add `views Number default 0`, `sales Number default 0`, `subtitle String default ''` fields to `apps/api/src/models/Product.js`; add index `{deletedAt:1,sales:-1}`
 
 ### 2B — Backend Services
 
-- [ ] T008 Create `apps/api/src/services/adminMetricsService.js` with MongoDB aggregation pipelines: `getMetrics()` (revenueToday, totalRevenue, ordersCount, todayOrdersCount, returningRate, newCustomers, pendingCount, processingCount, averageOrderValue, visitsHistory[], categoryShare[], forecast{}), `getActivities()` (last 20 AuditEvent docs transformed to ActivityEvent shape)
-- [ ] T009 [P] Create `apps/api/src/services/uploadService.js` with `uploadImage(buffer, mimetype)` — proxies to Cloudinary if `CLOUDINARY_URL` is set, otherwise returns a not-configured error with a 501 response code
-- [ ] T070 [P] Add `PATCH /auth/password` to `apps/api/src/routes/v1/auth.js`: requires `authenticate` middleware; Zod schema validates `{ currentPassword: string, newPassword: string min 8 }` using `authSchemas`; calls `authService.verifyPassword(user, currentPassword)` then `authService.updatePassword(user.id, newPassword)`; invalidates existing refresh tokens on success; returns 400 if current password is wrong
+- [X] T008 Create `apps/api/src/services/adminMetricsService.js` with MongoDB aggregation pipelines: `getMetrics()` (revenueToday, totalRevenue, ordersCount, todayOrdersCount, returningRate, newCustomers, pendingCount, processingCount, averageOrderValue, visitsHistory[], categoryShare[], forecast{}), `getActivities()` (last 20 AuditEvent docs transformed to ActivityEvent shape)
+- [X] T009 [P] Create `apps/api/src/services/uploadService.js` with `uploadImage(buffer, mimetype)` — proxies to Cloudinary if `CLOUDINARY_URL` is set, otherwise returns a not-configured error with a 501 response code
+- [X] T070 [P] Add `PATCH /auth/password` to `apps/api/src/routes/v1/auth.js`: requires `authenticate` middleware; Zod schema validates `{ currentPassword: string, newPassword: string min 8 }` using `authSchemas`; calls `authService.verifyPassword(user, currentPassword)` then `authService.updatePassword(user.id, newPassword)`; invalidates existing refresh tokens on success; returns 400 if current password is wrong
 
 ### 2C — Validators & Rate Limiter
 
-- [ ] T010 Add `rateLimiterAdmin` (windowMs 15 min, max 200) to `apps/api/src/middleware/rateLimiters.js` and export it alongside existing limiters
-- [ ] T068 [P] Create `apps/api/src/validators/contentSchemas.js` with Zod schemas: `testimonialSchema` (name string max 100, product string, rating number 1–5, comment string max 1000, verified boolean optional, date string), `headerSlideSchema` (image URL string, title max 100, subtitle optional, description optional, buttonText optional, linkTo enum['collection','story','reviews'], order number optional, active boolean optional), `howToApplySchema` (color hex string, steps array of {num, title, desc, iconType enum, presetName optional, customIconUrl optional})
-- [ ] T069 [P] Create `apps/api/src/validators/adminSchemas.js` with Zod schemas: `createProductSchema` / `updateProductSchema` (name, sku, category, price integer, currency, stockOnHand integer, subtitle optional, description optional, images string array, purchasable boolean), `updateOrderSchema` (fulfillmentStatus enum['unfulfilled','processing','shipped','delivered'] optional, trackingNumber string optional), `createCouponSchema` (code string, type enum['percentage','fixed'], value number, minOrderAmount number optional, usageLimit number optional, endDate string optional), `createOfferSchema` (description string, type enum['percentage','fixed'], value number, minOrderAmount optional, endDate string optional)
+- [X] T010 Add `rateLimiterAdmin` (windowMs 15 min, max 200) to `apps/api/src/middleware/rateLimiters.js` and export it alongside existing limiters
+- [X] T068 [P] Create `apps/api/src/validators/contentSchemas.js` with Zod schemas: `testimonialSchema` (name string max 100, product string, rating number 1–5, comment string max 1000, verified boolean optional, date string), `headerSlideSchema` (image URL string, title max 100, subtitle optional, description optional, buttonText optional, linkTo enum['collection','story','reviews'], order number optional, active boolean optional), `howToApplySchema` (color hex string, steps array of {num, title, desc, iconType enum, presetName optional, customIconUrl optional})
+- [X] T069 [P] Create `apps/api/src/validators/adminSchemas.js` with Zod schemas: `createProductSchema` / `updateProductSchema` (name, sku, category, price integer, currency, stockOnHand integer, subtitle optional, description optional, images string array, purchasable boolean), `updateOrderSchema` (fulfillmentStatus enum['unfulfilled','processing','shipped','delivered'] optional, trackingNumber string optional), `createCouponSchema` (code string, type enum['percentage','fixed'], value number, minOrderAmount number optional, usageLimit number optional, endDate string optional), `createOfferSchema` (description string, type enum['percentage','fixed'], value number, minOrderAmount optional, endDate string optional)
 
 ### 2D — Content Routes (public reads + admin writes; parallelizable)
 
-- [ ] T011 [P] Create `apps/api/src/routes/v1/testimonials.js`: `GET /testimonials` (public, filter `deletedAt:null`); admin write sub-router at `/testimonials` applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /testimonials`, `PUT /testimonials/:id`, `DELETE /testimonials/:id` (soft-delete); validate request body with `contentSchemas.testimonialSchema` (T068); emit `createAuditEvent` on write operations
-- [ ] T012 [P] Create `apps/api/src/routes/v1/headerSlides.js`: `GET /header-slides` (public, `{active:true}` sorted by order); admin write sub-router applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /admin/header-slides`, `PUT /admin/header-slides/:id`, `DELETE /admin/header-slides/:id`; validate body with `contentSchemas.headerSlideSchema` (T068); emit `createAuditEvent` on writes
-- [ ] T013 [P] Create `apps/api/src/routes/v1/howToApply.js`: `GET /how-to-apply` (public, returns configKey:'default' doc); admin write sub-router applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /admin/how-to-apply` (findOneAndUpdate upsert on configKey:'default'); validate body with `contentSchemas.howToApplySchema` (T068); emit `createAuditEvent` on write
+- [X] T011 [P] Create `apps/api/src/routes/v1/testimonials.js`: `GET /testimonials` (public, filter `deletedAt:null`); admin write sub-router at `/testimonials` applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /testimonials`, `PUT /testimonials/:id`, `DELETE /testimonials/:id` (soft-delete); validate request body with `contentSchemas.testimonialSchema` (T068); emit `createAuditEvent` on write operations
+- [X] T012 [P] Create `apps/api/src/routes/v1/headerSlides.js`: `GET /header-slides` (public, `{active:true}` sorted by order); admin write sub-router applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /admin/header-slides`, `PUT /admin/header-slides/:id`, `DELETE /admin/header-slides/:id`; validate body with `contentSchemas.headerSlideSchema` (T068); emit `createAuditEvent` on writes
+- [X] T013 [P] Create `apps/api/src/routes/v1/howToApply.js`: `GET /how-to-apply` (public, returns configKey:'default' doc); admin write sub-router applies `authenticate` + `requirePermission('admin:access')` + `rateLimiterAdmin` then handles `POST /admin/how-to-apply` (findOneAndUpdate upsert on configKey:'default'); validate body with `contentSchemas.howToApplySchema` (T068); emit `createAuditEvent` on write
 
 ### 2E — Admin-Only Routes (parallelizable after T008)
 
-- [ ] T014 [P] Create `apps/api/src/routes/v1/admin/metrics.js`: `GET /admin/metrics` (admin:access) — calls `adminMetricsService.getMetrics()`; apply `rateLimiterAdmin`
-- [ ] T015 [P] Create `apps/api/src/routes/v1/admin/activities.js`: `GET /admin/activities` (admin:access) — calls `adminMetricsService.getActivities()`; apply `rateLimiterAdmin`
-- [ ] T016 [P] Create `apps/api/src/routes/v1/admin/products.js`: `GET /admin/products` (paginated, search/category/status query params, KPI totals in response); `POST /admin/products` (validate with `adminSchemas.createProductSchema`); `PUT /admin/products/:id` (validate with `adminSchemas.updateProductSchema`); `DELETE /admin/products/:id` (soft-delete, sets `deletedAt`); emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
-- [ ] T017 [P] Create `apps/api/src/routes/v1/admin/orders.js`: `GET /admin/orders` (paginated, search/fulfillmentStatus/status filters); `PUT /admin/orders/:id` (validate with `adminSchemas.updateOrderSchema`; fulfillmentStatus + trackingNumber); `DELETE /admin/orders/:id` (hard delete, audit-logged); emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
-- [ ] T018 [P] Create `apps/api/src/routes/v1/admin/customers.js`: `GET /admin/customers` (paginated, search; aggregate ordersCount + lifetimeValue from Order collection; VIP threshold: ordersCount ≥ 3 OR lifetimeValue ≥ 50000; KPI totals: total, newThisWeek, returning); `DELETE /admin/customers/:email` (emit `createAuditEvent`; audit-logged); apply `rateLimiterAdmin`
-- [ ] T019 [P] Create `apps/api/src/routes/v1/admin/coupons.js`: `GET /admin/coupons` (PromoCode where `isAutomatic:false`); `POST /admin/coupons` (validate with `adminSchemas.createCouponSchema`; creates PromoCode with `isAutomatic:false`); `DELETE /admin/coupons/:id`; emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
-- [ ] T020 [P] Create `apps/api/src/routes/v1/admin/offers.js`: `GET /admin/offers` (PromoCode where `isAutomatic:true`); `POST /admin/offers` (validate with `adminSchemas.createOfferSchema`; creates PromoCode with `isAutomatic:true`); `DELETE /admin/offers/:id`; emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
-- [ ] T021 [P] Create `apps/api/src/routes/v1/admin/activityLog.js`: `GET /admin/activity-log` (paginated, default limit 50, returns AuditEvent docs sorted `{timestamp:-1}`); apply `rateLimiterAdmin`
-- [ ] T022 [P] Create `apps/api/src/routes/v1/admin/uploads.js`: `POST /admin/uploads` (multipart/form-data, max 5 MB, image/jpeg|png|webp only; calls `uploadService.uploadImage()`; returns `{url}`); apply `rateLimiterAdmin`
+- [X] T014 [P] Create `apps/api/src/routes/v1/admin/metrics.js`: `GET /admin/metrics` (admin:access) — calls `adminMetricsService.getMetrics()`; apply `rateLimiterAdmin`
+- [X] T015 [P] Create `apps/api/src/routes/v1/admin/activities.js`: `GET /admin/activities` (admin:access) — calls `adminMetricsService.getActivities()`; apply `rateLimiterAdmin`
+- [X] T016 [P] Create `apps/api/src/routes/v1/admin/products.js`: `GET /admin/products` (paginated, search/category/status query params, KPI totals in response); `POST /admin/products` (validate with `adminSchemas.createProductSchema`); `PUT /admin/products/:id` (validate with `adminSchemas.updateProductSchema`); `DELETE /admin/products/:id` (soft-delete, sets `deletedAt`); emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
+- [X] T017 [P] Create `apps/api/src/routes/v1/admin/orders.js`: `GET /admin/orders` (paginated, search/fulfillmentStatus/status filters); `PUT /admin/orders/:id` (validate with `adminSchemas.updateOrderSchema`; fulfillmentStatus + trackingNumber); `DELETE /admin/orders/:id` (hard delete, audit-logged); emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
+- [X] T018 [P] Create `apps/api/src/routes/v1/admin/customers.js`: `GET /admin/customers` (paginated, search; aggregate ordersCount + lifetimeValue from Order collection; VIP threshold: ordersCount ≥ 3 OR lifetimeValue ≥ 50000; KPI totals: total, newThisWeek, returning); `DELETE /admin/customers/:email` (emit `createAuditEvent`; audit-logged); apply `rateLimiterAdmin`
+- [X] T019 [P] Create `apps/api/src/routes/v1/admin/coupons.js`: `GET /admin/coupons` (PromoCode where `isAutomatic:false`); `POST /admin/coupons` (validate with `adminSchemas.createCouponSchema`; creates PromoCode with `isAutomatic:false`); `DELETE /admin/coupons/:id`; emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
+- [X] T020 [P] Create `apps/api/src/routes/v1/admin/offers.js`: `GET /admin/offers` (PromoCode where `isAutomatic:true`); `POST /admin/offers` (validate with `adminSchemas.createOfferSchema`; creates PromoCode with `isAutomatic:true`); `DELETE /admin/offers/:id`; emit `createAuditEvent` on writes; apply `rateLimiterAdmin`
+- [X] T021 [P] Create `apps/api/src/routes/v1/admin/activityLog.js`: `GET /admin/activity-log` (paginated, default limit 50, returns AuditEvent docs sorted `{timestamp:-1}`); apply `rateLimiterAdmin`
+- [X] T022 [P] Create `apps/api/src/routes/v1/admin/uploads.js`: `POST /admin/uploads` (multipart/form-data, max 5 MB, image/jpeg|png|webp only; calls `uploadService.uploadImage()`; returns `{url}`); apply `rateLimiterAdmin`
 
 ### 2F — Route Registration
 
-- [ ] T023 Register all new routes in `apps/api/src/routes/v1/index.js`: mount `testimonials`, `headerSlides`, `howToApply`, and all new `admin/*` routers under the existing v1 prefix (depends on T011–T022 route files existing)
+- [X] T023 Register all new routes in `apps/api/src/routes/v1/index.js`: mount `testimonials`, `headerSlides`, `howToApply`, and all new `admin/*` routers under the existing v1 prefix (depends on T011–T022 route files existing)
 
 ### 2G — Frontend Admin Shell
 
-- [ ] T024 [P] Create `apps/web/src/lib/admin-api.ts` with typed `apiGet<T>`, `apiPost<T>`, `apiPut<T>`, `apiDelete<T>` wrappers around the existing `apiClient` from `apps/web/src/lib/api.ts`; export named functions for every endpoint in `contracts/admin-api.md` (e.g. `getMetrics()`, `getAdminProducts(params)`, `updateOrder(id, body)`, etc.)
-- [ ] T025 [P] Create `apps/web/src/components/admin/AdminSidebar.tsx`: dark `--admin-bg` sidebar with logo, 10 nav items (Dashboard, Products, Orders, Customers, Analytics, Offers, Reports, Reviews, Interface, Settings), active state highlight in `--admin-accent`, admin user name + role footer
-- [ ] T026 [P] Create `apps/web/src/components/admin/AdminModal.tsx`: reusable modal wrapper with backdrop blur, close button, title prop, and children slot; uses Framer Motion for enter/exit animation
-- [ ] T027 [P] Create `apps/web/src/components/admin/AdminImageUploader.tsx`: URL text input as primary path; optional file `<input>` that calls `POST /admin/uploads` and populates the URL field on success; displays image preview when URL is set
-- [ ] T028 Create `apps/web/src/app/admin/layout.tsx`: reads `user` from `AuthContext`; redirects to `/login?redirect=/admin` if `!user || user.role !== 'admin'`; renders `<AdminSidebar>` + `{children}` inside a flex layout using `--admin-bg` background (depends on T025)
-- [ ] T029 Create `apps/web/src/app/admin/page.tsx`: Next.js redirect component that sends to `/admin/dashboard`
+- [X] T024 [P] Create `apps/web/src/lib/admin-api.ts` with typed `apiGet<T>`, `apiPost<T>`, `apiPut<T>`, `apiDelete<T>` wrappers around the existing `apiClient` from `apps/web/src/lib/api.ts`; export named functions for every endpoint in `contracts/admin-api.md` (e.g. `getMetrics()`, `getAdminProducts(params)`, `updateOrder(id, body)`, etc.)
+- [X] T025 [P] Create `apps/web/src/components/admin/AdminSidebar.tsx`: dark `--admin-bg` sidebar with logo, 10 nav items (Dashboard, Products, Orders, Customers, Analytics, Offers, Reports, Reviews, Interface, Settings), active state highlight in `--admin-accent`, admin user name + role footer
+- [X] T026 [P] Create `apps/web/src/components/admin/AdminModal.tsx`: reusable modal wrapper with backdrop blur, close button, title prop, and children slot; uses Framer Motion for enter/exit animation
+- [X] T027 [P] Create `apps/web/src/components/admin/AdminImageUploader.tsx`: URL text input as primary path; optional file `<input>` that calls `POST /admin/uploads` and populates the URL field on success; displays image preview when URL is set
+- [X] T028 Create `apps/web/src/app/admin/layout.tsx`: reads `user` from `AuthContext`; redirects to `/login?redirect=/admin` if `!user || user.role !== 'admin'`; renders `<AdminSidebar>` + `{children}` inside a flex layout using `--admin-bg` background (depends on T025)
+- [X] T029 Create `apps/web/src/app/admin/page.tsx`: Next.js redirect component that sends to `/admin/dashboard`
 
 **Checkpoint**: `GET /api/v1/testimonials` returns `[]`; `GET /api/v1/admin/metrics` returns 401 without auth, 200 with admin token. Navigating to `/admin` while logged in as admin shows the sidebar; without auth it redirects to login.
 
@@ -94,12 +94,12 @@
 
 **Independent Test**: Seed orders via the API, open `/admin/dashboard`, verify all 10 KPI cards show non-zero values and the Top Products list is ranked by sales.
 
-- [ ] T030 [US1] Create `apps/web/src/components/admin/AdminKpiCard.tsx`: displays label, value, trend direction, and an SVG sparkline built from a `history: number[]` prop; uses `--admin-gold` for labels and `--admin-accent` for accent highlights
-- [ ] T031 [P] [US1] Create `apps/web/src/components/admin/dashboard/DashboardKpis.tsx`: fetches `getMetrics()` on mount; renders 10 `AdminKpiCard` instances (Revenue Today, Total Revenue, Orders Today, Total Orders, Avg Order Value, Conversion Rate, Returning Rate, New Customers, Pending, Processing) with sparkline data from `visitsHistory`
-- [ ] T032 [P] [US1] Create `apps/web/src/components/admin/dashboard/TopProductsList.tsx`: fetches top products from metrics response `categoryShare`; renders a ranked list with relative bar widths; shows rank number, product name, units sold
-- [ ] T033 [P] [US1] Create `apps/web/src/components/admin/dashboard/RecentOrdersTable.tsx`: renders a table of recent orders from metrics with columns: Order ID, Customer, Items, Total, Status badge; includes a search input that filters client-side
-- [ ] T034 [P] [US1] Create `apps/web/src/components/admin/dashboard/ActivityFeed.tsx`: fetches `getActivities()` on mount then polls every 10 seconds via `setInterval` (cleared in `useEffect` cleanup); renders a list of activity items each with icon, user, text, sub-text, and relative timestamp; new items slide in at the top without a full re-render of the list (satisfies US1 AS2 "without requiring a page refresh")
-- [ ] T035 [US1] Create `apps/web/src/app/admin/dashboard/page.tsx`: assembles `DashboardKpis`, `TopProductsList`, `RecentOrdersTable`, and `ActivityFeed` in a two-column layout matching the NicklineAdminPortal design
+- [X] T030 [US1] Create `apps/web/src/components/admin/AdminKpiCard.tsx`: displays label, value, trend direction, and an SVG sparkline built from a `history: number[]` prop; uses `--admin-gold` for labels and `--admin-accent` for accent highlights
+- [X] T031 [P] [US1] Create `apps/web/src/components/admin/dashboard/DashboardKpis.tsx`: fetches `getMetrics()` on mount; renders 10 `AdminKpiCard` instances (Revenue Today, Total Revenue, Orders Today, Total Orders, Avg Order Value, Conversion Rate, Returning Rate, New Customers, Pending, Processing) with sparkline data from `visitsHistory`
+- [X] T032 [P] [US1] Create `apps/web/src/components/admin/dashboard/TopProductsList.tsx`: fetches top products from metrics response `categoryShare`; renders a ranked list with relative bar widths; shows rank number, product name, units sold
+- [X] T033 [P] [US1] Create `apps/web/src/components/admin/dashboard/RecentOrdersTable.tsx`: renders a table of recent orders from metrics with columns: Order ID, Customer, Items, Total, Status badge; includes a search input that filters client-side
+- [X] T034 [P] [US1] Create `apps/web/src/components/admin/dashboard/ActivityFeed.tsx`: fetches `getActivities()` on mount then polls every 10 seconds via `setInterval` (cleared in `useEffect` cleanup); renders a list of activity items each with icon, user, text, sub-text, and relative timestamp; new items slide in at the top without a full re-render of the list (satisfies US1 AS2 "without requiring a page refresh")
+- [X] T035 [US1] Create `apps/web/src/app/admin/dashboard/page.tsx`: assembles `DashboardKpis`, `TopProductsList`, `RecentOrdersTable`, and `ActivityFeed` in a two-column layout matching the NicklineAdminPortal design
 
 **Checkpoint**: Dashboard tab loads within 2 s, all KPI cards render without errors, activity feed shows recent events.
 
@@ -111,10 +111,10 @@
 
 **Independent Test**: Click "Add Product", fill all fields, save — verify product appears in table and at `/shop`. Edit stock to 0 — verify "Out of Stock" badge. Delete — verify product disappears.
 
-- [ ] T036 [P] [US2] Create `apps/web/src/components/admin/products/AddProductModal.tsx`: form with name, SKU, category dropdown, price, stock, subtitle, description; 3-image URL/upload slots using `AdminImageUploader`; hero image radio selector; calls `createAdminProduct()` on submit; closes and refreshes table on success
-- [ ] T037 [P] [US2] Create `apps/web/src/components/admin/products/EditProductModal.tsx`: same form fields as Add, pre-populated with existing product data; calls `updateAdminProduct(id, body)` on submit
-- [ ] T038 [US2] Create `apps/web/src/components/admin/products/ProductsTable.tsx`: fetches `getAdminProducts(page, filters)` on mount; renders paginated table (8 per page) with columns image, name, SKU, category, price, stock, status badge (ACTIVE/LOW STOCK/OUT OF STOCK), views, sales; search input + category select + status select filters; Edit and Delete action buttons per row; Delete triggers confirmation then `deleteAdminProduct(id)`
-- [ ] T039 [US2] Create `apps/web/src/app/admin/products/page.tsx`: renders `ProductsTable` with an "Add Product" button that opens `AddProductModal`; includes KPI header row showing total products, active, out-of-stock, total views from the list response `kpis` field
+- [X] T036 [P] [US2] Create `apps/web/src/components/admin/products/AddProductModal.tsx`: form with name, SKU, category dropdown, price, stock, subtitle, description; 3-image URL/upload slots using `AdminImageUploader`; hero image radio selector; calls `createAdminProduct()` on submit; closes and refreshes table on success
+- [X] T037 [P] [US2] Create `apps/web/src/components/admin/products/EditProductModal.tsx`: same form fields as Add, pre-populated with existing product data; calls `updateAdminProduct(id, body)` on submit
+- [X] T038 [US2] Create `apps/web/src/components/admin/products/ProductsTable.tsx`: fetches `getAdminProducts(page, filters)` on mount; renders paginated table (8 per page) with columns image, name, SKU, category, price, stock, status badge (ACTIVE/LOW STOCK/OUT OF STOCK), views, sales; search input + category select + status select filters; Edit and Delete action buttons per row; Delete triggers confirmation then `deleteAdminProduct(id)`
+- [X] T039 [US2] Create `apps/web/src/app/admin/products/page.tsx`: renders `ProductsTable` with an "Add Product" button that opens `AddProductModal`; includes KPI header row showing total products, active, out-of-stock, total views from the list response `kpis` field
 
 **Checkpoint**: Full product CRUD cycle completes without errors; paginated table shows correct status badges.
 
@@ -126,9 +126,9 @@
 
 **Independent Test**: Place a storefront order → find it in Orders tab (status: UNFULFILLED) → click row → open detail sidebar → click PROCESSING → click SHIPPED → enter tracking number → save → verify values persist on page reload.
 
-- [ ] T040 [P] [US3] Create `apps/web/src/components/admin/orders/OrderDetailSidebar.tsx`: right-side panel with customer info, items list, total, date, current `fulfillmentStatus` with transition buttons (UNFULFILLED → PROCESSING → SHIPPED → DELIVERED), tracking number input and Save button; calls `updateAdminOrder(id, {fulfillmentStatus, trackingNumber})` on each action; closes on outside click or X button
-- [ ] T041 [US3] Create `apps/web/src/components/admin/orders/OrdersTable.tsx`: fetches `getAdminOrders(page, filters)` on mount; renders table with columns order ID, customer name, items summary, total, location, payment status badge, fulfilment status badge; filter tabs: ALL / PENDING / PROCESSING / SHIPPED / DELIVERED; search input; clicking a row opens `OrderDetailSidebar`
-- [ ] T042 [US3] Create `apps/web/src/app/admin/orders/page.tsx`: renders `OrdersTable`; handles sidebar open/close state and selected order state
+- [X] T040 [P] [US3] Create `apps/web/src/components/admin/orders/OrderDetailSidebar.tsx`: right-side panel with customer info, items list, total, date, current `fulfillmentStatus` with transition buttons (UNFULFILLED → PROCESSING → SHIPPED → DELIVERED), tracking number input and Save button; calls `updateAdminOrder(id, {fulfillmentStatus, trackingNumber})` on each action; closes on outside click or X button
+- [X] T041 [US3] Create `apps/web/src/components/admin/orders/OrdersTable.tsx`: fetches `getAdminOrders(page, filters)` on mount; renders table with columns order ID, customer name, items summary, total, location, payment status badge, fulfilment status badge; filter tabs: ALL / PENDING / PROCESSING / SHIPPED / DELIVERED; search input; clicking a row opens `OrderDetailSidebar`
+- [X] T042 [US3] Create `apps/web/src/app/admin/orders/page.tsx`: renders `OrdersTable`; handles sidebar open/close state and selected order state
 
 **Checkpoint**: Order status transition saves to database and reflects in the Orders table without a full page reload.
 
@@ -140,9 +140,9 @@
 
 **Independent Test**: Register two test user accounts; open Customers tab — verify both appear with correct email and `ordersCount: 0`; delete one — verify it disappears.
 
-- [ ] T043 [P] [US4] Create `apps/web/src/components/admin/customers/CustomerDetailSidebar.tsx`: right-side panel with customer name, email, registered date, order history table (order ID, total, status, date), lifetime value total; Delete Account button with confirmation that calls `deleteAdminCustomer(email)` and closes sidebar on success
-- [ ] T044 [US4] Create `apps/web/src/components/admin/customers/CustomersTable.tsx`: fetches `getAdminCustomers(page, search)` on mount; renders table with columns avatar initials, name, email, orders count, lifetime value, status tag (NEW / ACTIVE / VIP); filter tabs ALL / NEW / VIP; search input; clicking a row opens `CustomerDetailSidebar`
-- [ ] T045 [US4] Create `apps/web/src/app/admin/customers/page.tsx`: renders `CustomersTable`; displays KPI header row (total, new this week, returning) from list response `kpis`; handles sidebar state
+- [X] T043 [P] [US4] Create `apps/web/src/components/admin/customers/CustomerDetailSidebar.tsx`: right-side panel with customer name, email, registered date, order history table (order ID, total, status, date), lifetime value total; Delete Account button with confirmation that calls `deleteAdminCustomer(email)` and closes sidebar on success
+- [X] T044 [US4] Create `apps/web/src/components/admin/customers/CustomersTable.tsx`: fetches `getAdminCustomers(page, search)` on mount; renders table with columns avatar initials, name, email, orders count, lifetime value, status tag (NEW / ACTIVE / VIP); filter tabs ALL / NEW / VIP; search input; clicking a row opens `CustomerDetailSidebar`
+- [X] T045 [US4] Create `apps/web/src/app/admin/customers/page.tsx`: renders `CustomersTable`; displays KPI header row (total, new this week, returning) from list response `kpis`; handles sidebar state
 
 **Checkpoint**: Customers tab shows correct aggregated order count and lifetime value per user.
 
@@ -154,9 +154,9 @@
 
 **Independent Test**: Create coupon "TEST10" (10% off, min 200 EGP) → use it at checkout → verify discount applies → delete coupon → verify checkout no longer accepts it.
 
-- [ ] T046 [P] [US5] Create `apps/web/src/components/admin/offers/CouponsSection.tsx`: fetches `getAdminCoupons()` on mount; renders a card-grid list of coupons with code, type, value, min spend, usage count; "Add Coupon" button opens an inline form/modal (code, type select, amount, min spend, usage limit, expiry date) that calls `createAdminCoupon(body)`; Delete button per coupon calls `deleteAdminCoupon(id)` with confirmation
-- [ ] T047 [P] [US5] Create `apps/web/src/components/admin/offers/CampaignsSection.tsx`: fetches `getAdminOffers()` on mount; renders a card-grid list of campaign offers with title, type badge (BOGO / DISCOUNT / BUNDLE), valid-until date, status (ACTIVE / EXPIRED); "Add Campaign" button opens a form/modal (title, type, value, min spend, expiry date) that calls `createAdminOffer(body)`; Delete button per offer calls `deleteAdminOffer(id)` with confirmation
-- [ ] T048 [US5] Create `apps/web/src/app/admin/offers/page.tsx`: renders `CouponsSection` and `CampaignsSection` in tabbed layout (Coupons / Campaigns tabs)
+- [X] T046 [P] [US5] Create `apps/web/src/components/admin/offers/CouponsSection.tsx`: fetches `getAdminCoupons()` on mount; renders a card-grid list of coupons with code, type, value, min spend, usage count; "Add Coupon" button opens an inline form/modal (code, type select, amount, min spend, usage limit, expiry date) that calls `createAdminCoupon(body)`; Delete button per coupon calls `deleteAdminCoupon(id)` with confirmation
+- [X] T047 [P] [US5] Create `apps/web/src/components/admin/offers/CampaignsSection.tsx`: fetches `getAdminOffers()` on mount; renders a card-grid list of campaign offers with title, type badge (BOGO / DISCOUNT / BUNDLE), valid-until date, status (ACTIVE / EXPIRED); "Add Campaign" button opens a form/modal (title, type, value, min spend, expiry date) that calls `createAdminOffer(body)`; Delete button per offer calls `deleteAdminOffer(id)` with confirmation
+- [X] T048 [US5] Create `apps/web/src/app/admin/offers/page.tsx`: renders `CouponsSection` and `CampaignsSection` in tabbed layout (Coupons / Campaigns tabs)
 
 **Checkpoint**: A coupon created in the admin is immediately usable at the storefront checkout without a server restart.
 
@@ -168,10 +168,10 @@
 
 **Independent Test**: Click "Add Review" → fill form → save → open homepage → verify review appears in reviews section → delete it → verify it disappears.
 
-- [ ] T049 [P] [US6] Create `apps/web/src/components/admin/reviews/AddReviewModal.tsx`: form with name, product (free text), star rating (1–5 selector), comment textarea, verified toggle; calls `createTestimonial(body)` on submit; closes and refreshes table on success
-- [ ] T050 [P] [US6] Create `apps/web/src/components/admin/reviews/EditReviewModal.tsx`: same fields as Add, pre-populated; calls `updateTestimonial(id, body)` on submit; "Verified Buyer" toggle is prominent
-- [ ] T051 [US6] Create `apps/web/src/components/admin/reviews/ReviewsTable.tsx`: fetches `getTestimonials()` (admin view, includes soft-deleted with `deletedAt` shown) on mount; renders table with columns name, product, star rating display, comment excerpt, verified badge, date; search input (filter by name); star filter dropdown (1–5); Edit and Delete buttons per row; Delete calls `deleteTestimonial(id)` (soft-delete) with confirmation
-- [ ] T052 [US6] Create `apps/web/src/app/admin/reviews/page.tsx`: renders `ReviewsTable` with "Add Review" button; handles modal open/close and selected review state
+- [X] T049 [P] [US6] Create `apps/web/src/components/admin/reviews/AddReviewModal.tsx`: form with name, product (free text), star rating (1–5 selector), comment textarea, verified toggle; calls `createTestimonial(body)` on submit; closes and refreshes table on success
+- [X] T050 [P] [US6] Create `apps/web/src/components/admin/reviews/EditReviewModal.tsx`: same fields as Add, pre-populated; calls `updateTestimonial(id, body)` on submit; "Verified Buyer" toggle is prominent
+- [X] T051 [US6] Create `apps/web/src/components/admin/reviews/ReviewsTable.tsx`: fetches `getTestimonials()` (admin view, includes soft-deleted with `deletedAt` shown) on mount; renders table with columns name, product, star rating display, comment excerpt, verified badge, date; search input (filter by name); star filter dropdown (1–5); Edit and Delete buttons per row; Delete calls `deleteTestimonial(id)` (soft-delete) with confirmation
+- [X] T052 [US6] Create `apps/web/src/app/admin/reviews/page.tsx`: renders `ReviewsTable` with "Add Review" button; handles modal open/close and selected review state
 
 **Checkpoint**: Review added in admin tab appears immediately on `GET /api/v1/testimonials`; storefront homepage shows the new review.
 
@@ -183,10 +183,10 @@
 
 **Independent Test**: Add a slide with a test image URL → open the storefront homepage → verify the slide appears in the hero carousel. Edit the How-to-Apply accent color → verify the storefront section color updates.
 
-- [ ] T053 [P] [US7] Create `apps/web/src/components/admin/interface/SlideModal.tsx`: form with image URL/upload (`AdminImageUploader`), title, subtitle, description, buttonText, linkTo enum select (`collection` / `story` / `reviews`), order number, active toggle; calls `createHeaderSlide(body)` or `updateHeaderSlide(id, body)` depending on mode; closes and refreshes on success
-- [ ] T054 [P] [US7] Create `apps/web/src/components/admin/interface/HowToApplyEditor.tsx`: fetches `getHowToApply()` on mount; renders accent color picker + an editable list of steps (num, title, desc, iconType select, presetName or customIconUrl); Add Step / Remove Step buttons; Save calls `updateHowToApply(body)`
-- [ ] T055 [US7] Create `apps/web/src/components/admin/interface/HeroSlidesSection.tsx`: fetches `getHeaderSlides()` (admin view, includes inactive) on mount; renders a card grid of slides with image thumbnail, title, order number, active badge; "Add Slide" button opens `SlideModal` in create mode; Edit button opens `SlideModal` in edit mode; Delete calls `deleteHeaderSlide(id)` with confirmation
-- [ ] T056 [US7] Create `apps/web/src/app/admin/interface/page.tsx`: renders `HeroSlidesSection` in the top section and `HowToApplyEditor` in the bottom section; tab header reads "Interface Billboard"
+- [X] T053 [P] [US7] Create `apps/web/src/components/admin/interface/SlideModal.tsx`: form with image URL/upload (`AdminImageUploader`), title, subtitle, description, buttonText, linkTo enum select (`collection` / `story` / `reviews`), order number, active toggle; calls `createHeaderSlide(body)` or `updateHeaderSlide(id, body)` depending on mode; closes and refreshes on success
+- [X] T054 [P] [US7] Create `apps/web/src/components/admin/interface/HowToApplyEditor.tsx`: fetches `getHowToApply()` on mount; renders accent color picker + an editable list of steps (num, title, desc, iconType select, presetName or customIconUrl); Add Step / Remove Step buttons; Save calls `updateHowToApply(body)`
+- [X] T055 [US7] Create `apps/web/src/components/admin/interface/HeroSlidesSection.tsx`: fetches `getHeaderSlides()` (admin view, includes inactive) on mount; renders a card grid of slides with image thumbnail, title, order number, active badge; "Add Slide" button opens `SlideModal` in create mode; Edit button opens `SlideModal` in edit mode; Delete calls `deleteHeaderSlide(id)` with confirmation
+- [X] T056 [US7] Create `apps/web/src/app/admin/interface/page.tsx`: renders `HeroSlidesSection` in the top section and `HowToApplyEditor` in the bottom section; tab header reads "Interface Billboard"
 
 **Checkpoint**: New slide added in admin is returned by `GET /api/v1/header-slides`; storefront carousel renders it without a deploy.
 
@@ -198,8 +198,8 @@
 
 **Independent Test**: Generate orders on different dates → open Analytics tab → select 7D → verify chart plots the last 7 days with correct counts.
 
-- [ ] T057 [US8] Create `apps/web/src/components/admin/analytics/AnalyticsChart.tsx`: accepts `data: {date: string, visits: number, checkouts: number}[]` prop; renders an SVG polyline chart with two series (visits in `--admin-gold`, checkouts in `--admin-accent`); shows date labels on x-axis; displays an empty-state message when data is empty
-- [ ] T058 [US8] Create `apps/web/src/app/admin/analytics/page.tsx`: fetches `getMetrics()` on mount; renders timeframe selector (7D / 30D / ALL) that slices `visitsHistory` and re-renders `AnalyticsChart`; also renders KPI cards for conversion rate, returning rate, average order value, new customers using `AdminKpiCard`
+- [X] T057 [US8] Create `apps/web/src/components/admin/analytics/AnalyticsChart.tsx`: accepts `data: {date: string, visits: number, checkouts: number}[]` prop; renders an SVG polyline chart with two series (visits in `--admin-gold`, checkouts in `--admin-accent`); shows date labels on x-axis; displays an empty-state message when data is empty
+- [X] T058 [US8] Create `apps/web/src/app/admin/analytics/page.tsx`: fetches `getMetrics()` on mount; renders timeframe selector (7D / 30D / ALL) that slices `visitsHistory` and re-renders `AnalyticsChart`; also renders KPI cards for conversion rate, returning rate, average order value, new customers using `AdminKpiCard`
 
 **Checkpoint**: Timeframe selector updates the chart without a page reload; empty store renders flat chart with no JS errors.
 
@@ -211,9 +211,9 @@
 
 **Independent Test**: Update display name in Profile → verify sidebar footer shows the new name. Open Activity Log → verify at least one admin mutation from a prior test appears with actor, action, and timestamp.
 
-- [ ] T059 [P] [US9] Create `apps/web/src/app/admin/settings/page.tsx`: redirect component that sends to `/admin/settings/profile`
-- [ ] T060 [P] [US9] Create `apps/web/src/app/admin/settings/profile/page.tsx`: renders two forms — (1) display name form calls `PATCH /api/v1/auth/me` (existing endpoint) then `refreshUser()` from `AuthContext` so the sidebar name updates immediately; (2) password change form (current password + new password) calls `PATCH /api/v1/auth/password` (created in T070); show success/error feedback inline on each form
-- [ ] T061 [P] [US9] Create `apps/web/src/app/admin/settings/activity-log/page.tsx`: fetches `getAdminActivityLog(page)` on mount; renders a paginated table with columns actor (email), action, target, before/after JSON diffs, timestamp; pagination controls at bottom
+- [X] T059 [P] [US9] Create `apps/web/src/app/admin/settings/page.tsx`: redirect component that sends to `/admin/settings/profile`
+- [X] T060 [P] [US9] Create `apps/web/src/app/admin/settings/profile/page.tsx`: renders two forms — (1) display name form calls `PATCH /api/v1/auth/me` (existing endpoint) then `refreshUser()` from `AuthContext` so the sidebar name updates immediately; (2) password change form (current password + new password) calls `PATCH /api/v1/auth/password` (created in T070); show success/error feedback inline on each form
+- [X] T061 [P] [US9] Create `apps/web/src/app/admin/settings/activity-log/page.tsx`: fetches `getAdminActivityLog(page)` on mount; renders a paginated table with columns actor (email), action, target, before/after JSON diffs, timestamp; pagination controls at bottom
 
 **Checkpoint**: Name change in Profile → sidebar footer name updates without page reload. Activity Log shows prior admin mutations from testing the other tabs.
 
@@ -223,12 +223,12 @@
 
 **Purpose**: Stubs, audit coverage, quality gates.
 
-- [ ] T062 Create `apps/web/src/app/admin/reports/page.tsx`: placeholder page with heading "Reports — Coming Soon" and a note that export functionality ships in Phase 6b
-- [ ] T063 Audit all admin mutation routes (`T011`–`T022`) and confirm every `POST`, `PUT`, and `DELETE` handler calls `createAuditEvent` before returning; add missing calls where needed
-- [ ] T064 Run `npm run lint` from repo root; fix all errors introduced by this feature (zero errors required)
-- [ ] T065 Run `npm run build:web`; fix all TypeScript and build errors (zero errors required)
-- [ ] T066 Walk through `specs/006-admin-dashboard/quickstart.md` — execute each section's curl commands and UI steps; confirm all pass
-- [ ] T067 Security validation: confirm `GET /api/v1/admin/metrics` returns 401 with no cookie, 403 with a customer-role cookie, and 200 with an admin-role cookie; repeat for `/admin/products`, `/admin/orders`, `/admin/customers`
+- [X] T062 Create `apps/web/src/app/admin/reports/page.tsx`: placeholder page with heading "Reports — Coming Soon" and a note that export functionality ships in Phase 6b
+- [X] T063 Audit all admin mutation routes (`T011`–`T022`) and confirm every `POST`, `PUT`, and `DELETE` handler calls `createAuditEvent` before returning; add missing calls where needed
+- [X] T064 Run `npm run lint` from repo root; fix all errors introduced by this feature (zero errors required)
+- [X] T065 Run `npm run build:web`; fix all TypeScript and build errors (zero errors required)
+- [X] T066 Walk through `specs/006-admin-dashboard/quickstart.md` — execute each section's curl commands and UI steps; confirm all pass
+- [X] T067 Security validation: confirm `GET /api/v1/admin/metrics` returns 401 with no cookie, 403 with a customer-role cookie, and 200 with an admin-role cookie; repeat for `/admin/products`, `/admin/orders`, `/admin/customers`
 
 **Checkpoint**: `npm run lint` and `npm run build:web` both exit 0; quickstart.md walkthrough passes end-to-end.
 

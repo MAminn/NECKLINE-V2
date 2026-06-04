@@ -7,6 +7,7 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
   updateProfileSchema,
+  changePasswordSchema,
 } = require('../../validators/authSchemas');
 const authenticate = require('../../middleware/authenticate');
 const {
@@ -149,6 +150,26 @@ router.patch('/me', authenticate, async (req, res, next) => {
     const user = await authService.updateProfile(req.user.id, parsed.data);
     res.status(200).json({ success: true, data: { user } });
   } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/v1/auth/password
+router.patch('/password', authenticate, async (req, res, next) => {
+  try {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join('; ');
+      return res.status(400).json({ error: true, message });
+    }
+
+    const { currentPassword, newPassword } = parsed.data;
+    await authService.updateProfile(req.user.id, { currentPassword, newPassword });
+    res.status(200).json({ success: true, message: 'Password updated successfully.' });
+  } catch (err) {
+    if (err.statusCode === 401 || err.message?.includes('incorrect')) {
+      return res.status(400).json({ error: true, message: 'Current password is incorrect' });
+    }
     next(err);
   }
 });

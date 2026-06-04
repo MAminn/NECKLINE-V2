@@ -14,6 +14,9 @@ const productSchema = new mongoose.Schema(
     images: [{ type: String }],
     category: { type: String, trim: true },
     tags: [{ type: String, trim: true }],
+    views:    { type: Number, default: 0 },
+    sales:    { type: Number, default: 0 },
+    subtitle: { type: String, trim: true, default: '' },
   },
   {
     timestamps: true,
@@ -28,5 +31,6 @@ productSchema.index({ category: 1, purchasable: 1, deletedAt: 1, createdAt: -1 }
 productSchema.index({ tags: 1, purchasable: 1, deletedAt: 1, createdAt: -1 }); // tag browsing
 productSchema.index({ stockOnHand: 1, purchasable: 1, deletedAt: 1 }); // in-stock filter
 productSchema.index({ name: 'text', description: 'text' }); // text search (non-authoritative)
+productSchema.index({ deletedAt: 1, sales: -1 }); // top products ranking
 
 module.exports = mongoose.model('Product', productSchema);

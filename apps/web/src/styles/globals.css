@@ -221,3 +221,14 @@ select:focus {
   opacity: 1;
   transform: translateY(0) translateZ(0);
 }
+
+/* ---------- Admin design tokens ---------- */
+:root {
+  --admin-bg: #090203;
+  --admin-surface: #130608;
+  --admin-border: rgba(194, 159, 104, 0.15);
+  --admin-accent: #D21B27;
+  --admin-gold: #C29F68;
+  --admin-text: #F5F0E8;
+  --admin-text-muted: rgba(245, 240, 232, 0.55);
+}
