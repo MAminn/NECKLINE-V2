@@ -89,26 +89,56 @@ These are governed by the constitution and verified by `/analyze` before any `/i
 **Depends on:** Phase 4.5 (must charge the discounted total). **Done when:** a real test-mode payment confirms an order via webhook. Gate: `/clarify` + `/analyze`.
 
 ## Phase 6 — Admin Dashboard
-**Goal:** Manage the entire store from a protected dashboard without touching the DB. Scope below is derived from the provided `Dashboard/` design images and is now design-locked (§2.1) — admin screens have designs and must match them.
+**Goal:** Manage the entire store from a protected dashboard without touching the DB. Scope is derived from the deleted `NicklineAdminPortal.tsx` UI (recovered from git history) plus the `Dashboard/` design images — both are design-locked (§2.1).
 
-**Sidebar nav (8 sections):** Dashboard · Products · Orders · Customers · Analytics · Offers · Reports · Settings. Global chrome on every screen: top search (orders/products/customers), currency switcher (EGP/USD/SAR), date-range picker, Export, and primary action button (e.g. "New Product").
+**Sidebar nav (10 sections):** Dashboard · Products · Orders · Customers · Analytics · Offers · Reports · Reviews · Interface Billboard · Settings. Global chrome on every screen: unified search bar (orders/products/customers), refresh, and primary action button per tab.
 
 **Scope by section:**
-- **Dashboard (overview):** KPI cards (today's orders, revenue today, live sessions, conversion rate; total revenue, orders, avg order value, new customers — each with period delta), 30-day revenue chart (daily/weekly toggle), Top Products by units, Recent Orders table with status badges, Live Activity feed.
-- **Products:** KPI cards (total / active / out-of-stock / total views); paginated, filterable table (search, category, status, tags, sort) — columns: image+name, SKU, category, price, stock, status (Active / Low Stock / Out of Stock), views, sales, row actions (view/edit/delete); product create/edit form with image upload; inventory + status management.
-- **Orders:** status tabs with counts (All / Pending / Processing / Shipped / Delivered / Cancelled / Refunded); filters (order status, payment status, fulfillment status, date range); table — order #, customer, item thumbnails+count, total, payment badge, fulfillment badge, date, actions; order detail + fulfillment-status updates; manual "New Order".
-- **Customers:** KPI cards (total / new / active / repeat); table — customer, contact (email+phone), location, total orders, total spent, status (Active/Inactive), last order, actions; customer detail; manual "Add Customer".
-- **Analytics:** revenue / orders / customers over-time charts, Sales-by-Category donut, Top Products, Top Countries (Egypt + GCC), Traffic Sources. **Consumes the instrumentation delivered in Phase 7** (consent-gated analytics) — this screen renders that data, it does not define the tracking.
-- **Offers:** two sub-pages — **Promo Codes** (code-based: code, type [percentage / fixed / free-shipping], discount, min order, usage count + limit, expiry, status [Active/Scheduled/Expired], bulk actions) and **Campaigns** (auto-applied offers, homepage banners, segments). Management UI only — discount *application/validation* is server-authoritative and lives with cart/checkout pricing (see Offers note below).
-- **Reports:** exportable operational/financial reports (scope to confirm at `/specify`).
-- **Settings:** sub-nav — Profile, Store, Team, **Roles & Permissions**, Payments, Shipping, **Taxes** (placeholder until tax registration — §III tax note), Notifications, Integrations, Appearance, Security, API keys, **Activity Log** (the audit trail surfaced read-only). Profile includes change-password and preferences (language, timezone GMT+2 Cairo, date/time format).
 
-**`/specify` seed:** "An admin signs into a protected dashboard to view store KPIs and analytics, manage products + inventory + images, process orders and update fulfillment status, manage customers, create and manage promo codes and offers, and configure store settings including team roles & permissions — all matching the provided dashboard designs."
-**Security (§4.3, §8.3, §XII):** capability-based authorization enforced server-side on every admin route and the Roles & Permissions matrix (never UI-hidden only); stricter rate limits; append-only audit trail on all admin mutations (money/inventory/roles/orders/offers) surfaced as the Activity Log; image uploads type-validated, size-limited, sanitized, stored outside the runtime filesystem, never executable; all admin lists paginated; admin search/export bounded and authorized.
-**Design fidelity (§2.1):** admin screens now HAVE provided designs (`Dashboard/`) — they are design-locked exactly like the storefront. Only the permitted enhancements (hover/focus, transitions, loading/empty states, responsive) may be added.
-**Depends on:** Phase 1–5 (Analytics screen also depends on Phase 7 instrumentation). **Done when:** every nav section above is operable end-to-end against real data and matches the dashboard designs.
+- **Dashboard (overview):** KPI cards with sparklines (today's orders, revenue today, live sessions, conversion rate, returning rate; total revenue, orders, avg order value, new customers, pending count, processing count — each with period delta), Top Products ranked bar list, Recent Orders table with global search + status filter (ALL/PENDING/PROCESSING/SHIPPED/DELIVERED), Live Realtime Activity feed. Backend: `GET /api/v1/admin/metrics` aggregation endpoint (queries Orders + Users + Products, returns rolled-up KPIs + `visitsHistory[]` for sparklines); `GET /api/v1/admin/activities` (recent order/cart events feed).
 
-> **Scope note:** Phase 6 is large. It can be split into **6a — Catalog/Orders/Customers admin** (the operational core) and **6b — Offers/Analytics/Reports/Settings** if a single phase proves too big. Left as one phase for now; confirm at `/plan`.
+- **Products:** KPI cards (total / active / out-of-stock / total views); paginated, filterable table (search, category, status) — columns: image+name, SKU, category, price, stock, status (ACTIVE / LOW STOCK / OUT OF STOCK), views, sales, row actions (edit/delete); product create modal with 3-image gallery upload + hero picker; product edit modal with same fields. Backend: existing `GET/POST /api/v1/admin/products` (from Product model), `PUT/DELETE /api/v1/admin/products/:id`.
+
+- **Orders:** Search + status filter tabs (ALL / PENDING / PROCESSING / SHIPPED / DELIVERED); table — order ID, customer avatar+name, items summary, total (EGP), location, status badge, Inspect/Delete actions; click-to-inspect detail sidebar (status transition buttons, tracking number form, order info grid, timeline). Backend: `GET /api/v1/admin/orders` (list orders with customer info), `PUT /api/v1/admin/orders/:id` (status + trackingNumber), `DELETE /api/v1/admin/orders/:id`.
+
+- **Customers:** Status tabs (ALL / ACTIVE / NEW / VIP); table — customer avatar+name, email, location, orders count, CLV, tags, actions; click-to-inspect detail sidebar (order history, sparkline). Backend: `GET /api/v1/admin/customers` (list Users with order aggregates), `DELETE /api/v1/admin/customers/:email`.
+
+- **Analytics:** Timeframe selector (7D / 30D / ALL); SVG line chart (visits + checkout overlay); KPI metrics (CAC, MER, conversion, returning rate); Sales-by-Category share; AI Forecast card (projected revenue, recommended stock, top product). **Consumes Phase 7 instrumentation** — this screen renders that data, it does not define the tracking. Backend: `GET /api/v1/admin/metrics` (same endpoint as Dashboard, extended with `categoryShare[]` + `forecast{}`); `POST /api/v1/admin/reset-analytics` (dev/staging only).
+
+- **Offers:** Two sub-sections — **Coupons** (code-based: code, type [percentage / fixed], discount amount, min spend, used count, status [ACTIVE/EXPIRED]; add/delete; maps to existing PromoCode model with `isAutomatic: false`) and **Campaigns** (auto-applied offers: title, subtitle, type [BOGO / DISCOUNT / BUNDLE], status [ACTIVE/DRAFT], valid-until; add/delete; maps to PromoCode with `isAutomatic: true`). Backend: `GET/POST/DELETE /api/v1/admin/coupons` and `GET/POST/DELETE /api/v1/admin/offers` — both are views over the existing `PromoCode` collection, split by `isAutomatic` flag. Management UI only — discount application/validation is server-authoritative and lives with cart/checkout pricing.
+
+- **Reports:** Exportable operational/financial reports (scope to confirm at `/specify`).
+
+- **Reviews** *(not in original plan — recovered from deleted UI):* Full CRUD over customer testimonials displayed on the storefront homepage. Table: customer name, product, star rating, comment excerpt, verified badge, date, edit/delete actions. Add-review modal (name, product dropdown, rating 1–5, comment). Edit-review modal (same + verified toggle + date override). Search by name/product/comment; filter by star rating. Backend: `GET/POST /api/v1/testimonials` (public read + admin create), `PUT/DELETE /api/v1/testimonials/:id` (admin only). Requires new `Testimonial` Mongoose model (name, product, rating, comment, verified, date, `deletedAt` soft-delete).
+
+- **Interface Billboard** *(not in original plan — recovered from deleted UI):* CMS for two homepage content blocks without code changes.
+  - *Hero Carousel:* list/add/edit/delete homepage hero slides. Fields: image (file upload or URL), title, subtitle, description, button text, link target (`#collection` / `#story` / `#reviews`). Backend: `GET /api/v1/header-slides` (public), `POST/PUT/DELETE /api/v1/admin/header-slides/:id` (admin). Requires new `HeaderSlide` Mongoose model (image, title, subtitle, description, buttonText, linkTo, order, active).
+  - *How to Apply:* edit the 5 application steps shown on the homepage. Fields: accent color (hex), per-step number + title + description + icon (preset name or custom upload URL). Backend: `GET /api/v1/how-to-apply` (public), `POST /api/v1/admin/how-to-apply` (admin, upserts single config doc). Requires new `HowToApply` Mongoose model (color, steps[]).
+
+- **Settings:** sub-nav — Profile (change name/password, language, timezone GMT+2 Cairo), Store, Team, **Roles & Permissions** (capability matrix), Payments, Shipping, **Taxes** (placeholder), Notifications, Integrations, Appearance, Security, API keys, **Activity Log** (append-only audit trail, read-only).
+
+**New backend models required:** `Testimonial`, `HeaderSlide`, `HowToApply`.
+
+**New admin API endpoints required (beyond what exists):**
+- `GET /api/v1/admin/metrics` — dashboard KPI aggregation
+- `GET /api/v1/admin/activities` — live activity feed
+- `GET /api/v1/admin/orders` + `PUT/DELETE /api/v1/admin/orders/:id`
+- `GET /api/v1/admin/customers` + `DELETE /api/v1/admin/customers/:email`
+- `GET/POST/DELETE /api/v1/admin/coupons` (PromoCode, `isAutomatic: false`)
+- `GET/POST/DELETE /api/v1/admin/offers` (PromoCode, `isAutomatic: true`)
+- `GET/POST /api/v1/testimonials` + `PUT/DELETE /api/v1/testimonials/:id`
+- `GET /api/v1/header-slides` + `POST/PUT/DELETE /api/v1/admin/header-slides/:id`
+- `GET /api/v1/how-to-apply` + `POST /api/v1/admin/how-to-apply`
+
+**`/specify` seed:** "An admin signs into a protected dashboard to view store KPIs and analytics, manage products + inventory + images, process orders and update fulfillment status, manage customers, create and manage promo codes and campaign offers, moderate customer reviews displayed on the storefront, manage homepage hero slides and How-to-Apply content via a CMS, and configure store settings — all matching the recovered dashboard UI design."
+
+**Security (§4.3, §8.3, §XII):** capability-based authorization enforced server-side on every admin route (never UI-hidden only); stricter rate limits on all admin mutations; append-only audit trail on all admin mutations (money/inventory/roles/orders/offers/content) surfaced as the Activity Log; image uploads type-validated, size-limited, sanitized, stored outside the runtime filesystem, never executable; all admin lists paginated; admin search/export bounded and authorized. Public routes (`/testimonials`, `/header-slides`, `/how-to-apply`) are read-only, rate-limited, and require no auth.
+
+**Design fidelity (§2.1):** UI must match the recovered `NicklineAdminPortal.tsx` design exactly — dark `#090203` background, crimson `#D21B27` accent, gold `#C29F68` mono labels, zinc-950 cards, sidebar with active state (`bg-[#1F0D0F]` + left crimson border). Only hover/focus states, transitions, and loading/empty states may be added.
+
+**Depends on:** Phase 1–5 (Analytics screen also depends on Phase 7 instrumentation). **Done when:** all 10 nav sections are operable end-to-end against real data and match the recovered UI design.
+
+> **Scope note:** Phase 6 is large. Split into **6a — Dashboard/Products/Orders/Customers** (operational core) and **6b — Analytics/Offers/Reports/Reviews/Interface Billboard/Settings** if a single phase proves too big. Confirm at `/plan`.
 
 ## Phase 7 — Launch Hardening
 **Goal:** Production-ready.

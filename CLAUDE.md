@@ -118,7 +118,7 @@ This project uses **spec-kit** for spec-driven development. Every feature follow
 - `specs/phase-1-catalog.specify.md` — Phase 1 product catalog spec
 
 <!-- SPECKIT START -->
-Active plan: none
+Active plan: specs/006-admin-dashboard/plan.md
 <!-- SPECKIT END -->
 
 ## Environment Variables
