@@ -5,6 +5,7 @@ class DiscountError extends Error {
   constructor(message, code = 'DISCOUNT_ERROR') {
     super(message);
     this.code = code;
+    this.isOperational = true;
   }
 }
 

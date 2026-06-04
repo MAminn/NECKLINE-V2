@@ -56,7 +56,7 @@ const orderSchema = new mongoose.Schema(
     orderNumber: { type: String, required: true, unique: true, index: true },
     status: {
       type: String,
-      enum: ['pending', 'pending_payment', 'confirmed'],
+      enum: ['pending', 'pending_payment', 'confirmed', 'cancelled'],
       default: 'pending',
     },
     userId: {
@@ -86,7 +86,7 @@ const orderSchema = new mongoose.Schema(
       ref: 'PaymentTransaction',
       default: null,
     },
-    idempotencyKey: { type: String, index: true },
+    idempotencyKey: { type: String },
     notes: { type: String, trim: true },
   },
   { timestamps: true }
@@ -96,5 +96,11 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ customerEmail: 1 });
 orderSchema.index({ createdAt: -1 });
+// Defense-in-depth: at most one order per idempotency key. Partial filter so the many
+// guest orders with a null key (no key supplied) don't collide on the unique constraint.
+orderSchema.index(
+  { idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: 'string' } } }
+);
 
 module.exports = mongoose.model('Order', orderSchema);

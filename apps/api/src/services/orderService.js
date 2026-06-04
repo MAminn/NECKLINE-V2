@@ -1,9 +1,8 @@
+// orderService is the read/query layer for orders. Order *writes* happen in checkoutService
+// inside transactions (stock + order + payment must commit atomically), so there is
+// deliberately no createOrder here — a plain wrapper could not participate in those sessions.
 const Order = require('../models/Order');
 const PaymentTransaction = require('../models/PaymentTransaction');
-
-async function createOrder(orderData) {
-  return Order.create(orderData);
-}
 
 async function getOrderByNumber(orderNumber) {
   return Order.findOne({ orderNumber }).lean();
@@ -34,7 +33,6 @@ async function listOrdersByUser(userId, { page = 1, limit = 10 } = {}) {
 }
 
 module.exports = {
-  createOrder,
   getOrderByNumber,
   getOrderByIntentId,
   listOrdersByUser,

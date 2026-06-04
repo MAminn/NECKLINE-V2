@@ -4,6 +4,13 @@
  */
 
 class PaymentProvider {
+  constructor() {
+    // How this provider settles payment, so callers branch on capability — not provider name:
+    //   'sync'     — confirmPayment() settles inline during checkout.
+    //   'redirect' — createPaymentIntent() returns a payUrl; settlement arrives via webhook.
+    this.mode = 'sync';
+  }
+
   /**
    * Creates a payment intent for the given order.
    * @param {Object} order
@@ -13,7 +20,7 @@ class PaymentProvider {
    * @param {string} order.customerEmail
    * @returns {Promise<{id: string, status: string, clientSecret?: string, amount: number, currency: string}>}
    */
-  async createPaymentIntent(order) {
+  async createPaymentIntent(_order) {
     throw new Error('createPaymentIntent must be implemented');
   }
 
@@ -22,7 +29,7 @@ class PaymentProvider {
    * @param {string} intentId
    * @returns {Promise<{success: boolean, transactionId?: string, status: string, errorCode?: string, errorMessage?: string}>}
    */
-  async confirmPayment(intentId) {
+  async confirmPayment(_intentId) {
     throw new Error('confirmPayment must be implemented');
   }
 
@@ -32,7 +39,7 @@ class PaymentProvider {
    * @param {number} amount - integer minor units
    * @returns {Promise<{success: boolean, refundId?: string, amount: number, currency: string, status: string, errorMessage?: string}>}
    */
-  async refund(transactionId, amount) {
+  async refund(_transactionId, _amount) {
     throw new Error('refund must be implemented');
   }
 }

@@ -1,5 +1,9 @@
 const { z } = require('zod');
 
+// Insecure placeholder so local dev / tests boot without extra setup.
+// Production is FORBIDDEN from using it — see the superRefine guard below.
+const DEV_JWT_SECRET_DEFAULT = 'dev-insecure-secret-change-me';
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().transform(Number).default('4000'),
@@ -25,12 +29,28 @@ const envSchema = z.object({
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
   CART_TTL_DAYS: z.string().transform(Number).default('7'),
   RESERVATION_TTL_MINUTES: z.string().transform(Number).default('15'),
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required').default('dev-secret-change-me'),
+  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required').default(DEV_JWT_SECRET_DEFAULT),
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   BCRYPT_ROUNDS: z.string().transform(Number).default('10'),
   SHIPPING_STANDARD_COST: z.string().transform(Number).default('5000'),
   SHIPPING_CURRENCY: z.string().default('EGP'),
+}).superRefine((data, ctx) => {
+  // Production must never run on the dev default or a weak secret — tokens would be forgeable.
+  if (data.NODE_ENV === 'production') {
+    if (
+      !data.JWT_SECRET ||
+      data.JWT_SECRET === DEV_JWT_SECRET_DEFAULT ||
+      data.JWT_SECRET.length < 32
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['JWT_SECRET'],
+        message:
+          'JWT_SECRET must be set to a unique value of at least 32 characters in production',
+      });
+    }
+  }
 });
 
 const parsed = envSchema.safeParse(process.env);

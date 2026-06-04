@@ -2,7 +2,8 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 
-const JWT_SECRET = env.JWT_SECRET || 'dev-secret-change-me';
+// env validation guarantees this is present (dev default) and strong in production.
+const JWT_SECRET = env.JWT_SECRET;
 const ACCESS_EXPIRY = env.JWT_ACCESS_EXPIRY || '15m';
 const REFRESH_EXPIRY = env.JWT_REFRESH_EXPIRY || '7d';
 

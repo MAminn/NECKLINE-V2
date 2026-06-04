@@ -23,7 +23,6 @@ router.post(
   async (req, res, next) => {
     try {
       const { checkoutToken, paymentMethod } = req.body;
-      const userId = req.user?.id || null;
       const idempotencyKey = req.get('idempotency-key') || null;
 
       const result = await checkoutService.processOrder({
@@ -44,13 +43,15 @@ router.post(
         res.status(201).json({ order: result });
       }
     } catch (err) {
-      if (err instanceof CheckoutError) {
-        const status = err.statusCode || 400;
-        const body = { error: true, message: err.message, code: err.code };
-        if (err.code === 'PAYMENT_FAILED') {
-          body.checkoutToken = req.body.checkoutToken;
-        }
-        return res.status(status).json(body);
+      // PAYMENT_FAILED is special: return the checkoutToken so the client can retry the
+      // same session. Every other CheckoutError is rendered by the central errorHandler.
+      if (err instanceof CheckoutError && err.code === 'PAYMENT_FAILED') {
+        return res.status(err.statusCode || 402).json({
+          error: true,
+          message: err.message,
+          code: err.code,
+          checkoutToken: req.body.checkoutToken,
+        });
       }
       next(err);
     }

@@ -41,12 +41,7 @@ router.post(
 
       res.json(result);
     } catch (err) {
-      if (err.code === 'EMPTY_CART') {
-        return res.status(400).json({ error: true, message: err.message, code: err.code });
-      }
-      if (err.code === 'STOCK_UNAVAILABLE') {
-        return res.status(409).json({ error: true, message: err.message, code: err.code });
-      }
+      // CheckoutError carries statusCode + code; the central errorHandler renders them.
       next(err);
     }
   }

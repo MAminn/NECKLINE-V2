@@ -17,6 +17,7 @@ try {
 class PaymobPaymentProvider extends PaymentProvider {
   constructor() {
     super();
+    this.mode = 'redirect'; // settles asynchronously via hosted checkout + webhook
     this.apiKey = env.PAYMOB_API_KEY;
     this.integrationId = env.PAYMOB_INTEGRATION_ID;
     this.iframeId = env.PAYMOB_IFRAME_ID;
@@ -219,7 +220,7 @@ class PaymobPaymentProvider extends PaymentProvider {
 
   // ─── Mock implementations for development / CI ───
 
-  _mockCreateIntent({ orderNumber, total, currency, customerEmail }) {
+  _mockCreateIntent({ orderNumber, total, currency }) {
     const intentId = `paymob_mock_intent_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const clientSecret = `cs_mock_${Math.random().toString(36).slice(2, 16)}`;
     const payUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=mock&clientSecret=${clientSecret}`;
@@ -240,7 +241,7 @@ class PaymobPaymentProvider extends PaymentProvider {
     };
   }
 
-  _mockConfirmIntent(intentId) {
+  _mockConfirmIntent(_intentId) {
     // In mock mode, simulate success for any intent that exists
     return {
       success: true,
