@@ -12,6 +12,16 @@ const envSchema = z.object({
   STUB_PAYMENT_FAILURE_RATE: z.string().transform(Number).default('0'),
   STUB_PAYMENT_DECLINE_EMAILS: z.string().default(''),
   IDEMPOTENCY_TTL_HOURS: z.string().transform(Number).default('24'),
+
+  // Payment provider selection (Phase 5)
+  PAYMENT_PROVIDER: z.enum(['stub', 'paymob']).default('stub'),
+
+  // Paymob credentials (Phase 5) — server-side only, never exposed to client
+  PAYMOB_API_KEY: z.string().default(''),
+  PAYMOB_INTEGRATION_ID: z.string().default(''),
+  PAYMOB_IFRAME_ID: z.string().default(''),
+  PAYMOB_HMAC_SECRET: z.string().default(''),
+  PAYMOB_BASE_URL: z.string().default('https://accept.paymob.com'),
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
   CART_TTL_DAYS: z.string().transform(Number).default('7'),
   RESERVATION_TTL_MINUTES: z.string().transform(Number).default('15'),

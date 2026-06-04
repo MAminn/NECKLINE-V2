@@ -15,18 +15,58 @@ export default function OrderConfirmationClient() {
   const [order, setOrder] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
     if (!orderNumber) return;
-    getOrder(orderNumber, email || undefined)
-      .then((data) => {
+
+    let pollInterval: NodeJS.Timeout | null = null;
+    let pollCount = 0;
+    const maxPolls = 40; // ~2 minutes at 3s intervals
+
+    async function fetchOrder() {
+      try {
+        const data = await getOrder(orderNumber, email || undefined);
         setOrder(data.order);
+
+        // If order is pending_payment, start polling
+        if (data.order?.status === 'pending_payment') {
+          setIsPolling(true);
+          if (!pollInterval) {
+            pollInterval = setInterval(() => {
+              pollCount++;
+              if (pollCount >= maxPolls) {
+                if (pollInterval) clearInterval(pollInterval);
+                setIsPolling(false);
+                return;
+              }
+              getOrder(orderNumber, email || undefined)
+                .then((refresh) => {
+                  setOrder(refresh.order);
+                  if (refresh.order?.status === 'confirmed') {
+                    if (pollInterval) clearInterval(pollInterval);
+                    setIsPolling(false);
+                  }
+                })
+                .catch(() => {
+                  // Silently retry on poll errors
+                });
+            }, 3000);
+          }
+        }
+
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err: any) {
         setError(err.message || 'Order not found');
         setLoading(false);
-      });
+      }
+    }
+
+    fetchOrder();
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [orderNumber, email]);
 
   if (loading) {
@@ -54,19 +94,39 @@ export default function OrderConfirmationClient() {
     );
   }
 
+  const isPending = order.status === 'pending_payment';
+
   return (
     <main className="min-h-screen bg-bg text-text-primary">
       <div className="mx-auto max-w-container px-4 py-12">
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
-            <svg className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="mt-4 font-display text-3xl uppercase tracking-wide">Order Confirmed</h1>
-          <p className="mt-2 text-text-secondary">
-            Thank you, {order.customerName}. Your order has been placed.
-          </p>
+          {isPending ? (
+            <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+              </div>
+              <h1 className="mt-4 font-display text-3xl uppercase tracking-wide">
+                {isPolling ? 'Confirming Your Payment...' : 'Payment Pending'}
+              </h1>
+              <p className="mt-2 text-text-secondary">
+                {isPolling
+                  ? 'We are waiting for payment confirmation. This usually takes a few seconds.'
+                  : 'Your payment is taking longer than expected. We will update this page automatically.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+                <svg className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="mt-4 font-display text-3xl uppercase tracking-wide">Order Confirmed</h1>
+              <p className="mt-2 text-text-secondary">
+                Thank you, {order.customerName}. Your order has been placed.
+              </p>
+            </>
+          )}
           <p className="mt-1 font-display text-lg text-gold">{order.orderNumber}</p>
         </div>
 

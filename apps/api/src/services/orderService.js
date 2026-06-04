@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const PaymentTransaction = require('../models/PaymentTransaction');
 
 async function createOrder(orderData) {
   return Order.create(orderData);
@@ -6,6 +7,12 @@ async function createOrder(orderData) {
 
 async function getOrderByNumber(orderNumber) {
   return Order.findOne({ orderNumber }).lean();
+}
+
+async function getOrderByIntentId(intentId) {
+  const transaction = await PaymentTransaction.findOne({ intentId }).lean();
+  if (!transaction) return null;
+  return Order.findById(transaction.orderId).lean();
 }
 
 async function listOrdersByUser(userId, { page = 1, limit = 10 } = {}) {
@@ -29,5 +36,6 @@ async function listOrdersByUser(userId, { page = 1, limit = 10 } = {}) {
 module.exports = {
   createOrder,
   getOrderByNumber,
+  getOrderByIntentId,
   listOrdersByUser,
 };

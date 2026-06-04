@@ -1,12 +1,15 @@
 const StubPaymentProvider = require('./StubPaymentProvider');
+const PaymobPaymentProvider = require('./PaymobPaymentProvider');
+const env = require('../../config/env');
 
 function createPaymentProvider() {
-  const provider = process.env.PAYMENT_PROVIDER || 'stub';
+  const provider = env.PAYMENT_PROVIDER || 'stub';
 
   switch (provider) {
     case 'stub':
       return new StubPaymentProvider();
-    // case 'stripe': return new StripePaymentProvider(config); // Phase 5
+    case 'paymob':
+      return new PaymobPaymentProvider();
     default:
       throw new Error(`Unknown payment provider: ${provider}`);
   }

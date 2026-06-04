@@ -26,7 +26,7 @@ const checkoutSchema = z.object({
 const createOrderSchema = z.object({
   body: z.object({
     checkoutToken: z.string().min(1, 'Checkout token is required'),
-    paymentMethod: z.string().optional().default('stub'),
+    paymentMethod: z.enum(['stub', 'paymob']).optional().default('stub'),
   }),
 });
 

@@ -79,11 +79,19 @@ export default function CheckoutPage() {
     setPaymentError(null);
 
     try {
-      const result = await createOrder({ checkoutToken, paymentMethod: 'stub' });
+      const result = await createOrder({ checkoutToken, paymentMethod: 'paymob' });
+
+      // Paymob flow: redirect to hosted checkout
+      if (result.payUrl) {
+        window.location.href = result.payUrl;
+        return;
+      }
+
+      // Stub flow: order is already confirmed
       router.push(`/order-confirmation/${result.order.orderNumber}`);
     } catch (err: any) {
       setIsProcessing(false);
-      if (err.status === 402) {
+      if (err.status === 402 || err.code === 'PAYMENT_INIT_FAILED') {
         setPaymentError(err.message || 'Payment was declined. Please try again.');
       } else if (err.code === 'STOCK_UNAVAILABLE') {
         setPaymentError('Some items are no longer available. Please return to your cart.');

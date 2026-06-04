@@ -26,7 +26,7 @@ router.post(
       const userId = req.user?.id || null;
       const idempotencyKey = req.get('idempotency-key') || null;
 
-      const order = await checkoutService.processOrder({
+      const result = await checkoutService.processOrder({
         checkoutToken,
         paymentMethod,
         idempotencyKey,
@@ -37,7 +37,12 @@ router.post(
         },
       });
 
-      res.status(201).json({ order });
+      // Paymob returns { order, payUrl }; stub returns order directly
+      if (result && result.payUrl) {
+        res.status(201).json({ order: result.order, payUrl: result.payUrl });
+      } else {
+        res.status(201).json({ order: result });
+      }
     } catch (err) {
       if (err instanceof CheckoutError) {
         const status = err.statusCode || 400;

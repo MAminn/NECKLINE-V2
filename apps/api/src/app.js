@@ -9,6 +9,8 @@ const logger = require('./config/logger');
 const requestIdMiddleware = require('./middleware/requestId');
 const errorHandler = require('./middleware/errorHandler');
 const v1Routes = require('./routes/v1');
+const webhookRoutes = require('./routes/v1/webhooks');
+const verifyPaymobWebhook = require('./middleware/verifyPaymobWebhook');
 
 function createApp() {
   const app = express();
@@ -22,6 +24,10 @@ function createApp() {
       credentials: true,
     })
   );
+
+  // Webhook route MUST be mounted BEFORE express.json() to preserve raw body for HMAC verification
+  app.post('/api/v1/webhooks/paymob', requestIdMiddleware, verifyPaymobWebhook, webhookRoutes);
+
   app.use(express.json());
   app.use(cookieParser());
   app.use(requestIdMiddleware);
