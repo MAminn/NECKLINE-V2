@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../../lib/api';
 import ProductGrid from '../../components/ProductGrid';
+import ProductSkeleton from '../../components/ProductSkeleton';
 import Pagination from '../../components/Pagination';
 
 interface Product {
@@ -25,7 +26,7 @@ interface CatalogResponse {
   };
 }
 
-export default function Home() {
+export default function ShopPage() {
   const [result, setResult] = useState<CatalogResponse | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -80,15 +81,18 @@ export default function Home() {
           )}
         </div>
 
+        {/* Skeleton grid while loading */}
         {loading && (
-          <div className="flex min-h-[400px] items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))}
           </div>
         )}
 
         {error && (
           <div className="flex min-h-[400px] items-center justify-center">
-            <p className="text-error">{error}</p>
+            <p className="text-sm text-text-tertiary">{error}</p>
           </div>
         )}
 

@@ -6,6 +6,7 @@
 import { Scent } from "../../types/nickline";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatPrice } from "../../lib/formatPrice";
 
 interface CollectionProps {
   onAddToCart: (scent: Scent) => void;
@@ -115,7 +116,7 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                 {/* Centered price & shop now bottom line */}
                 <div className="text-center z-10 w-full mt-auto flex flex-col items-center gap-3">
                   <span className="text-[13px] font-bold tracking-[0.14em] font-sans text-white block">
-                    ${scent.price.toFixed(2)}
+                    {formatPrice(scent.price, scent.currency || 'EGP')}
                   </span>
                   
                   <button

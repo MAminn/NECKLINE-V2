@@ -20,6 +20,7 @@ export function mapProductToScent(product: LocalProduct): Scent {
     description: product.description || 'Premium solid fragrance',
     longDescription: product.description || 'Premium solid fragrance',
     price: product.price,
+    currency: product.currency,
     image: product.images?.[0] || '/images/product.jpg',
     galleryImages: product.images?.length ? product.images : undefined,
     notes: { top: 'Spices', heart: 'Woods', base: 'Amber' },

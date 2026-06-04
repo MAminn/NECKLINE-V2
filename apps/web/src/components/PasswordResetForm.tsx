@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { apiClient } from '../lib/api';
 
 export default function PasswordResetForm() {
@@ -19,42 +20,49 @@ export default function PasswordResetForm() {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
-      setMessage('If an account exists, a reset link has been sent.');
+      setMessage('If an account exists, a reset link has been sent to your inbox.');
     } catch (err: any) {
-      setError(err.message || 'Request failed');
+      setError(err.message || 'Request failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {message && (
-        <div className="rounded-md bg-green-50 px-4 py-2 text-sm text-green-700">
-          {message}
+        <div className="alert-success flex items-start gap-2.5">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
+          <span>{message}</span>
         </div>
       )}
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-600">
-          {error}
+        <div className="alert-error flex items-start gap-2.5">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
+          <span>{error}</span>
         </div>
       )}
+
       <div>
-        <label className="block text-sm font-medium text-text-secondary">Email</label>
+        <label htmlFor="reset-email" className="field-label">Email Address</label>
         <input
+          id="reset-email"
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-primary focus:outline-none"
+          placeholder="you@example.com"
+          className="input-field"
+          autoComplete="email"
         />
       </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-text-primary px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-sm bg-primary py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all duration-200 hover:bg-primary-hover hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? 'Sending...' : 'Send Reset Link'}
+        {loading ? 'Sending…' : 'Send Reset Link'}
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { X, RotateCcw } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { CartItem } from '../contexts/CartContext';
 import { formatPrice } from '../lib/formatPrice';
@@ -40,13 +41,10 @@ export default function CartLineItem({ item }: Props) {
             <button
               onClick={() => removeItem(item.productId)}
               disabled={isLoading}
-              className="ml-2 text-text-secondary transition-colors hover:text-primary disabled:opacity-50"
+              className="ml-2 rounded p-0.5 text-text-tertiary transition-colors hover:text-primary disabled:opacity-50"
               aria-label="Remove item"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </svg>
+              <X className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
           <p className="text-xs text-text-tertiary">{item.sku}</p>
@@ -90,9 +88,10 @@ export default function CartLineItem({ item }: Props) {
             <button
               onClick={() => refresh()}
               disabled={isLoading}
-              className="text-xs text-gold underline transition-colors hover:text-text-primary disabled:opacity-50"
+              className="inline-flex items-center gap-1 text-xs text-gold underline transition-colors hover:text-text-primary disabled:opacity-50"
             >
-              Refresh Availability
+              <RotateCcw className="h-3 w-3" strokeWidth={1.5} />
+              Refresh
             </button>
           </div>
         )}

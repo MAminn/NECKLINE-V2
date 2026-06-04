@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { HeartPulse, Droplets, Wind } from 'lucide-react';
 import ImageGallery from '../../../components/ImageGallery';
 import PriceDisplay from '../../../components/PriceDisplay';
 import ProductGrid from '../../../components/ProductGrid';
@@ -55,9 +57,11 @@ export default async function ProductDetailPage({ params }: Props) {
     <main className="min-h-screen bg-bg">
       <div className="mx-auto max-w-container px-4 py-12">
         {/* Breadcrumb */}
-        <nav className="mb-8 text-sm text-text-tertiary">
-          <span className="hover:text-text-secondary cursor-pointer">Home</span>
-          <span className="mx-2">/</span>
+        <nav className="mb-8 flex items-center gap-2 text-sm text-text-muted">
+          <Link href="/" className="transition-colors hover:text-text-secondary">Home</Link>
+          <span>/</span>
+          <Link href="/shop" className="transition-colors hover:text-text-secondary">Shop</Link>
+          <span>/</span>
           <span className="text-text-secondary">{product.name}</span>
         </nav>
 
@@ -111,6 +115,28 @@ export default async function ProductDetailPage({ params }: Props) {
                 This item is currently unavailable. Check back soon.
               </p>
             )}
+
+            {/* Solid fragrance ritual callout */}
+            <div className="mt-8 rounded-lg border border-border bg-surface p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-text-muted">
+                How to wear it
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { icon: <HeartPulse className="h-4 w-4 text-primary" strokeWidth={1.5} />, label: 'Apply to pulse points', sub: 'Neck, wrists, collarbone' },
+                  { icon: <Droplets className="h-4 w-4 text-primary" strokeWidth={1.5} />, label: 'Body heat activates', sub: 'Melts on contact with skin' },
+                  { icon: <Wind className="h-4 w-4 text-primary" strokeWidth={1.5} />, label: 'Scent evolves', sub: 'Intimate trail, hours long' },
+                ].map((step, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1.5 text-center">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border">
+                      {step.icon}
+                    </div>
+                    <p className="text-xs font-medium text-text-secondary leading-tight">{step.label}</p>
+                    <p className="text-[11px] text-text-muted leading-tight">{step.sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

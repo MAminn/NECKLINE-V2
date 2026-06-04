@@ -1,5 +1,6 @@
 'use client';
 
+import { User, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function HeaderAuth() {
@@ -10,15 +11,18 @@ export default function HeaderAuth() {
       <div className="flex items-center gap-3">
         <a
           href="/account"
-          className="text-sm uppercase tracking-wide text-text-secondary transition-colors hover:text-text-primary"
+          className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-text-secondary transition-colors hover:text-text-primary"
         >
-          {user.name}
+          <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <span>{user.name}</span>
         </a>
         <button
           onClick={() => logout()}
-          className="text-sm uppercase tracking-wide text-text-secondary transition-colors hover:text-text-primary"
+          className="flex items-center gap-1 text-xs uppercase tracking-widest text-text-muted transition-colors hover:text-text-secondary"
+          aria-label="Log out"
         >
-          Log Out
+          <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <span className="hidden lg:inline">Log Out</span>
         </button>
       </div>
     );
@@ -28,13 +32,13 @@ export default function HeaderAuth() {
     <div className="flex items-center gap-3">
       <a
         href="/login"
-        className="text-sm uppercase tracking-wide text-text-secondary transition-colors hover:text-text-primary"
+        className="text-xs uppercase tracking-widest text-text-secondary transition-colors hover:text-text-primary"
       >
         Log In
       </a>
       <a
         href="/register"
-        className="text-sm uppercase tracking-wide text-text-secondary transition-colors hover:text-text-primary"
+        className="inline-flex items-center rounded-sm border border-primary/60 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary transition-all duration-200 hover:bg-primary hover:text-white hover:shadow-glow"
       >
         Sign Up
       </a>

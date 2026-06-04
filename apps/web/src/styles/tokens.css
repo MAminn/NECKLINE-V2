@@ -32,10 +32,10 @@
   --color-bg: #070606;            /* background (primary) */
   --color-bg-deep: #0A0203;       /* deepest dark */
   --color-bg-secondary: #1F0D0F;  /* warm dark tint */
-  --color-surface: #090909;       /* card backgrounds */
-  --color-surface-alt: #0a0607;   /* product card backgrounds */
-  --color-surface-input: #040404; /* feature strip / pill backgrounds */
-  --color-surface-overlay: rgba(0, 0, 0, 0.4);
+  --color-surface: #111111;       /* card backgrounds — lifted to be visible on bg */
+  --color-surface-alt: #0e0e0e;   /* product card backgrounds */
+  --color-surface-input: #0a0a0a; /* inputs / pill backgrounds */
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
 
   /* ---------- Surfaces / Neutrals — Admin ---------- */
   --color-admin-bg: #09090b;                 /* zinc-950 */
@@ -51,8 +51,8 @@
   --color-text: #FFFFFF;          /* primary */
   --color-text-secondary: #E7E5E4; /* stone-200 */
   --color-text-secondary-alt: #D6D3D1; /* stone-300 */
-  --color-text-tertiary: #A3A3A3; /* neutral-400 */
-  --color-text-muted: #737373;    /* neutral-500 */
+  --color-text-tertiary: #C0C0C0; /* raised from neutral-400 for clarity */
+  --color-text-muted: #909090;    /* raised from neutral-500 for clarity */
   --color-text-disabled: #44403C; /* stone-700 */
   --color-text-inverse: #070606;
   --color-text-brand: #D21B27;
@@ -60,11 +60,11 @@
   --color-text-warning: #F59E0B;  /* amber-500 */
 
   /* ---------- Border & Divider ---------- */
-  --color-border: rgba(255, 255, 255, 0.05);
-  --color-border-strong: rgba(255, 255, 255, 0.08);
-  --color-border-card-hover: rgba(210, 27, 39, 0.25);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.13);
+  --color-border-card-hover: rgba(210, 27, 39, 0.35);
   --color-border-input-focus: #D21B27;
-  --color-divider: rgba(255, 255, 255, 0.06);
+  --color-divider: rgba(255, 255, 255, 0.08);
 
   /* ---------- Semantic foreground + bg tint ---------- */
   --color-success-fg: #22C55E;
@@ -176,6 +176,10 @@
   --scrollbar-thumb: #D21B27;
   --scrollbar-thumb-hover: #B0151E;
   --scrollbar-track: #0A0203;
+
+  /* ---------- Compatibility aliases ---------- */
+  --color-surface-elevated: var(--color-surface-alt);
+  --font-body: var(--font-sans);
 }
 
 /* ============================================================
@@ -241,9 +245,6 @@
   background: var(--scrollbar-thumb-hover);
 }
 
-/* ---------- Compatibility aliases (deprecated — migrate to canonical names) ---------- */
---color-surface-elevated: var(--color-surface-alt);
---font-body: var(--font-sans);
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -19,7 +19,7 @@ const ScentQuiz = dynamic(() => import('../components/nickline/ScentQuiz'), { ss
 const ShopPage = dynamic(() => import('../components/nickline/ShopPage'), { ssr: false });
 const ProductPage = dynamic(() => import('../components/nickline/ProductPage'), { ssr: false });
 
-import ToastItem from '../components/ToastItem';
+import { useToast } from '../contexts/ToastContext';
 
 interface CatalogResponse {
   data: LocalProduct[];
@@ -27,13 +27,13 @@ interface CatalogResponse {
 
 export default function LandingPage() {
   const { addItem } = useCart();
+  const { addToast } = useToast();
   const [scentsList, setScentsList] = useState<Scent[]>([]);
   const [headerSlides, setHeaderSlides] = useState<HeaderSlide[]>([]);
   const [howToApplyConfig, setHowToApplyConfig] = useState<{ color: string; steps: any[] }>({
     color: '#D21B27',
     steps: [],
   });
-  const [toasts, setToasts] = useState<{ id: string; message: string; sub: string }[]>([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [view, setView] = useState<'home' | 'shop' | 'product'>('home');
@@ -76,17 +76,7 @@ export default function LandingPage() {
 
   const handleAddToCart = (scent: Scent, quantity: number = 1) => {
     addItem(scent.id, quantity);
-
-    const newToast = {
-      id: `toast-${Date.now()}`,
-      message: `${scent.name} added to sensory bag`,
-      sub: scent.subtitle,
-    };
-    setToasts((prev) => [...prev, newToast]);
-
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
-    }, 3500);
+    addToast(`${scent.name} added to your bag`, { type: 'brand', sub: scent.subtitle });
   };
 
   const handleOpenProduct = (scent: Scent) => {
@@ -269,12 +259,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Toasts */}
-      <div className="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none max-w-sm w-full">
-        {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onDismiss={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))} />
-        ))}
-      </div>
     </div>
   );
 }

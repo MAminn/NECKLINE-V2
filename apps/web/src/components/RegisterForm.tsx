@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
@@ -19,58 +20,72 @@ export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) 
       await register(name, email, password);
       onSuccess?.();
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-600">
-          {error}
+        <div className="alert-error flex items-start gap-2.5">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} />
+          <span>{error}</span>
         </div>
       )}
+
       <div>
-        <label className="block text-sm font-medium text-text-secondary">Name</label>
+        <label htmlFor="reg-name" className="field-label">Full Name</label>
         <input
+          id="reg-name"
           type="text"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-primary focus:outline-none"
+          placeholder="Your name"
+          className="input-field"
+          autoComplete="name"
         />
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-text-secondary">Email</label>
+        <label htmlFor="reg-email" className="field-label">Email</label>
         <input
+          id="reg-email"
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-primary focus:outline-none"
+          placeholder="you@example.com"
+          className="input-field"
+          autoComplete="email"
         />
       </div>
+
       <div>
-        <label className="block text-sm font-medium text-text-secondary">Password</label>
+        <label htmlFor="reg-password" className="field-label">Password</label>
         <input
+          id="reg-password"
           type="password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-primary focus:outline-none"
+          placeholder="••••••••"
+          className="input-field"
+          autoComplete="new-password"
         />
-        <p className="mt-1 text-xs text-text-secondary">
-          At least 8 characters, one uppercase, one lowercase, one number.
+        <p className="mt-1.5 text-xs text-text-muted">
+          Min 8 characters — uppercase, lowercase, and a number.
         </p>
       </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-text-primary px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-sm bg-primary py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all duration-200 hover:bg-primary-hover hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? 'Creating account...' : 'Create Account'}
+        {loading ? 'Creating Account…' : 'Create Account'}
       </button>
     </form>
   );
