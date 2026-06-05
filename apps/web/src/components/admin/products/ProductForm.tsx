@@ -78,11 +78,11 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
       <AdminImageUploader label="Gallery Image 3" value={form.image2} onChange={(v) => set('image2', v)} />
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" checked={form.purchasable} onChange={(e) => set('purchasable', e.target.checked)} />
-        <span style={{ color: 'var(--admin-text)', fontSize: 13 }}>Purchasable</span>
+        <span style={{ color: 'var(--color-text)', fontSize: 13 }}>Purchasable</span>
       </label>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <button type="submit" disabled={saving} className="w-full rounded-lg py-2 text-sm font-bold uppercase tracking-widest transition-opacity"
-        style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
+        style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
         {saving ? 'Saving…' : submitLabel}
       </button>
     </form>

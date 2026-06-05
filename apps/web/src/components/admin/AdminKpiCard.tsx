@@ -27,7 +27,7 @@ function Sparkline({ data }: { data: number[] }) {
       <polyline
         points={points}
         fill="none"
-        stroke="var(--admin-accent)"
+        stroke="var(--color-primary)"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -47,16 +47,16 @@ function formatValue(value: string | number): string {
 }
 
 export default function AdminKpiCard({ label, value, trend = 'neutral', history = [] }: AdminKpiCardProps) {
-  const trendColor = trend === 'up' ? '#4ade80' : trend === 'down' ? 'var(--admin-accent)' : 'var(--admin-text-muted)';
+  const trendColor = trend === 'up' ? '#4ade80' : trend === 'down' ? 'var(--color-primary)' : 'var(--color-text-tertiary)';
   const trendArrow = trend === 'up' ? '▲' : trend === 'down' ? '▼' : '—';
 
   return (
     <div
       className="flex flex-col justify-between rounded-xl p-4 h-28"
-      style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}
+      style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}
     >
       <div className="flex items-start justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-widest truncate pr-2" style={{ color: 'var(--admin-gold)' }}>
+        <p className="text-[10px] font-bold uppercase tracking-widest truncate pr-2" style={{ color: 'var(--color-gold)' }}>
           {label}
         </p>
         {trend !== 'neutral' && (
@@ -64,7 +64,7 @@ export default function AdminKpiCard({ label, value, trend = 'neutral', history 
         )}
       </div>
       <div className="flex items-end justify-between gap-2">
-        <p className="text-2xl font-bold leading-none" style={{ color: 'var(--admin-text)' }}>
+        <p className="text-2xl font-bold leading-none" style={{ color: 'var(--color-text)' }}>
           {formatValue(value)}
         </p>
         {history.length >= 2 && <Sparkline data={history} />}

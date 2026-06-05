@@ -6,7 +6,7 @@ import HowToApplyEditor from '../../../components/admin/interface/HowToApplyEdit
 export default function InterfacePage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Interface Billboard</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Interface Billboard</h1>
       <HeroSlidesSection />
       <HowToApplyEditor />
     </div>

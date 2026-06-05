@@ -1,14 +1,36 @@
 const { Router } = require('express');
 const PromoCode = require('../../../models/PromoCode');
 const validate = require('../../../middleware/validate');
+const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
+const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { createPromoCodeSchema, updatePromoCodeSchema } = require('../../../validators/promoCodeSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
 
 const router = Router();
 
-router.use(requirePermission('admin:access'));
+router.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
+
+function serializePromo(p) {
+  return {
+    id: p._id.toString(),
+    code: p.code,
+    type: p.type,
+    value: p.value,
+    minOrderAmount: p.minOrderAmount,
+    maxDiscountAmount: p.maxDiscountAmount,
+    usageLimit: p.usageLimit,
+    usageCount: p.usageCount,
+    startDate: p.startDate,
+    endDate: p.endDate,
+    active: p.active,
+    isAutomatic: p.isAutomatic,
+    description: p.description,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  };
+}
 
 // GET /api/v1/admin/promo-codes
 router.get('/', async (req, res, next) => {
@@ -28,29 +50,8 @@ router.get('/', async (req, res, next) => {
     ]);
 
     res.json({
-      promoCodes: promoCodes.map((p) => ({
-        id: p._id.toString(),
-        code: p.code,
-        type: p.type,
-        value: p.value,
-        minOrderAmount: p.minOrderAmount,
-        maxDiscountAmount: p.maxDiscountAmount,
-        usageLimit: p.usageLimit,
-        usageCount: p.usageCount,
-        startDate: p.startDate,
-        endDate: p.endDate,
-        active: p.active,
-        isAutomatic: p.isAutomatic,
-        description: p.description,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      })),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      promoCodes: promoCodes.map(serializePromo),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (err) {
     next(err);
@@ -80,23 +81,7 @@ router.post('/', validate(createPromoCodeSchema), async (req, res, next) => {
       }).catch((err) => logger.error({ err }, 'Audit event failed'));
     }
 
-    res.status(201).json({
-      id: promoCode._id.toString(),
-      code: promoCode.code,
-      type: promoCode.type,
-      value: promoCode.value,
-      minOrderAmount: promoCode.minOrderAmount,
-      maxDiscountAmount: promoCode.maxDiscountAmount,
-      usageLimit: promoCode.usageLimit,
-      usageCount: promoCode.usageCount,
-      startDate: promoCode.startDate,
-      endDate: promoCode.endDate,
-      active: promoCode.active,
-      isAutomatic: promoCode.isAutomatic,
-      description: promoCode.description,
-      createdAt: promoCode.createdAt,
-      updatedAt: promoCode.updatedAt,
-    });
+    res.status(201).json(serializePromo(promoCode));
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({ error: true, message: 'Promo code already exists' });
@@ -109,26 +94,8 @@ router.post('/', validate(createPromoCodeSchema), async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const promoCode = await PromoCode.findById(req.params.id).lean();
-    if (!promoCode) {
-      return res.status(404).json({ error: true, message: 'Promo code not found' });
-    }
-    res.json({
-      id: promoCode._id.toString(),
-      code: promoCode.code,
-      type: promoCode.type,
-      value: promoCode.value,
-      minOrderAmount: promoCode.minOrderAmount,
-      maxDiscountAmount: promoCode.maxDiscountAmount,
-      usageLimit: promoCode.usageLimit,
-      usageCount: promoCode.usageCount,
-      startDate: promoCode.startDate,
-      endDate: promoCode.endDate,
-      active: promoCode.active,
-      isAutomatic: promoCode.isAutomatic,
-      description: promoCode.description,
-      createdAt: promoCode.createdAt,
-      updatedAt: promoCode.updatedAt,
-    });
+    if (!promoCode) return res.status(404).json({ error: true, message: 'Promo code not found' });
+    res.json(serializePromo(promoCode));
   } catch (err) {
     next(err);
   }
@@ -138,19 +105,13 @@ router.get('/:id', async (req, res, next) => {
 router.patch('/:id', validate(updatePromoCodeSchema), async (req, res, next) => {
   try {
     const promoCode = await PromoCode.findById(req.params.id);
-    if (!promoCode) {
-      return res.status(404).json({ error: true, message: 'Promo code not found' });
-    }
+    if (!promoCode) return res.status(404).json({ error: true, message: 'Promo code not found' });
 
     const updates = { ...req.body };
     delete updates.usageCount;
 
-    // Prevent changing code if code has been used
     if (updates.code && updates.code !== promoCode.code && promoCode.usageCount > 0) {
-      return res.status(409).json({
-        error: true,
-        message: 'Cannot change code after it has been used',
-      });
+      return res.status(409).json({ error: true, message: 'Cannot change code after it has been used' });
     }
 
     if (updates.code) updates.code = updates.code.toUpperCase().trim();
@@ -173,23 +134,7 @@ router.patch('/:id', validate(updatePromoCodeSchema), async (req, res, next) => 
       }).catch((err) => logger.error({ err }, 'Audit event failed'));
     }
 
-    res.json({
-      id: promoCode._id.toString(),
-      code: promoCode.code,
-      type: promoCode.type,
-      value: promoCode.value,
-      minOrderAmount: promoCode.minOrderAmount,
-      maxDiscountAmount: promoCode.maxDiscountAmount,
-      usageLimit: promoCode.usageLimit,
-      usageCount: promoCode.usageCount,
-      startDate: promoCode.startDate,
-      endDate: promoCode.endDate,
-      active: promoCode.active,
-      isAutomatic: promoCode.isAutomatic,
-      description: promoCode.description,
-      createdAt: promoCode.createdAt,
-      updatedAt: promoCode.updatedAt,
-    });
+    res.json(serializePromo(promoCode));
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({ error: true, message: 'Promo code already exists' });
@@ -202,9 +147,7 @@ router.patch('/:id', validate(updatePromoCodeSchema), async (req, res, next) => 
 router.delete('/:id', async (req, res, next) => {
   try {
     const promoCode = await PromoCode.findById(req.params.id);
-    if (!promoCode) {
-      return res.status(404).json({ error: true, message: 'Promo code not found' });
-    }
+    if (!promoCode) return res.status(404).json({ error: true, message: 'Promo code not found' });
 
     promoCode.active = false;
     await promoCode.save();

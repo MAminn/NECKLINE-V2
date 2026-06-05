@@ -15,9 +15,9 @@ interface Props {
 
 const STATUS_COLOR: Record<string, string> = {
   confirmed: '#4ade80',
-  cancelled: 'var(--admin-accent)',
-  pending: 'var(--admin-gold)',
-  pending_payment: 'var(--admin-gold)',
+  cancelled: 'var(--color-primary)',
+  pending: 'var(--color-gold)',
+  pending_payment: 'var(--color-gold)',
 };
 
 export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props) {
@@ -60,36 +60,36 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
       {/* Panel */}
       <div
         className="fixed right-0 top-0 z-50 flex h-full w-80 flex-col shadow-2xl"
-        style={{ background: 'var(--admin-surface)', borderLeft: '1px solid var(--admin-border)' }}
+        style={{ background: 'var(--color-admin-surface)', borderLeft: '1px solid var(--color-admin-border)' }}
       >
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--admin-border)' }}>
-          <h2 className="text-sm font-bold" style={{ color: 'var(--admin-text)' }}>{order.orderNumber}</h2>
-          <button onClick={onClose} style={{ color: 'var(--admin-text-muted)' }}>✕</button>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--color-admin-border)' }}>
+          <h2 className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{order.orderNumber}</h2>
+          <button onClick={onClose} style={{ color: 'var(--color-text-tertiary)' }}>✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Customer */}
           <section>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--admin-gold)' }}>Customer</p>
-            <p className="text-sm font-semibold" style={{ color: 'var(--admin-text)' }}>{order.customerName}</p>
-            <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>{order.customerEmail}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--admin-text-muted)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Customer</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{order.customerName}</p>
+            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{order.customerEmail}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
               {order.shippingAddress?.city}, {order.shippingAddress?.governorate}
             </p>
           </section>
 
           {/* Items */}
           <section>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--admin-gold)' }}>Items</p>
-            <p className="text-xs" style={{ color: 'var(--admin-text)' }}>{order.itemsSummary}</p>
-            <p className="text-sm font-bold mt-1" style={{ color: 'var(--admin-text)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Items</p>
+            <p className="text-xs" style={{ color: 'var(--color-text)' }}>{order.itemsSummary}</p>
+            <p className="text-sm font-bold mt-1" style={{ color: 'var(--color-text)' }}>
               Total: {(order.total / 100).toLocaleString()} {order.currency}
             </p>
           </section>
 
           {/* Status */}
           <section>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--admin-gold)' }}>Fulfillment</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-gold)' }}>Fulfillment</p>
             <div className="flex gap-1 flex-wrap mb-3">
               {FULFILLMENT_STEPS.map((s, idx) => (
                 <span
@@ -97,8 +97,8 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
                   className="rounded px-2 py-0.5 text-[10px] font-bold uppercase"
                   style={{
                     background: idx <= currentIdx ? 'rgba(210,27,39,0.15)' : 'transparent',
-                    color: idx <= currentIdx ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
-                    border: '1px solid var(--admin-border)',
+                    color: idx <= currentIdx ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
+                    border: '1px solid var(--color-admin-border)',
                   }}
                 >
                   {s}
@@ -110,7 +110,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
                 onClick={() => advanceFulfillment(nextStatus)}
                 disabled={saving}
                 className="w-full rounded-lg py-2 text-xs font-bold uppercase tracking-widest"
-                style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}
+                style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}
               >
                 Mark as {nextStatus.toUpperCase()}
               </button>
@@ -119,7 +119,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
 
           {/* Payment */}
           <section>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--admin-gold)' }}>Payment</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Payment</p>
             <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${STATUS_COLOR[order.status] ?? '#999'}1a`, color: STATUS_COLOR[order.status] ?? '#999' }}>
               {order.status}
             </span>
@@ -127,19 +127,19 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
 
           {/* Tracking */}
           <section>
-            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--admin-gold)' }}>Tracking Number</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Tracking Number</p>
             <input
               value={tracking}
               onChange={(e) => setTracking(e.target.value)}
               placeholder="TRK-EGY-…"
               className="w-full rounded-lg px-3 py-1.5 text-xs mb-2"
-              style={{ background: '#1a0a0c', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
+              style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)' }}
             />
             <button
               onClick={saveTracking}
               disabled={saving}
               className="w-full rounded-lg py-1.5 text-xs font-bold"
-              style={{ background: 'rgba(194,159,104,0.15)', color: 'var(--admin-gold)', border: '1px solid var(--admin-gold)' }}
+              style={{ background: 'rgba(194,159,104,0.15)', color: 'var(--color-gold)', border: '1px solid var(--color-gold)' }}
             >
               Save Tracking
             </button>

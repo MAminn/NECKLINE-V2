@@ -50,7 +50,7 @@ export default function ReviewForm({ initial = {}, onSubmit, submitLabel }: Prop
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((s) => (
             <button key={s} type="button" onClick={() => set('rating', s)}
-              style={{ color: s <= form.rating ? 'var(--admin-gold)' : 'var(--admin-border)', fontSize: 20 }}>★</button>
+              style={{ color: s <= form.rating ? 'var(--color-gold)' : 'var(--color-admin-border)', fontSize: 20 }}>★</button>
           ))}
         </div>
       </div>
@@ -58,11 +58,11 @@ export default function ReviewForm({ initial = {}, onSubmit, submitLabel }: Prop
       <div><label style={adminLabel}>Display Date</label><input required style={adminInput} value={form.date} onChange={(e) => set('date', e.target.value)} /></div>
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" checked={form.verified} onChange={(e) => set('verified', e.target.checked)} />
-        <span style={{ color: 'var(--admin-gold)', fontSize: 13, fontWeight: 700 }}>Verified Buyer</span>
+        <span style={{ color: 'var(--color-gold)', fontSize: 13, fontWeight: 700 }}>Verified Buyer</span>
       </label>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <button type="submit" disabled={saving} className="w-full rounded-lg py-2 text-sm font-bold uppercase tracking-widest"
-        style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
+        style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
         {saving ? 'Saving…' : submitLabel}
       </button>
     </form>

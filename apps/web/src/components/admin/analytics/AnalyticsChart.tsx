@@ -13,8 +13,8 @@ interface Props {
 export default function AnalyticsChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-xl" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--admin-text-muted)' }}>No data for this period</p>
+      <div className="flex h-48 items-center justify-center rounded-xl" style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No data for this period</p>
       </div>
     );
   }
@@ -37,13 +37,13 @@ export default function AnalyticsChart({ data }: Props) {
   const labelEvery = Math.ceil(data.length / 6);
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+    <div className="rounded-xl p-4" style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
       <div className="mb-3 flex items-center gap-4">
-        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--admin-gold)' }}>
-          <span className="inline-block h-2 w-4 rounded" style={{ background: 'var(--admin-gold)' }} /> Visits
+        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-gold)' }}>
+          <span className="inline-block h-2 w-4 rounded" style={{ background: 'var(--color-gold)' }} /> Visits
         </span>
-        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--admin-accent)' }}>
-          <span className="inline-block h-2 w-4 rounded" style={{ background: 'var(--admin-accent)' }} /> Checkouts
+        <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-primary)' }}>
+          <span className="inline-block h-2 w-4 rounded" style={{ background: 'var(--color-primary)' }} /> Checkouts
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: 180 }}>
@@ -52,8 +52,8 @@ export default function AnalyticsChart({ data }: Props) {
           const y = PAD.top + chartH * (1 - f);
           return (
             <g key={f}>
-              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="var(--admin-border)" strokeWidth="1" />
-              <text x={PAD.left - 4} y={y + 4} textAnchor="end" fontSize="10" fill="var(--admin-text-muted)">
+              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="var(--color-admin-border)" strokeWidth="1" />
+              <text x={PAD.left - 4} y={y + 4} textAnchor="end" fontSize="10" fill="var(--color-text-tertiary)">
                 {Math.round(maxVal * f)}
               </text>
             </g>
@@ -61,14 +61,14 @@ export default function AnalyticsChart({ data }: Props) {
         })}
 
         {/* Data lines */}
-        <polyline points={visitPoints} fill="none" stroke="var(--admin-gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <polyline points={checkoutPoints} fill="none" stroke="var(--admin-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points={visitPoints} fill="none" stroke="var(--color-gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points={checkoutPoints} fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
         {/* X labels */}
         {data.map((d, i) => {
           if (i % labelEvery !== 0) return null;
           return (
-            <text key={i} x={toX(i)} y={H - 4} textAnchor="middle" fontSize="9" fill="var(--admin-text-muted)">
+            <text key={i} x={toX(i)} y={H - 4} textAnchor="middle" fontSize="9" fill="var(--color-text-tertiary)">
               {d.date.slice(5)}
             </text>
           );

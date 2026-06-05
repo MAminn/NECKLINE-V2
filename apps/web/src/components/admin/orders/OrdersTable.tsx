@@ -8,11 +8,11 @@ const FILTER_TABS = ['ALL', 'UNFULFILLED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: '#4ade80',
-  cancelled: 'var(--admin-accent)',
-  pending: 'var(--admin-gold)',
-  pending_payment: 'var(--admin-gold)',
-  unfulfilled: 'var(--admin-text-muted)',
-  processing: 'var(--admin-gold)',
+  cancelled: 'var(--color-primary)',
+  pending: 'var(--color-gold)',
+  pending_payment: 'var(--color-gold)',
+  unfulfilled: 'var(--color-text-tertiary)',
+  processing: 'var(--color-gold)',
   shipped: '#60a5fa',
   delivered: '#4ade80',
 };
@@ -56,9 +56,9 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
             onClick={() => { setTab(t); setPage(1); }}
             className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest transition-colors"
             style={{
-              background: tab === t ? 'var(--admin-accent)' : 'transparent',
-              color: tab === t ? '#fff' : 'var(--admin-text-muted)',
-              border: '1px solid var(--admin-border)',
+              background: tab === t ? 'var(--color-primary)' : 'transparent',
+              color: tab === t ? '#fff' : 'var(--color-text-tertiary)',
+              border: '1px solid var(--color-admin-border)',
             }}
           >
             {t}
@@ -69,34 +69,34 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search order / customer…"
           className="ml-auto rounded-lg px-3 py-1.5 text-xs"
-          style={{ background: '#1a0a0c', border: '1px solid var(--admin-border)', color: 'var(--admin-text)', width: 200 }}
+          style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)', width: 200 }}
         />
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--admin-border)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-admin-border)' }}>
         <table className="w-full text-xs">
-          <thead style={{ background: 'var(--admin-surface)' }}>
+          <thead style={{ background: 'var(--color-admin-surface)' }}>
             <tr>
               {['Order', 'Customer', 'Items', 'Total', 'Payment', 'Fulfillment'].map((h) => (
-                <th key={h} className="px-3 py-2.5 text-left font-semibold" style={{ color: 'var(--admin-text-muted)' }}>{h}</th>
+                <th key={h} className="px-3 py-2.5 text-left font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={6} className="py-8 text-center" style={{ color: 'var(--admin-text-muted)' }}>Loading…</td></tr>
+              <tr><td colSpan={6} className="py-8 text-center" style={{ color: 'var(--color-text-tertiary)' }}>Loading…</td></tr>
             )}
             {!loading && orders.map((o) => (
               <tr
                 key={o.id}
                 className="cursor-pointer transition-colors"
-                style={{ borderTop: '1px solid var(--admin-border)' }}
+                style={{ borderTop: '1px solid var(--color-admin-border)' }}
                 onClick={() => onSelectOrder(o)}
               >
-                <td className="px-3 py-2 font-mono font-semibold" style={{ color: 'var(--admin-text)' }}>{o.orderNumber}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text)' }}>{o.customerName}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text-muted)' }}>{o.itemCount}</td>
-                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--admin-text)' }}>{(o.total / 100).toLocaleString()} EGP</td>
+                <td className="px-3 py-2 font-mono font-semibold" style={{ color: 'var(--color-text)' }}>{o.orderNumber}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{o.customerName}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{o.itemCount}</td>
+                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{(o.total / 100).toLocaleString()} EGP</td>
                 <td className="px-3 py-2">
                   <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: STATUS_COLORS[o.status], background: `${STATUS_COLORS[o.status]}1a` }}>
                     {o.status}
@@ -110,7 +110,7 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
               </tr>
             ))}
             {!loading && !orders.length && (
-              <tr><td colSpan={6} className="py-8 text-center" style={{ color: 'var(--admin-text-muted)' }}>No orders</td></tr>
+              <tr><td colSpan={6} className="py-8 text-center" style={{ color: 'var(--color-text-tertiary)' }}>No orders</td></tr>
             )}
           </tbody>
         </table>
@@ -118,9 +118,9 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
 
       {totalPages > 1 && (
         <div className="mt-3 flex items-center justify-end gap-2 text-xs">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} style={{ color: 'var(--admin-text-muted)' }}>← Prev</button>
-          <span style={{ color: 'var(--admin-text)' }}>{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} style={{ color: 'var(--admin-text-muted)' }}>Next →</button>
+          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} style={{ color: 'var(--color-text-tertiary)' }}>← Prev</button>
+          <span style={{ color: 'var(--color-text)' }}>{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} style={{ color: 'var(--color-text-tertiary)' }}>Next →</button>
         </div>
       )}
     </div>

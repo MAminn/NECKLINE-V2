@@ -18,16 +18,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading || !user || user.role !== 'admin') {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ background: 'var(--admin-bg)' }}>
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--admin-accent)' }} />
+      <div className="flex h-screen items-center justify-center" style={{ background: 'var(--color-admin-bg)' }}>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: 'var(--color-primary)' }} />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--admin-bg)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-admin-bg)' }}>
       <AdminSidebar />
-      <main className="flex-1 overflow-y-auto p-6" style={{ color: 'var(--admin-text)' }}>
+      <main className="flex-1 overflow-y-auto p-6" style={{ color: 'var(--color-text)' }}>
         {children}
       </main>
     </div>

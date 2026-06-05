@@ -33,9 +33,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ---------- Global input baseline ---------- */
-input,
-textarea,
-select {
+input, textarea, select {
   font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-surface-input);
@@ -45,9 +43,7 @@ select {
               box-shadow var(--duration-base) var(--ease-standard);
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(210, 27, 39, 0.18);
@@ -74,11 +70,8 @@ select:focus {
   box-shadow: 0 0 0 2px rgba(210, 27, 39, 0.18);
 }
 
-.input-field::placeholder {
-  color: var(--color-text-muted);
-}
+.input-field::placeholder { color: var(--color-text-muted); }
 
-/* ---------- Design-system label class ---------- */
 .field-label {
   display: block;
   margin-bottom: var(--space-1);
@@ -89,7 +82,6 @@ select:focus {
   color: var(--color-text-tertiary);
 }
 
-/* ---------- Alert / error box ---------- */
 .alert-error {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
@@ -115,47 +107,22 @@ select:focus {
   color: var(--color-text-inverse);
 }
 
-/* GPU-accelerate all animated elements by default */
 .gpu-layer {
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform, opacity;
 }
 
-/* ---------- Fade In ---------- */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade-in { animation: fade-in 0.4s ease-out forwards; will-change: opacity; }
 
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
-  will-change: opacity;
-}
-
-/* ---------- Fade Up (scroll reveal) ---------- */
 @keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px) translateZ(0);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) translateZ(0);
-  }
+  from { opacity: 0; transform: translateY(24px) translateZ(0); }
+  to { opacity: 1; transform: translateY(0) translateZ(0); }
 }
+.animate-fade-up { animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: transform, opacity; }
 
-.animate-fade-up {
-  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  will-change: transform, opacity;
-}
-
-/* Staggered fade-up children */
-.stagger-children > * {
-  opacity: 0;
-  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  will-change: transform, opacity;
-}
+.stagger-children > * { opacity: 0; animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: transform, opacity; }
 .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
 .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
 .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
@@ -163,37 +130,19 @@ select:focus {
 .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
 .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
 
-/* ---------- Scale In ---------- */
 @keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateZ(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateZ(0);
-  }
+  from { opacity: 0; transform: scale(0.96) translateZ(0); }
+  to { opacity: 1; transform: scale(1) translateZ(0); }
 }
+.animate-scale-in { animation: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: transform, opacity; }
 
-.animate-scale-in {
-  animation: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  will-change: transform, opacity;
-}
-
-/* ---------- Glow Pulse ---------- */
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(210, 27, 39, 0); }
   50% { box-shadow: 0 0 20px 4px rgba(210, 27, 39, 0.25); }
 }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
 
-.animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
-/* ---------- Navbar underline hover (GPU-accelerated scaleX) ---------- */
-.nav-link {
-  position: relative;
-}
+.nav-link { position: relative; }
 .nav-link::after {
   content: '';
   position: absolute;
@@ -206,29 +155,16 @@ select:focus {
   transform-origin: left;
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.nav-link:hover::after {
-  transform: scaleX(1);
-}
+.nav-link:hover::after { transform: scaleX(1); }
 
-/* ---------- Section reveal on scroll ---------- */
 .reveal {
   opacity: 0;
   transform: translateY(20px) translateZ(0);
   transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform, opacity;
 }
-.reveal.revealed {
-  opacity: 1;
-  transform: translateY(0) translateZ(0);
-}
+.reveal.revealed { opacity: 1; transform: translateY(0) translateZ(0); }
 
-/* ---------- Admin design tokens ---------- */
-:root {
-  --admin-bg: #090203;
-  --admin-surface: #130608;
-  --admin-border: rgba(194, 159, 104, 0.15);
-  --admin-accent: #D21B27;
-  --admin-gold: #C29F68;
-  --admin-text: #F5F0E8;
-  --admin-text-muted: rgba(245, 240, 232, 0.55);
-}
+/* Admin tokens are defined in tokens.css under --color-admin-*.
+   The legacy --admin-* block (cream/gold palette) was removed in the design-system unification —
+   admin now uses the dark-luxury crimson palette from the dashboard images (§2.1). */

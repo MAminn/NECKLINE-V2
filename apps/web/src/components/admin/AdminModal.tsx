@@ -36,21 +36,21 @@ export default function AdminModal({ open, title, onClose, children }: AdminModa
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18 }}
             className="w-full max-w-lg rounded-xl shadow-2xl"
-            style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}
+            style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div
               className="flex items-center justify-between px-6 py-4"
-              style={{ borderBottom: '1px solid var(--admin-border)' }}
+              style={{ borderBottom: '1px solid var(--color-admin-border)' }}
             >
-              <h2 className="text-base font-semibold tracking-wide" style={{ color: 'var(--admin-text)' }}>
+              <h2 className="text-base font-semibold tracking-wide" style={{ color: 'var(--color-text)' }}>
                 {title}
               </h2>
               <button
                 onClick={onClose}
                 className="text-lg leading-none transition-colors duration-150"
-                style={{ color: 'var(--admin-text-muted)' }}
+                style={{ color: 'var(--color-text-tertiary)' }}
                 aria-label="Close modal"
               >
                 ✕

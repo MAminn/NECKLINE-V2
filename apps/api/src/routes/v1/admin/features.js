@@ -1,9 +1,16 @@
 const { Router } = require('express');
+const authenticate = require('../../../middleware/authenticate');
+const requirePermission = require('../../../middleware/requirePermission');
+const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const FeatureFlag = require('../../../models/FeatureFlag');
 const { isEnabled, setEnabled } = require('../../../domain/features');
 const { createAuditEvent } = require('../../../domain/audit');
 
 const router = Router();
+
+// SECURITY: feature flags govern payment/pricing/stock kill switches (§XIII–XIV).
+// Every endpoint here MUST be authenticated and admin-gated.
+router.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
 router.get('/list', async (req, res, next) => {
   try {
@@ -18,7 +25,7 @@ router.post('/:name/toggle', async (req, res, next) => {
   try {
     const { name } = req.params;
     const { enabled } = req.body;
-    const changedBy = req.headers['x-admin-id'] || 'unknown';
+    const changedBy = req.user?.id || req.headers['x-admin-id'] || 'unknown';
 
     if (typeof enabled !== 'boolean') {
       return res.status(400).json({ error: true, message: 'enabled must be a boolean' });

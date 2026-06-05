@@ -11,7 +11,7 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Customers</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Customers</h1>
       <CustomersTable onSelectCustomer={setSelected} refresh={refresh} />
       <CustomerDetailSidebar
         customer={selected}

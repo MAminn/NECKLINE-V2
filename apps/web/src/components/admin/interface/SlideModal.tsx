@@ -70,12 +70,12 @@ export default function SlideModal({ slide, onClose, onSuccess }: Props) {
           <div><label style={adminLabel}>Order</label><input type="number" style={adminInput} value={form.order} onChange={(e) => set('order', Number(e.target.value))} /></div>
           <label className="flex items-center gap-2 cursor-pointer pb-1.5">
             <input type="checkbox" checked={form.active} onChange={(e) => set('active', e.target.checked)} />
-            <span style={{ color: 'var(--admin-text)', fontSize: 13 }}>Active</span>
+            <span style={{ color: 'var(--color-text)', fontSize: 13 }}>Active</span>
           </label>
         </div>
         {error && <p className="text-xs text-red-400">{error}</p>}
         <button type="submit" disabled={saving} className="w-full rounded-lg py-2 text-sm font-bold uppercase tracking-widest"
-          style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
+          style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Slide'}
         </button>
       </form>

@@ -51,7 +51,7 @@ export default function RootLayout({
           <AuthProvider>
             <CartProvider>
               {/* Header */}
-              <header className="fixed left-0 right-0 top-0 z-[1100] border-b border-border bg-bg/96 backdrop-blur-md transition-colors duration-300 gpu-layer">
+              <header className="fixed left-0 right-0 top-0 z-sticky border-b border-border bg-bg-translucent backdrop-blur-md transition-colors duration-base gpu-layer">
                 <div className="mx-auto flex max-w-container items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5 lg:py-4">
 
                   {/* Logo */}

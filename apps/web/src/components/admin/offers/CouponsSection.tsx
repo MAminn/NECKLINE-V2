@@ -49,16 +49,16 @@ export default function CouponsSection() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--admin-gold)' }}>Coupon Codes</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--color-gold)' }}>Coupon Codes</h3>
         <button onClick={() => setShowForm((v) => !v)} className="rounded-lg px-3 py-1.5 text-xs font-bold uppercase"
-          style={{ background: 'var(--admin-accent)', color: '#fff' }}>
+          style={{ background: 'var(--color-primary)', color: '#fff' }}>
           + Add Coupon
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleCreate} className="mb-4 rounded-xl p-4 space-y-3"
-          style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+          style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
           <div className="grid grid-cols-2 gap-2">
             <input required placeholder="CODE"           style={adminInputSm} value={form.code}           onChange={(e) => setField('code', e.target.value)} />
             <select                                       style={adminInputSm} value={form.type}           onChange={(e) => setField('type', e.target.value)}>
@@ -72,7 +72,7 @@ export default function CouponsSection() {
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <button type="submit" disabled={saving} className="rounded-lg px-4 py-1.5 text-xs font-bold"
-            style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
+            style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
             {saving ? 'Creating…' : 'Create'}
           </button>
         </form>
@@ -81,19 +81,19 @@ export default function CouponsSection() {
       <div className="grid gap-3">
         {coupons.map((c) => (
           <div key={c.id} className="flex items-center justify-between rounded-xl px-4 py-3"
-            style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+            style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
             <div>
-              <p className="text-sm font-bold font-mono" style={{ color: 'var(--admin-text)' }}>{c.code}</p>
-              <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>
+              <p className="text-sm font-bold font-mono" style={{ color: 'var(--color-text)' }}>{c.code}</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                 {c.type === 'percentage' ? `${c.value}% off` : `${(c.value / 100).toFixed(2)} EGP off`}
                 {c.minOrderAmount ? ` · min ${(c.minOrderAmount / 100).toFixed(0)} EGP` : ''}
                 {c.usageLimit ? ` · ${c.usageCount}/${c.usageLimit} uses` : ` · ${c.usageCount} uses`}
               </p>
             </div>
-            <button onClick={() => handleDelete(c.id)} className="text-xs underline" style={{ color: 'var(--admin-accent)' }}>Delete</button>
+            <button onClick={() => handleDelete(c.id)} className="text-xs underline" style={{ color: 'var(--color-primary)' }}>Delete</button>
           </div>
         ))}
-        {!coupons.length && <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>No coupons yet.</p>}
+        {!coupons.length && <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>No coupons yet.</p>}
       </div>
     </div>
   );

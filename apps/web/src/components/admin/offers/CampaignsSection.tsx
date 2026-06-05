@@ -52,16 +52,16 @@ export default function CampaignsSection() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--admin-gold)' }}>Campaign Offers</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--color-gold)' }}>Campaign Offers</h3>
         <button onClick={() => setShowForm((v) => !v)} className="rounded-lg px-3 py-1.5 text-xs font-bold uppercase"
-          style={{ background: 'var(--admin-accent)', color: '#fff' }}>
+          style={{ background: 'var(--color-primary)', color: '#fff' }}>
           + Add Campaign
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleCreate} className="mb-4 rounded-xl p-4 space-y-3"
-          style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+          style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
           <div className="grid grid-cols-2 gap-2">
             <input required placeholder="Description" style={{ ...adminInputSm, gridColumn: '1/-1' }} className="col-span-2"
               value={form.description} onChange={(e) => setField('description', e.target.value)} />
@@ -75,7 +75,7 @@ export default function CampaignsSection() {
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <button type="submit" disabled={saving} className="rounded-lg px-4 py-1.5 text-xs font-bold"
-            style={{ background: 'var(--admin-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
+            style={{ background: 'var(--color-primary)', color: '#fff', opacity: saving ? 0.6 : 1 }}>
             {saving ? 'Creating…' : 'Create'}
           </button>
         </form>
@@ -86,25 +86,25 @@ export default function CampaignsSection() {
           const active = isActive(o);
           return (
             <div key={o.id} className="flex items-center justify-between rounded-xl px-4 py-3"
-              style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+              style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--admin-text)' }}>{o.description}</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{o.description}</p>
                   <span className="rounded px-1.5 py-0.5 text-[10px] font-bold"
-                    style={{ background: active ? 'rgba(74,222,128,0.15)' : 'rgba(210,27,39,0.15)', color: active ? '#4ade80' : 'var(--admin-accent)' }}>
+                    style={{ background: active ? 'rgba(74,222,128,0.15)' : 'rgba(210,27,39,0.15)', color: active ? '#4ade80' : 'var(--color-primary)' }}>
                     {active ? 'ACTIVE' : 'EXPIRED'}
                   </span>
                 </div>
-                <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>
+                <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                   {o.type === 'percentage' ? `${o.value}% off` : `${(o.value / 100).toFixed(2)} EGP off`}
                   {o.endDate ? ` · until ${new Date(o.endDate).toLocaleDateString()}` : ''}
                 </p>
               </div>
-              <button onClick={() => handleDelete(o.id)} className="text-xs underline" style={{ color: 'var(--admin-accent)' }}>Delete</button>
+              <button onClick={() => handleDelete(o.id)} className="text-xs underline" style={{ color: 'var(--color-primary)' }}>Delete</button>
             </div>
           );
         })}
-        {!offers.length && <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>No campaign offers yet.</p>}
+        {!offers.length && <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>No campaign offers yet.</p>}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function ReviewsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Reviews</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Reviews</h1>
       <ReviewsTable onAddClick={() => setAddOpen(true)} refresh={refresh} />
       <AdminModal open={addOpen} title="Add Review" onClose={() => setAddOpen(false)}>
         <ReviewForm onSubmit={handleAdd} submitLabel="Create Review" />

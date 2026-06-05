@@ -10,7 +10,7 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Products</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Products</h1>
       <ProductsTable onAddClick={() => setAddOpen(true)} refresh={refresh} />
       <AddProductModal
         open={addOpen}

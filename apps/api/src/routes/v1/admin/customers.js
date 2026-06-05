@@ -11,6 +11,20 @@ const router = Router();
 
 router.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
+/**
+ * Customer tier classification — server-authoritative.
+ * The frontend renders the returned `tag` as-is; do not duplicate this logic in the UI.
+ * Future segmenting (e.g. offer "Customer Segments") should reuse these rules.
+ */
+const VIP_ORDERS_THRESHOLD = 3;
+const VIP_LIFETIME_VALUE_THRESHOLD = 5_000_000; // minor units (cents) — 50,000 EGP
+
+function computeCustomerTag({ ordersCount, lifetimeValue }) {
+  if (ordersCount >= VIP_ORDERS_THRESHOLD || lifetimeValue >= VIP_LIFETIME_VALUE_THRESHOLD) return 'VIP';
+  if (ordersCount === 0) return 'NEW';
+  return 'ACTIVE';
+}
+
 // GET /api/v1/admin/customers
 router.get('/', async (req, res, next) => {
   try {
@@ -32,7 +46,6 @@ router.get('/', async (req, res, next) => {
       User.countDocuments({ role: 'customer', createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }),
     ]);
 
-    // Aggregate order stats per user
     const userIds = users.map((u) => u._id);
     const orderAgg = await Order.aggregate([
       { $match: { userId: { $in: userIds }, status: 'confirmed' } },
@@ -47,9 +60,7 @@ router.get('/', async (req, res, next) => {
     ]);
 
     const statsMap = {};
-    for (const s of orderAgg) {
-      statsMap[s._id.toString()] = s;
-    }
+    for (const s of orderAgg) statsMap[s._id.toString()] = s;
 
     const customers = users.map((u) => {
       const stats = statsMap[u._id.toString()] ?? { ordersCount: 0, lifetimeValue: 0, lastOrderAt: null };
@@ -63,6 +74,7 @@ router.get('/', async (req, res, next) => {
         currency: 'EGP',
         createdAt: u.createdAt,
         lastOrderAt: stats.lastOrderAt ?? null,
+        tag: computeCustomerTag(stats),
       };
     });
 

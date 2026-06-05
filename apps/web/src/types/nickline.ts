@@ -14,12 +14,8 @@ export interface Scent {
   originalPrice?: number;
   image: string;
   galleryImages?: string[];
-  notes: {
-    top: string;
-    heart: string;
-    base: string;
-  };
-  intensity: number; // 1-5 scale
+  notes: { top: string; heart: string; base: string; };
+  intensity: number;
   vibe: string;
   ingredients: string[];
   tag?: string;
@@ -37,10 +33,7 @@ export interface Review {
   date: string;
 }
 
-export interface CartItem {
-  scent: Scent;
-  quantity: number;
-}
+export interface CartItem { scent: Scent; quantity: number; }
 
 export interface HeaderSlide {
   id: string;
@@ -72,10 +65,7 @@ export interface HowToApplyStep {
   customIconUrl?: string;
 }
 
-export interface HowToApply {
-  color: string;
-  steps: HowToApplyStep[];
-}
+export interface HowToApply { color: string; steps: HowToApplyStep[]; }
 
 export interface AdminMetrics {
   revenueToday: number;
@@ -91,12 +81,7 @@ export interface AdminMetrics {
   liveSessions: number;
   visitsHistory: { date: string; visits: number; checkouts: number }[];
   categoryShare: { name: string; share: number; color: string }[];
-  forecast: {
-    increase: number;
-    recommendedStock: number;
-    topProduct: string;
-    projectedRevenue: number;
-  };
+  forecast: { increase: number; recommendedStock: number; topProduct: string; projectedRevenue: number; };
 }
 
 export interface ActivityEvent {
@@ -144,6 +129,8 @@ export interface AdminOrder {
   shippingAddress: { city: string; governorate: string };
 }
 
+export type CustomerTag = 'VIP' | 'NEW' | 'ACTIVE';
+
 export interface AdminCustomer {
   id: string;
   name: string;
@@ -154,6 +141,8 @@ export interface AdminCustomer {
   currency: string;
   createdAt: string;
   lastOrderAt?: string | null;
+  /** Server-computed tier (see apps/api/.../admin/customers.js computeCustomerTag). */
+  tag: CustomerTag;
 }
 
 export interface AdminPromoCode {
@@ -198,9 +187,5 @@ export interface AuditEventRecord {
 export interface QuizQuestion {
   id: number;
   question: string;
-  options: {
-    label: string;
-    value: string;
-    description: string;
-  }[];
+  options: { label: string; value: string; description: string; }[];
 }

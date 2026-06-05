@@ -22,7 +22,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Analytics</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Analytics</h1>
 
       {/* Timeframe selector */}
       <div className="flex gap-2">
@@ -32,9 +32,9 @@ export default function AnalyticsPage() {
             onClick={() => setTimeframe(t)}
             className="rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
             style={{
-              background: timeframe === t ? 'var(--admin-accent)' : 'transparent',
-              color: timeframe === t ? '#fff' : 'var(--admin-text-muted)',
-              border: '1px solid var(--admin-border)',
+              background: timeframe === t ? 'var(--color-primary)' : 'transparent',
+              color: timeframe === t ? '#fff' : 'var(--color-text-tertiary)',
+              border: '1px solid var(--color-admin-border)',
             }}
           >
             {t}

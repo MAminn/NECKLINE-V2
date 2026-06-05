@@ -24,14 +24,14 @@ export default function AdminSidebar() {
   return (
     <aside
       className="flex h-screen w-60 flex-shrink-0 flex-col"
-      style={{ background: 'var(--admin-bg)', borderRight: '1px solid var(--admin-border)' }}
+      style={{ background: 'var(--color-admin-bg)', borderRight: '1px solid var(--color-admin-border)' }}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 px-5" style={{ borderBottom: '1px solid var(--admin-border)' }}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ color: 'var(--admin-accent)' }}>
+      <div className="flex h-16 items-center gap-2 px-5" style={{ borderBottom: '1px solid var(--color-admin-border)' }}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ color: 'var(--color-primary)' }}>
           <path d="M6 0L12 6L6 12L0 6L6 0Z" />
         </svg>
-        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>
+        <span className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>
           Admin
         </span>
       </div>
@@ -46,9 +46,9 @@ export default function AdminSidebar() {
               href={item.href}
               className="flex items-center gap-3 px-5 py-2.5 text-sm transition-colors duration-150"
               style={{
-                color: active ? 'var(--admin-text)' : 'var(--admin-text-muted)',
+                color: active ? 'var(--color-text)' : 'var(--color-text-tertiary)',
                 background: active ? 'rgba(210,27,39,0.12)' : 'transparent',
-                borderLeft: active ? '2px solid var(--admin-accent)' : '2px solid transparent',
+                borderLeft: active ? '2px solid var(--color-primary)' : '2px solid transparent',
               }}
             >
               <span className="text-base" aria-hidden="true">{item.icon}</span>
@@ -59,11 +59,11 @@ export default function AdminSidebar() {
       </nav>
 
       {/* User footer */}
-      <div className="px-5 py-4" style={{ borderTop: '1px solid var(--admin-border)' }}>
-        <p className="text-xs font-semibold truncate" style={{ color: 'var(--admin-gold)' }}>
+      <div className="px-5 py-4" style={{ borderTop: '1px solid var(--color-admin-border)' }}>
+        <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-gold)' }}>
           {user?.name ?? 'Admin'}
         </p>
-        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--admin-text-muted)' }}>
+        <p className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
           {user?.role}
         </p>
       </div>

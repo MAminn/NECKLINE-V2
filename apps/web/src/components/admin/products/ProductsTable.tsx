@@ -7,8 +7,8 @@ import EditProductModal from './EditProductModal';
 
 const STATUS_COLORS: Record<string, string> = {
   'ACTIVE': '#4ade80',
-  'LOW STOCK': 'var(--admin-gold)',
-  'OUT OF STOCK': 'var(--admin-accent)',
+  'LOW STOCK': 'var(--color-gold)',
+  'OUT OF STOCK': 'var(--color-primary)',
 };
 
 interface Props {
@@ -49,9 +49,9 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
       {/* KPI strip */}
       <div className="mb-4 flex gap-4 text-xs">
         {[['Total', kpis.total], ['Active', kpis.active], ['Out of Stock', kpis.outOfStock], ['Total Views', kpis.totalViews]].map(([l, v]) => (
-          <div key={String(l)} className="rounded-lg px-3 py-2" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
-            <p style={{ color: 'var(--admin-gold)' }} className="font-semibold uppercase tracking-widest text-[10px]">{l}</p>
-            <p style={{ color: 'var(--admin-text)' }} className="text-base font-bold">{v ?? 0}</p>
+          <div key={String(l)} className="rounded-lg px-3 py-2" style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
+            <p style={{ color: 'var(--color-gold)' }} className="font-semibold uppercase tracking-widest text-[10px]">{l}</p>
+            <p style={{ color: 'var(--color-text)' }} className="text-base font-bold">{v ?? 0}</p>
           </div>
         ))}
       </div>
@@ -63,13 +63,13 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search name or SKU…"
           className="rounded-lg px-3 py-1.5 text-xs flex-1"
-          style={{ background: '#1a0a0c', border: '1px solid var(--admin-border)', color: 'var(--admin-text)', minWidth: 160 }}
+          style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)', minWidth: 160 }}
         />
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-lg px-2 py-1.5 text-xs"
-          style={{ background: '#1a0a0c', border: '1px solid var(--admin-border)', color: 'var(--admin-text)' }}
+          style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)' }}
         >
           <option value="">All Statuses</option>
           <option>ACTIVE</option>
@@ -79,56 +79,56 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
         <button
           onClick={onAddClick}
           className="rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
-          style={{ background: 'var(--admin-accent)', color: '#fff' }}
+          style={{ background: 'var(--color-primary)', color: '#fff' }}
         >
           + Add Product
         </button>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--admin-border)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-admin-border)' }}>
         <table className="w-full text-xs">
-          <thead style={{ background: 'var(--admin-surface)' }}>
+          <thead style={{ background: 'var(--color-admin-surface)' }}>
             <tr>
               {['', 'Name', 'SKU', 'Category', 'Price', 'Stock', 'Status', 'Views', 'Sales', 'Actions'].map((h) => (
-                <th key={h} className="px-3 py-2.5 text-left font-semibold" style={{ color: 'var(--admin-text-muted)' }}>{h}</th>
+                <th key={h} className="px-3 py-2.5 text-left font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={10} className="py-8 text-center" style={{ color: 'var(--admin-text-muted)' }}>Loading…</td></tr>
+              <tr><td colSpan={10} className="py-8 text-center" style={{ color: 'var(--color-text-tertiary)' }}>Loading…</td></tr>
             )}
             {!loading && products.map((p) => (
-              <tr key={p.id} style={{ borderTop: '1px solid var(--admin-border)' }}>
+              <tr key={p.id} style={{ borderTop: '1px solid var(--color-admin-border)' }}>
                 <td className="px-3 py-2">
                   {p.image && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.image} alt="" className="h-8 w-8 rounded object-cover" />
                   )}
                 </td>
-                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--admin-text)' }}>{p.name}</td>
-                <td className="px-3 py-2 font-mono" style={{ color: 'var(--admin-text-muted)' }}>{p.sku}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text-muted)' }}>{p.category}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text)' }}>{(p.price / 100).toLocaleString()}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text)' }}>{p.stockOnHand}</td>
+                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{p.name}</td>
+                <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>{p.sku}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{p.category}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{(p.price / 100).toLocaleString()}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{p.stockOnHand}</td>
                 <td className="px-3 py-2">
                   <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${STATUS_COLORS[p.status] ?? '#999'}1a`, color: STATUS_COLORS[p.status] ?? '#999' }}>
                     {p.status}
                   </span>
                 </td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text-muted)' }}>{p.views}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--admin-text-muted)' }}>{p.sales}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{p.views}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{p.sales}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">
-                    <button onClick={() => setEditProduct(p)} className="text-[10px] underline" style={{ color: 'var(--admin-gold)' }}>Edit</button>
-                    <button onClick={() => handleDelete(p.id)} className="text-[10px] underline" style={{ color: 'var(--admin-accent)' }}>Del</button>
+                    <button onClick={() => setEditProduct(p)} className="text-[10px] underline" style={{ color: 'var(--color-gold)' }}>Edit</button>
+                    <button onClick={() => handleDelete(p.id)} className="text-[10px] underline" style={{ color: 'var(--color-primary)' }}>Del</button>
                   </div>
                 </td>
               </tr>
             ))}
             {!loading && !products.length && (
-              <tr><td colSpan={10} className="py-8 text-center" style={{ color: 'var(--admin-text-muted)' }}>No products</td></tr>
+              <tr><td colSpan={10} className="py-8 text-center" style={{ color: 'var(--color-text-tertiary)' }}>No products</td></tr>
             )}
           </tbody>
         </table>
@@ -137,9 +137,9 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-3 flex items-center justify-end gap-2 text-xs">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} style={{ color: 'var(--admin-text-muted)' }}>← Prev</button>
-          <span style={{ color: 'var(--admin-text)' }}>{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} style={{ color: 'var(--admin-text-muted)' }}>Next →</button>
+          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} style={{ color: 'var(--color-text-tertiary)' }}>← Prev</button>
+          <span style={{ color: 'var(--color-text)' }}>{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} style={{ color: 'var(--color-text-tertiary)' }}>Next →</button>
         </div>
       )}
 

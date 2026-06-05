@@ -31,25 +31,25 @@ export default function ActivityFeed({ initial = [] }: Props) {
 
   return (
     <div className="rounded-xl p-4" style={cardStyle}>
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--admin-gold)' }}>
+      <h3 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--color-gold)' }}>
         Live Activity
       </h3>
       {!events.length && (
-        <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>No recent activity</p>
+        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>No recent activity</p>
       )}
       <ul className="space-y-3 max-h-64 overflow-y-auto">
         {events.map((e) => (
           <li key={e.id} className="flex items-start gap-3">
-            <span className="mt-0.5 text-base shrink-0" style={{ color: 'var(--admin-accent)' }} aria-hidden="true">
+            <span className="mt-0.5 text-base shrink-0" style={{ color: 'var(--color-primary)' }} aria-hidden="true">
               {ICON_MAP[e.iconType] ?? '◊'}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs leading-snug truncate" style={{ color: 'var(--admin-text)' }}>
+              <p className="text-xs leading-snug truncate" style={{ color: 'var(--color-text)' }}>
                 <span className="font-semibold">{e.user}</span> — {e.text}
               </p>
-              {e.sub && <p className="text-[10px] truncate" style={{ color: 'var(--admin-text-muted)' }}>{e.sub}</p>}
+              {e.sub && <p className="text-[10px] truncate" style={{ color: 'var(--color-text-tertiary)' }}>{e.sub}</p>}
             </div>
-            <span className="shrink-0 text-[10px]" style={{ color: 'var(--admin-text-muted)' }}>{e.time}</span>
+            <span className="shrink-0 text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>{e.time}</span>
           </li>
         ))}
       </ul>

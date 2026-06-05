@@ -16,7 +16,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--admin-text)' }}>Orders</h1>
+      <h1 className="text-xl font-bold uppercase tracking-widest" style={{ color: 'var(--color-text)' }}>Orders</h1>
       <OrdersTable onSelectOrder={setSelectedOrder} refresh={refresh} />
       <OrderDetailSidebar
         order={selectedOrder}
