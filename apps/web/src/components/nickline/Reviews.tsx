@@ -96,11 +96,11 @@ export default function Reviews() {
   };
 
   return (
-    <section className="py-20 select-none dark:bg-[#070606] light:bg-[#FAF8F5] transition-colors duration-500 overflow-hidden" id="reviews">
+    <section className="py-12 select-none dark:bg-[#070606] light:bg-[#FAF8F5] transition-colors duration-500 overflow-hidden" id="reviews">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* TOP INTRO */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl font-display font-medium tracking-[0.3em] uppercase dark:text-white light:text-neutral-900">
             Loved By Thousands
           </h2>
@@ -124,7 +124,7 @@ export default function Reviews() {
             No aura reviews loaded. Write the first dynamic review!
           </div>
         ) : (
-          <div className="relative w-full overflow-hidden py-6 mb-12 select-none" id="reviews-marquee-parent">
+          <div className="relative w-full overflow-hidden py-4 mb-8 select-none" id="reviews-marquee-parent">
             {/* Edge feathering custom gradient overlays */}
             <div className="absolute left-0 top-0 bottom-0 w-20 sm:w-48 bg-gradient-to-r from-[#070606] via-[#070606]/80 to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-20 sm:w-48 bg-gradient-to-l from-[#070606] via-[#070606]/80 to-transparent z-10 pointer-events-none" />

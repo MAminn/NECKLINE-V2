@@ -13,7 +13,7 @@ export default function CartDrawer() {
       {/* Backdrop — always in DOM so opacity transition fires without a React mount delay.
           backdrop-blur intentionally omitted: it forces full-page recomposition every frame. */}
       <div
-        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-200
+        className={`fixed inset-0 z-[1200] bg-black/60 transition-opacity duration-200
           ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={closeDrawer}
         aria-hidden="true"
@@ -24,7 +24,7 @@ export default function CartDrawer() {
         role="dialog"
         aria-modal={isOpen ? 'true' : 'false'}
         aria-label="Shopping cart"
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[420px] flex-col
+        className={`fixed right-0 top-0 z-[1300] flex h-full w-full max-w-[420px] flex-col
           border-l border-border bg-surface shadow-[-8px_0_48px_rgba(0,0,0,0.6)]
           transform-gpu will-change-transform
           transition-transform duration-[220ms] ease-out
