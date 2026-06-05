@@ -21,7 +21,7 @@ const router = Router();
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   path: '/',
 };
 
@@ -64,7 +64,7 @@ router.post('/register', rateLimitRegister, async (req, res, next) => {
     const guestCartId = req.cookies?.cartId;
     if (guestCartId) {
       await cartService.mergeGuestCart(guestCartId, result.user.id);
-      res.clearCookie('cartId', { path: '/', httpOnly: true, sameSite: 'strict' });
+      res.clearCookie('cartId', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
     }
 
     setAuthCookies(res, result.accessToken, result.refreshToken);
@@ -89,7 +89,7 @@ router.post('/login', rateLimitLogin, async (req, res, next) => {
     const guestCartId = req.cookies?.cartId;
     if (guestCartId) {
       await cartService.mergeGuestCart(guestCartId, result.user.id);
-      res.clearCookie('cartId', { path: '/', httpOnly: true, sameSite: 'strict' });
+      res.clearCookie('cartId', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
     }
 
     setAuthCookies(res, result.accessToken, result.refreshToken);
