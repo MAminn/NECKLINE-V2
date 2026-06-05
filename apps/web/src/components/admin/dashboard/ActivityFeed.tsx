@@ -3,40 +3,44 @@
 import { useEffect, useState } from 'react';
 import { getActivities } from '../../../lib/admin-api';
 import type { ActivityEvent } from '../../../types/nickline';
+import { adminCard } from '../adminStyles';
 
 const ICON_MAP: Record<string, string> = {
-  order: '◉',
-  cart: '◈',
-  ship: '◌',
-  alert: '◊',
-  user: '◎',
+  order: '◉', cart: '◈', ship: '◌', alert: '◊', user: '◎',
 };
 
-export default function ActivityFeed() {
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
+const cardStyle = { ...adminCard, borderRadius: 12 } as const;
 
+interface Props { initial?: ActivityEvent[]; }
+
+export default function ActivityFeed({ initial = [] }: Props) {
+  const [events, setEvents] = useState<ActivityEvent[]>(initial);
+
+  // Sync if parent provides hydrated initial data
   useEffect(() => {
-    getActivities().then(setEvents).catch(() => {});
+    if (initial.length) setEvents(initial);
+  }, [initial]);
 
-    const interval = setInterval(() => {
+  // Poll every 10s for live updates (satisfies US1 AS2)
+  useEffect(() => {
+    const id = setInterval(() => {
       getActivities().then(setEvents).catch(() => {});
     }, 10_000);
-
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, []);
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+    <div className="rounded-xl p-4" style={cardStyle}>
       <h3 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--admin-gold)' }}>
         Live Activity
       </h3>
-      {events.length === 0 && (
+      {!events.length && (
         <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>No recent activity</p>
       )}
       <ul className="space-y-3 max-h-64 overflow-y-auto">
         {events.map((e) => (
           <li key={e.id} className="flex items-start gap-3">
-            <span className="mt-0.5 text-base" style={{ color: 'var(--admin-accent)' }} aria-hidden="true">
+            <span className="mt-0.5 text-base shrink-0" style={{ color: 'var(--admin-accent)' }} aria-hidden="true">
               {ICON_MAP[e.iconType] ?? '◊'}
             </span>
             <div className="min-w-0 flex-1">

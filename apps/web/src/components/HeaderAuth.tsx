@@ -9,6 +9,15 @@ export default function HeaderAuth() {
   if (isAuthenticated && user) {
     return (
       <div className="flex items-center gap-3">
+        {user.role === 'admin' && (
+          <a
+            href="/admin"
+            className="text-xs uppercase tracking-widest transition-colors hover:opacity-80"
+            style={{ color: '#C29F68' }}
+          >
+            Admin
+          </a>
+        )}
         <a
           href="/account"
           className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-text-secondary transition-colors hover:text-text-primary"

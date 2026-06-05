@@ -1,33 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getMetrics } from '../../../lib/admin-api';
+import { adminCard } from '../adminStyles';
 
-interface CategoryShare {
-  name: string;
-  share: number;
-  color: string;
-}
+interface CategoryShare { name: string; share: number; color: string; }
+interface Props { categoryShare: CategoryShare[] | null; }
 
-export default function TopProductsList() {
-  const [items, setItems] = useState<CategoryShare[]>([]);
+const cardStyle = { ...adminCard, borderRadius: 12 } as const;
 
-  useEffect(() => {
-    getMetrics()
-      .then((m) => setItems(m.categoryShare))
-      .catch(() => {});
-  }, []);
+export default function TopProductsList({ categoryShare }: Props) {
+  if (!categoryShare) return null;
+  if (!categoryShare.length) return null;
 
-  if (!items.length) return null;
-  const max = Math.max(...items.map((i) => i.share));
+  const max = Math.max(...categoryShare.map((i) => i.share));
 
   return (
-    <div className="rounded-xl p-4" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)' }}>
+    <div className="rounded-xl p-4" style={cardStyle}>
       <h3 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--admin-gold)' }}>
         Top Categories
       </h3>
       <ul className="space-y-2.5">
-        {items.map((item, idx) => (
+        {categoryShare.map((item, idx) => (
           <li key={item.name}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs" style={{ color: 'var(--admin-text)' }}>
