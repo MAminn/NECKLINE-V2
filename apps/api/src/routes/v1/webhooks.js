@@ -34,7 +34,6 @@ router.post('/', async (req, res) => {
     payload.data?.amount_cents ||
     payload.obj?.amount_cents;
 
-  const currency = payload.data?.currency || payload.obj?.currency || 'EGP';
   const status = payload.data?.status || payload.obj?.success;
 
   if (!intentId || !transactionId) {

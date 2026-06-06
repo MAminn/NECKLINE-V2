@@ -1,7 +1,6 @@
 const { Router } = require('express');
 const { z } = require('zod');
 const { listProducts, getProductById, getRelatedProducts } = require('../../services/productService');
-const logger = require('../../config/logger');
 
 const router = Router();
 

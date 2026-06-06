@@ -2,9 +2,8 @@ const crypto = require('node:crypto');
 const User = require('../models/User');
 const RefreshToken = require('../models/RefreshToken');
 const PasswordResetToken = require('../models/PasswordResetToken');
-const Cart = require('../models/Cart');
 const { hashPassword, comparePassword } = require('../utils/passwordUtils');
-const { generateTokenPair, hashToken, verifyToken } = require('../utils/tokenUtils');
+const { generateTokenPair, hashToken } = require('../utils/tokenUtils');
 const { createAuditEvent } = require('../domain/audit');
 const logger = require('../config/logger');
 
@@ -77,7 +76,7 @@ async function register({ name, email, password }, meta = {}) {
     role: 'customer',
   });
 
-  const { accessToken, refreshToken, tokenId } = generateTokenPair(user);
+  const { accessToken, refreshToken } = generateTokenPair(user);
   await createRefreshTokenDoc(user._id, refreshToken, meta);
 
   if (meta.requestId) {
@@ -110,7 +109,7 @@ async function login({ email, password }, meta = {}) {
     throw new AuthError('Invalid credentials', 401);
   }
 
-  const { accessToken, refreshToken, tokenId } = generateTokenPair(user);
+  const { accessToken, refreshToken } = generateTokenPair(user);
   await createRefreshTokenDoc(user._id, refreshToken, meta);
 
   if (meta.requestId) {
