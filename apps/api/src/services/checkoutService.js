@@ -409,6 +409,69 @@ async function executeRedirectFlow({ session, provider, checkoutToken, paymentMe
   return { order, payUrl: intent.payUrl };
 }
 
+// Records the PaymentTransaction and flips the order to 'confirmed' in a single transaction.
+async function persistPaymentAndConfirmOrder({ order, paymentMethod, paymentResult, intent, total, currency }) {
+  const confirmSession = await mongoose.startSession();
+  try {
+    await confirmSession.withTransaction(async () => {
+      const [tx] = await PaymentTransaction.create(
+        [
+          {
+            orderId: order._id,
+            provider: paymentMethod,
+            providerTransactionId: paymentResult.transactionId,
+            intentId: intent.id,
+            amount: total,
+            currency,
+            status: 'succeeded',
+          },
+        ],
+        { session: confirmSession }
+      );
+      await Order.findByIdAndUpdate(
+        order._id,
+        { status: 'confirmed', paymentStatus: 'succeeded', paymentTransactionId: tx._id },
+        { session: confirmSession }
+      );
+    });
+  } catch (err) {
+    logger.error({ err, orderId: order._id }, 'Failed to confirm order after payment — manual intervention required');
+    throw new CheckoutError('Order confirmation failed. Please contact support.', 500, 'ORDER_CONFIRMATION_FAILED');
+  } finally {
+    await confirmSession.endSession();
+  }
+}
+
+// Emits the order.created, order.payment_confirmed, and inventory.decremented audit events.
+function emitSyncOrderSuccessAudit({ order, lineItems, userId, total, currency, paymentResult, meta }) {
+  if (!meta.requestId) return;
+  createAuditEvent({
+    actor: userId || 'guest',
+    action: 'order.created',
+    target: order._id.toString(),
+    targetType: 'Order',
+    before: { status: 'pending' },
+    after: { status: 'confirmed', orderNumber: order.orderNumber, total, currency },
+    requestId: meta.requestId,
+    ip: meta.ip,
+    userAgent: meta.userAgent,
+  }).catch((err) => logger.error({ err }, 'Audit event failed'));
+
+  createAuditEvent({
+    actor: userId || 'guest',
+    action: 'order.payment_confirmed',
+    target: order._id.toString(),
+    targetType: 'Order',
+    before: { paymentStatus: 'pending' },
+    after: { paymentStatus: 'succeeded', transactionId: paymentResult.transactionId },
+    requestId: meta.requestId,
+    ip: meta.ip,
+    userAgent: meta.userAgent,
+  }).catch((err) => logger.error({ err }, 'Audit event failed'));
+
+  emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
+}
+
 // SYNC FLOW — payment is confirmed inline; used by the stub provider and as a Paymob fallback.
 async function executeSyncFlow({ session, provider, checkoutToken, paymentMethod, idempotencyKey, meta }) {
   const { cartId, userId, lineItems, total, currency, promoCode, discount } = session;
@@ -470,67 +533,10 @@ async function executeSyncFlow({ session, provider, checkoutToken, paymentMethod
   }
 
   // Step 4: Record payment transaction + confirm order
-  const confirmSession = await mongoose.startSession();
-  let paymentTransaction = null;
-  try {
-    await confirmSession.withTransaction(async () => {
-      paymentTransaction = await PaymentTransaction.create(
-        [
-          {
-            orderId: order._id,
-            provider: paymentMethod,
-            providerTransactionId: paymentResult.transactionId,
-            intentId: intent.id,
-            amount: total,
-            currency,
-            status: 'succeeded',
-          },
-        ],
-        { session: confirmSession }
-      );
-      paymentTransaction = paymentTransaction[0];
-      await Order.findByIdAndUpdate(
-        order._id,
-        { status: 'confirmed', paymentStatus: 'succeeded', paymentTransactionId: paymentTransaction._id },
-        { session: confirmSession }
-      );
-    });
-  } catch (err) {
-    logger.error({ err, orderId: order._id }, 'Failed to confirm order after payment — manual intervention required');
-    throw new CheckoutError('Order confirmation failed. Please contact support.', 500, 'ORDER_CONFIRMATION_FAILED');
-  } finally {
-    await confirmSession.endSession();
-  }
+  await persistPaymentAndConfirmOrder({ order, paymentMethod, paymentResult, intent, total, currency });
 
   await deleteCheckoutSession(checkoutToken);
-
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: userId || 'guest',
-      action: 'order.created',
-      target: order._id.toString(),
-      targetType: 'Order',
-      before: { status: 'pending' },
-      after: { status: 'confirmed', orderNumber: order.orderNumber, total, currency },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-
-    createAuditEvent({
-      actor: userId || 'guest',
-      action: 'order.payment_confirmed',
-      target: order._id.toString(),
-      targetType: 'Order',
-      before: { paymentStatus: 'pending' },
-      after: { paymentStatus: 'succeeded', transactionId: paymentResult.transactionId },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-
-    emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
-  }
+  emitSyncOrderSuccessAudit({ order, lineItems, userId, total, currency, paymentResult, meta });
 
   return order;
 }
