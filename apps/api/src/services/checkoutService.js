@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
@@ -55,7 +55,7 @@ class CheckoutError extends Error {
 
 async function validateCheckout({ cartId, userId }) {
   const cart = await cartService.getCart(cartId, userId);
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!cart?.items?.length) {
     throw new CheckoutError('Cart is empty', 400, 'EMPTY_CART');
   }
 
@@ -308,226 +308,47 @@ function emitInventoryDecrementedAudit(lineItems, orderId, requestId) {
   }
 }
 
-async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotencyKey, meta = {} }) {
-  const session = await getCheckoutSession(checkoutToken);
-  if (!session) {
-    throw new CheckoutError('Checkout session expired or invalid', 400, 'INVALID_CHECKOUT_TOKEN');
-  }
-
-  // shippingAddress / shippingMethod are read from `session` inside buildOrderDoc().
-  const {
-    cartId,
-    userId,
-    contact,
-    lineItems,
-    subtotal,
-    shippingCost,
-    originalShippingCost,
-    discount,
-    total,
-    currency,
-    promoCode,
-  } = session;
-
-  // Re-validate stock before processing
-  const cart = await cartService.getCart(cartId, userId);
-  if (!cart || !cart.items || cart.items.length === 0) {
-    throw new CheckoutError('Cart is empty', 400, 'EMPTY_CART');
-  }
-
-  const unavailableItems = cart.items.filter((item) => !item.available);
-  if (unavailableItems.length > 0) {
-    const names = unavailableItems.map((i) => i.name).join(', ');
-    throw new CheckoutError(`The following items are no longer available: ${names}`, 409, 'STOCK_UNAVAILABLE');
-  }
-
-  // Re-validate discount before payment
-  if (promoCode) {
-    try {
-      const freshDiscount = await discountService.findBestDiscount({
-        subtotal,
-        shippingCost: originalShippingCost || shippingCost,
-        currency,
-        manualCode: promoCode,
-      });
-      if (!freshDiscount || freshDiscount.code !== discount?.code) {
-        throw new CheckoutError(
-          'This promo code is no longer available',
-          409,
-          'PROMO_INVALID'
-        );
-      }
-    } catch (err) {
-      if (err instanceof CheckoutError) throw err;
-      throw new CheckoutError(
-        'This promo code is no longer available',
-        409,
-        'PROMO_INVALID'
-      );
+async function revalidatePromoCode({ promoCode, discount, subtotal, shippingCost, currency }) {
+  if (!promoCode) return;
+  try {
+    const freshDiscount = await discountService.findBestDiscount({
+      subtotal,
+      shippingCost,
+      currency,
+      manualCode: promoCode,
+    });
+    if (!freshDiscount || freshDiscount.code !== discount?.code) {
+      throw new CheckoutError('This promo code is no longer available', 409, 'PROMO_INVALID');
     }
+  } catch (err) {
+    if (err instanceof CheckoutError) throw err;
+    throw new CheckoutError('This promo code is no longer available', 409, 'PROMO_INVALID');
   }
+}
 
-  const provider = createPaymentProvider();
-  // The provider declares how it confirms payment: 'redirect' (async, confirmed by webhook)
-  // or 'sync' (inline). We branch on that capability rather than the provider's name, so a
-  // new provider needs no change here. The paymob_enabled flag can force the sync flow.
-  const paymobFeatureEnabled = await isEnabled('paymob_enabled');
-  const useRedirectFlow = provider.mode === 'redirect' && paymobFeatureEnabled !== false;
+// REDIRECT FLOW — order is created as 'pending_payment' and confirmed later by webhook.
+async function executeRedirectFlow({ session, provider, checkoutToken, paymentMethod, idempotencyKey, meta }) {
+  const { cartId, userId, contact, lineItems, total, currency, promoCode, discount } = session;
 
-  // ─────────────────────────────────────────────────────────────
-  // REDIRECT FLOW (async — order is pending_payment, confirmed by webhook)
-  // ─────────────────────────────────────────────────────────────
-  if (useRedirectFlow) {
-    // Step 1: Atomic transaction — stock decrement + promo + order (pending_payment) + transaction + cart clear
-    const mongoSession = await mongoose.startSession();
-    let order = null;
-    let paymentTransaction = null;
-
-    try {
-      await mongoSession.withTransaction(async () => {
-        // 1a. Decrement stock with optimistic locking (AD-1)
-        await decrementStockForItems(lineItems, mongoSession);
-
-        // 1b. Increment promo code usage count (if applicable)
-        if (promoCode && discount) {
-          await discountService.incrementUsageCount(promoCode, mongoSession);
-        }
-
-        // 1c. Create order with status 'pending_payment' — confirmed by webhook later
-        order = await Order.create([buildOrderDoc(session, 'pending_payment', idempotencyKey)], {
-          session: mongoSession,
-        });
-        order = order[0];
-
-        // 1d. Create pending PaymentTransaction
-        paymentTransaction = await PaymentTransaction.create(
-          [
-            {
-              orderId: order._id,
-              provider: paymentMethod,
-              amount: total,
-              currency,
-              status: 'pending',
-            },
-          ],
-          { session: mongoSession }
-        );
-        paymentTransaction = paymentTransaction[0];
-
-        // 1e. Link transaction to order
-        await Order.findByIdAndUpdate(
-          order._id,
-          { paymentTransactionId: paymentTransaction._id },
-          { session: mongoSession }
-        );
-
-        // 1f. Clear cart + release reservations
-        await clearCartAndReservations(cartId, mongoSession);
-      });
-    } catch (err) {
-      if (err instanceof CheckoutError) throw err;
-      if (err instanceof DiscountError) throw new CheckoutError(err.message, 409, err.code);
-      logger.error({ err, checkoutToken }, 'Checkout transaction failed');
-      throw new CheckoutError('Order creation failed. Please try again.', 500, 'ORDER_CREATION_FAILED');
-    } finally {
-      await mongoSession.endSession();
-    }
-
-    // Step 2: Create Paymob intention
-    let intent;
-    try {
-      intent = await provider.createPaymentIntent({
-        orderNumber: order.orderNumber,
-        total,
-        currency,
-        customerEmail: contact.email,
-        customerName: contact.name,
-        customerPhone: contact.phone,
-        lineItems: lineItems.map((item) => ({
-          title: item.name,
-          sku: item.sku,
-          unitPrice: item.unitPrice.amount,
-          quantity: item.quantity,
-        })),
-      });
-    } catch (err) {
-      logger.error({ err, orderId: order._id }, 'Paymob intention creation failed — compensating');
-      // Compensate: restore stock, delete order, decrement promo usage
-      await compensateFailedPayment({ order, lineItems, promoCode });
-      throw new CheckoutError(
-        'Unable to initialize payment. Please try again.',
-        503,
-        'PAYMENT_INIT_FAILED'
-      );
-    }
-
-    // Step 3: Update PaymentTransaction with intentId
-    try {
-      await PaymentTransaction.findByIdAndUpdate(paymentTransaction._id, {
-        intentId: intent.id,
-      });
-    } catch (err) {
-      logger.error({ err, orderId: order._id, intentId: intent.id }, 'Failed to store intentId on transaction');
-    }
-
-    // Audit: payment intent created
-    if (meta.requestId) {
-      createAuditEvent({
-        actor: userId || 'guest',
-        action: 'payment.intent_created',
-        target: order._id.toString(),
-        targetType: 'Order',
-        before: { status: 'pending_payment' },
-        after: { intentId: intent.id, provider: 'paymob', amount: total, currency },
-        requestId: meta.requestId,
-        ip: meta.ip,
-        userAgent: meta.userAgent,
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
-
-      // Audit: inventory decremented
-      emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
-    }
-
-    // Remove checkout session
-    await deleteCheckoutSession(checkoutToken);
-
-    // Return order + payUrl for frontend redirect
-    return { order, payUrl: intent.payUrl };
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SYNC FLOW (inline confirmation — stub provider / paymob fallback)
-  // ─────────────────────────────────────────────────────────────
-
-  // Step 1: Create payment intent (no charge yet)
-  const intent = await provider.createPaymentIntent({
-    orderNumber: 'pending',
-    total,
-    currency,
-    customerEmail: contact.email,
-  });
-
-  // Step 2: Atomic transaction — stock decrement + promo + order (pending) + cart clear
+  // Step 1: Atomic transaction — stock + promo + order (pending_payment) + payment tx + cart
   const mongoSession = await mongoose.startSession();
   let order = null;
+  let paymentTransaction = null;
 
   try {
     await mongoSession.withTransaction(async () => {
-      // 2a. Decrement stock with optimistic locking (AD-1)
       await decrementStockForItems(lineItems, mongoSession);
-
-      // 2b. Increment promo code usage count (if applicable)
       if (promoCode && discount) {
         await discountService.incrementUsageCount(promoCode, mongoSession);
       }
-
-      // 2c. Create order with paymentStatus 'pending' — confirmed after payment succeeds
-      order = await Order.create([buildOrderDoc(session, 'pending', idempotencyKey)], {
-        session: mongoSession,
-      });
+      order = await Order.create([buildOrderDoc(session, 'pending_payment', idempotencyKey)], { session: mongoSession });
       order = order[0];
-
-      // 2d. Clear cart + release reservations
+      paymentTransaction = await PaymentTransaction.create(
+        [{ orderId: order._id, provider: paymentMethod, amount: total, currency, status: 'pending' }],
+        { session: mongoSession }
+      );
+      paymentTransaction = paymentTransaction[0];
+      await Order.findByIdAndUpdate(order._id, { paymentTransactionId: paymentTransaction._id }, { session: mongoSession });
       await clearCartAndReservations(cartId, mongoSession);
     });
   } catch (err) {
@@ -539,7 +360,91 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     await mongoSession.endSession();
   }
 
-  // Step 3: Confirm payment — order exists in DB but is pending; if this fails we compensate
+  // Step 2: Create Paymob intention
+  let intent;
+  try {
+    intent = await provider.createPaymentIntent({
+      orderNumber: order.orderNumber,
+      total,
+      currency,
+      customerEmail: contact.email,
+      customerName: contact.name,
+      customerPhone: contact.phone,
+      lineItems: lineItems.map((item) => ({
+        title: item.name,
+        sku: item.sku,
+        unitPrice: item.unitPrice.amount,
+        quantity: item.quantity,
+      })),
+    });
+  } catch (err) {
+    logger.error({ err, orderId: order._id }, 'Paymob intention creation failed — compensating');
+    await compensateFailedPayment({ order, lineItems, promoCode });
+    throw new CheckoutError('Unable to initialize payment. Please try again.', 503, 'PAYMENT_INIT_FAILED');
+  }
+
+  // Step 3: Persist intentId (best-effort — a missing intentId is reconcilable via Paymob logs)
+  try {
+    await PaymentTransaction.findByIdAndUpdate(paymentTransaction._id, { intentId: intent.id });
+  } catch (err) {
+    logger.error({ err, orderId: order._id, intentId: intent.id }, 'Failed to store intentId on transaction');
+  }
+
+  if (meta.requestId) {
+    createAuditEvent({
+      actor: userId || 'guest',
+      action: 'payment.intent_created',
+      target: order._id.toString(),
+      targetType: 'Order',
+      before: { status: 'pending_payment' },
+      after: { intentId: intent.id, provider: 'paymob', amount: total, currency },
+      requestId: meta.requestId,
+      ip: meta.ip,
+      userAgent: meta.userAgent,
+    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
+  }
+
+  await deleteCheckoutSession(checkoutToken);
+  return { order, payUrl: intent.payUrl };
+}
+
+// SYNC FLOW — payment is confirmed inline; used by the stub provider and as a Paymob fallback.
+async function executeSyncFlow({ session, provider, checkoutToken, paymentMethod, idempotencyKey, meta }) {
+  const { cartId, userId, lineItems, total, currency, promoCode, discount } = session;
+
+  // Step 1: Create payment intent (no charge yet)
+  const intent = await provider.createPaymentIntent({
+    orderNumber: 'pending',
+    total,
+    currency,
+    customerEmail: session.contact.email,
+  });
+
+  // Step 2: Atomic transaction — stock + promo + order (pending) + cart
+  const mongoSession = await mongoose.startSession();
+  let order = null;
+
+  try {
+    await mongoSession.withTransaction(async () => {
+      await decrementStockForItems(lineItems, mongoSession);
+      if (promoCode && discount) {
+        await discountService.incrementUsageCount(promoCode, mongoSession);
+      }
+      order = await Order.create([buildOrderDoc(session, 'pending', idempotencyKey)], { session: mongoSession });
+      order = order[0];
+      await clearCartAndReservations(cartId, mongoSession);
+    });
+  } catch (err) {
+    if (err instanceof CheckoutError) throw err;
+    if (err instanceof DiscountError) throw new CheckoutError(err.message, 409, err.code);
+    logger.error({ err, checkoutToken }, 'Checkout transaction failed');
+    throw new CheckoutError('Order creation failed. Please try again.', 500, 'ORDER_CREATION_FAILED');
+  } finally {
+    await mongoSession.endSession();
+  }
+
+  // Step 3: Confirm payment — if this fails we compensate and surface the error
   const paymentResult = await provider.confirmPayment(intent.id);
 
   if (!paymentResult.success) {
@@ -564,7 +469,7 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     );
   }
 
-  // Step 4: Record payment + confirm order
+  // Step 4: Record payment transaction + confirm order
   const confirmSession = await mongoose.startSession();
   let paymentTransaction = null;
   try {
@@ -584,7 +489,6 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
         { session: confirmSession }
       );
       paymentTransaction = paymentTransaction[0];
-
       await Order.findByIdAndUpdate(
         order._id,
         { status: 'confirmed', paymentStatus: 'succeeded', paymentTransactionId: paymentTransaction._id },
@@ -598,10 +502,8 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
     await confirmSession.endSession();
   }
 
-  // Remove checkout session
   await deleteCheckoutSession(checkoutToken);
 
-  // Audit: order created
   if (meta.requestId) {
     createAuditEvent({
       actor: userId || 'guest',
@@ -627,11 +529,33 @@ async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotency
       userAgent: meta.userAgent,
     }).catch((err) => logger.error({ err }, 'Audit event failed'));
 
-    // Audit: inventory decremented
     emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
   }
 
   return order;
+}
+
+async function processOrder({ checkoutToken, paymentMethod = 'stub', idempotencyKey, meta = {} }) {
+  const session = await getCheckoutSession(checkoutToken);
+  if (!session) {
+    throw new CheckoutError('Checkout session expired or invalid', 400, 'INVALID_CHECKOUT_TOKEN');
+  }
+
+  const { cartId, userId, subtotal, shippingCost, originalShippingCost, discount, currency, promoCode } = session;
+
+  await validateCheckout({ cartId, userId });
+  await revalidatePromoCode({ promoCode, discount, subtotal, shippingCost: originalShippingCost || shippingCost, currency });
+
+  const provider = createPaymentProvider();
+  // Branch on provider capability, not name — a new provider needs no change here.
+  // paymob_enabled flag can force the sync flow even when the provider supports redirects.
+  const paymobFeatureEnabled = await isEnabled('paymob_enabled');
+  const useRedirectFlow = provider.mode === 'redirect' && paymobFeatureEnabled !== false;
+
+  if (useRedirectFlow) {
+    return executeRedirectFlow({ session, provider, checkoutToken, paymentMethod, idempotencyKey, meta });
+  }
+  return executeSyncFlow({ session, provider, checkoutToken, paymentMethod, idempotencyKey, meta });
 }
 
 module.exports = {

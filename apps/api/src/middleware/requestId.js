@@ -1,4 +1,4 @@
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('node:crypto');
 
 function requestIdMiddleware(req, res, next) {
   const requestId = req.get('x-request-id') || randomUUID();
