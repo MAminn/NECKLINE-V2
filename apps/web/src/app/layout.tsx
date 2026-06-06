@@ -94,10 +94,11 @@ export default function RootLayout({
                   </nav>
 
                   {/* Right side: Auth + Cart */}
-                  <div className="flex items-center gap-3 lg:gap-5">
+                  <div className="flex items-center gap-[10px]">
                     <div className="hidden sm:block">
                       <HeaderAuth />
                     </div>
+                    <div className="hidden sm:block w-[3px] h-[3px] rounded-full bg-white/[0.18] shrink-0" aria-hidden="true" />
                     <CartIcon />
                     <MobileMenu />
                   </div>
