@@ -11,8 +11,9 @@
 
 ```bash
 cd apps/api
+# Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD in apps/api/.env first
 node scripts/seedAdmin.js
-# Creates admin@neckline.com / Admin123! with role: 'admin'
+# Creates (or promotes + rotates the password of) the admin from those env vars
 ```
 
 Or via the DB directly:

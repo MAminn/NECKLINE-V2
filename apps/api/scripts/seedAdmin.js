@@ -1,34 +1,49 @@
+require('dotenv').config();
+
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
 const { hashPassword } = require('../src/utils/passwordUtils');
 
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  'mongodb://dev:devpassword@localhost:27017/neckline?authSource=admin';
+// All credentials come from the environment — no hardcoded fallbacks.
+// Set these in apps/api/.env (gitignored) or your deployment's secret store.
+const MONGODB_URI = process.env.MONGODB_URI;
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+
+const missing = [
+  !MONGODB_URI && 'MONGODB_URI',
+  !ADMIN_EMAIL && 'SEED_ADMIN_EMAIL',
+  !ADMIN_PASSWORD && 'SEED_ADMIN_PASSWORD',
+].filter(Boolean);
+
+if (missing.length > 0) {
+  console.error(`Missing required env var(s): ${missing.join(', ')}`);
+  console.error('Set them in apps/api/.env or your secret store before seeding.');
+  process.exit(1);
+}
 
 async function seed() {
   await mongoose.connect(MONGODB_URI);
 
-  const email = 'admin@neckline.com';
-  const password = 'Admin123!';
-
-  const existing = await User.findOne({ email });
+  const existing = await User.findOne({ email: ADMIN_EMAIL });
 
   if (existing) {
-    // Promote existing user to admin
+    // Promote to admin and rotate the password to the current env value.
     existing.role = 'admin';
+    existing.passwordHash = await hashPassword(ADMIN_PASSWORD);
     await existing.save();
-    console.log(`Updated existing user ${email} → role: admin`);
+    console.log(`Updated existing user ${ADMIN_EMAIL} → role: admin, password rotated`);
   } else {
-    const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(ADMIN_PASSWORD);
     await User.create({
       name: 'Admin',
-      email,
+      email: ADMIN_EMAIL,
       passwordHash,
       role: 'admin',
       emailVerified: true,
     });
-    console.log(`Created admin user: ${email} / ${password}`);
+    // Never log the password — operator already knows it from the env var.
+    console.log(`Created admin user: ${ADMIN_EMAIL}`);
   }
 
   await mongoose.disconnect();
