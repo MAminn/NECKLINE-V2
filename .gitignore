@@ -33,3 +33,9 @@ Thumbs.db
 # Misc
 *.tgz
 .cache/
+
+# Impeccable skill tooling (installed, not project source)
+.agents/
+.claude/skills/
+.impeccable/
+skills-lock.json
