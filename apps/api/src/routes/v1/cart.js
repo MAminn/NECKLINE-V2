@@ -6,6 +6,7 @@ const rateLimitPromo = require('../../middleware/rateLimitPromo');
 const maybeAuthenticate = require('../../middleware/maybeAuthenticate');
 const validate = require('../../middleware/validate');
 const { applyPromoSchema } = require('../../validators/promoCodeSchemas');
+const { addItemSchema, updateItemSchema, itemParamsSchema } = require('../../validators/cartSchemas');
 
 const router = Router();
 
@@ -50,6 +51,7 @@ router.get('/', async (req, res, next) => {
 router.post(
   '/items',
   rateLimitCart,
+  validate(addItemSchema),
   idempotencyMiddleware,
   async (req, res, next) => {
     try {
@@ -73,7 +75,7 @@ router.post(
 );
 
 // PATCH /api/v1/cart/items/:productId
-router.patch('/items/:productId', rateLimitCart, async (req, res, next) => {
+router.patch('/items/:productId', rateLimitCart, validate(updateItemSchema), async (req, res, next) => {
   try {
     const { quantity } = req.body;
     const userId = req.user?.id || null;
@@ -96,7 +98,7 @@ router.patch('/items/:productId', rateLimitCart, async (req, res, next) => {
 });
 
 // DELETE /api/v1/cart/items/:productId
-router.delete('/items/:productId', rateLimitCart, async (req, res, next) => {
+router.delete('/items/:productId', rateLimitCart, validate(itemParamsSchema), async (req, res, next) => {
   try {
     const userId = req.user?.id || null;
     const cartId = getCartId(req);
