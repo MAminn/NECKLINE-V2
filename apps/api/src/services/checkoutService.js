@@ -24,13 +24,24 @@ function createCheckoutToken() {
   return `cko_${crypto.randomBytes(16).toString('hex')}`;
 }
 
+// Checkout tokens arrive from request bodies, so coerce to a primitive string before
+// building any query. This prevents an attacker-supplied object (e.g. { $gt: '' }) from
+// being interpreted as a MongoDB query operator (NoSQL operator injection).
+function normalizeToken(token) {
+  return typeof token === 'string' ? token : null;
+}
+
 async function getCheckoutSession(token) {
-  const doc = await CheckoutSession.findOne({ token }).lean();
+  const safeToken = normalizeToken(token);
+  if (!safeToken) return null;
+  const doc = await CheckoutSession.findOne({ token: safeToken }).lean();
   return doc ? doc.data : null;
 }
 
 async function deleteCheckoutSession(token) {
-  await CheckoutSession.deleteOne({ token });
+  const safeToken = normalizeToken(token);
+  if (!safeToken) return;
+  await CheckoutSession.deleteOne({ token: safeToken });
 }
 
 class CheckoutError extends Error {
