@@ -1,0 +1,17 @@
+# gitleaks configuration for NECKLINE
+# Extends the built-in ruleset; adds an allowlist for intentional local-dev
+# credentials that are not real secrets (documented in CLAUDE.md / .env.example).
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Intentional local-development credentials — localhost only, never used in production"
+regexes = [
+  # Local Docker MongoDB dev credential (see docker-compose.yml, .env.example, CLAUDE.md)
+  '''devpassword''',
+]
+paths = [
+  # Example env files contain placeholders, not live secrets
+  '''.*\.env\.example$''',
+]

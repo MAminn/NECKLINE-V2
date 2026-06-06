@@ -1,0 +1,4 @@
+# Keep shell scripts and git hooks LF-only so they run on Linux CI and macOS,
+# regardless of the committer's core.autocrlf setting on Windows.
+*.sh text eol=lf
+.githooks/** text eol=lf
