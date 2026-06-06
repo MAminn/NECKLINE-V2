@@ -13,6 +13,11 @@ jest.mock('../../../src/config/logger', () => ({
   error: jest.fn(),
 }));
 
+const mongoose = require('mongoose');
+
+// Helper: build a query mock whose .lean() resolves to `value` (matches `.findOne(...).lean()`).
+const leanResolving = (value) => ({ lean: () => Promise.resolve(value) });
+
 const Order = require('../../../src/models/Order');
 const PaymentTransaction = require('../../../src/models/PaymentTransaction');
 const orderService = require('../../../src/services/orderService');
@@ -26,6 +31,12 @@ describe('POST /webhooks/paymob', () => {
     app.use(express.json());
     app.use('/webhooks/paymob', webhookRouter);
     jest.clearAllMocks();
+
+    // Stub the Mongoose session so withTransaction runs its callback without a real DB.
+    jest.spyOn(mongoose, 'startSession').mockResolvedValue({
+      withTransaction: async (fn) => fn(),
+      endSession: jest.fn().mockResolvedValue(undefined),
+    });
   });
 
   it('returns 400 for missing intent_id', async () => {
@@ -38,7 +49,7 @@ describe('POST /webhooks/paymob', () => {
   });
 
   it('returns 200 for duplicate already-processed transaction', async () => {
-    PaymentTransaction.findOne.mockResolvedValue({ status: 'succeeded', providerTransactionId: 'txn_123' });
+    PaymentTransaction.findOne.mockReturnValue(leanResolving({ status: 'succeeded', providerTransactionId: 'txn_123' }));
 
     const res = await request(app)
       .post('/webhooks/paymob')
@@ -52,7 +63,7 @@ describe('POST /webhooks/paymob', () => {
   });
 
   it('returns 404 when order not found', async () => {
-    PaymentTransaction.findOne.mockResolvedValue(null);
+    PaymentTransaction.findOne.mockReturnValue(leanResolving(null));
     orderService.getOrderByIntentId.mockResolvedValue(null);
 
     const res = await request(app)
@@ -66,7 +77,7 @@ describe('POST /webhooks/paymob', () => {
   });
 
   it('returns 400 when amount mismatches', async () => {
-    PaymentTransaction.findOne.mockResolvedValue(null);
+    PaymentTransaction.findOne.mockReturnValue(leanResolving(null));
     orderService.getOrderByIntentId.mockResolvedValue({
       _id: 'order123',
       total: 5000,
@@ -85,7 +96,7 @@ describe('POST /webhooks/paymob', () => {
   });
 
   it('confirms order on valid webhook', async () => {
-    PaymentTransaction.findOne.mockResolvedValue(null);
+    PaymentTransaction.findOne.mockReturnValue(leanResolving(null));
     orderService.getOrderByIntentId.mockResolvedValue({
       _id: 'order123',
       orderNumber: 'ORD-001',
