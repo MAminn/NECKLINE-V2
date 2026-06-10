@@ -31,17 +31,20 @@ function normalizeToken(token) {
   return typeof token === 'string' ? token : null;
 }
 
+// Queries always match the token via the explicit $eq operator. Even if a non-string
+// value slipped past normalizeToken, $eq forces Mongo to compare it as a literal value
+// rather than interpreting it as query operators — defense-in-depth against NoSQL injection.
 async function getCheckoutSession(token) {
   const safeToken = normalizeToken(token);
   if (!safeToken) return null;
-  const doc = await CheckoutSession.findOne({ token: safeToken }).lean();
+  const doc = await CheckoutSession.findOne({ token: { $eq: safeToken } }).lean();
   return doc ? doc.data : null;
 }
 
 async function deleteCheckoutSession(token) {
   const safeToken = normalizeToken(token);
   if (!safeToken) return;
-  await CheckoutSession.deleteOne({ token: safeToken });
+  await CheckoutSession.deleteOne({ token: { $eq: safeToken } });
 }
 
 class CheckoutError extends Error {
