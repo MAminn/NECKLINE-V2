@@ -153,7 +153,7 @@ async function getOrCreateCart(cartId, userId = null) {
   return Cart.create({ items: [] });
 }
 
-async function getCart(cartId, userId = null) {
+async function resolveCart(cartId, userId = null) {
   let cart = null;
   if (userId) {
     cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
@@ -161,6 +161,11 @@ async function getCart(cartId, userId = null) {
   if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
     cart = await Cart.findById(cartId);
   }
+  return cart;
+}
+
+async function getCart(cartId, userId = null) {
+  const cart = await resolveCart(cartId, userId);
   if (!cart) return null;
   const availabilityMap = await buildAvailabilityMap(cart);
   const discountInfo = await computeCartDiscount(cart);
@@ -244,13 +249,7 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
     throw new CartError('Quantity must be between 1 and 99', 400);
   }
 
-  let cart = null;
-  if (meta.userId) {
-    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, meta.userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
   const itemIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
@@ -299,13 +298,7 @@ async function removeItem(cartId, productId, meta = {}) {
     throw new CartError('Invalid productId', 400);
   }
 
-  let cart = null;
-  if (meta.userId) {
-    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, meta.userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
   const itemIndex = cart.items.findIndex((i) => i.productId.toString() === productId);
@@ -343,13 +336,7 @@ async function removeItem(cartId, productId, meta = {}) {
 }
 
 async function clearCart(cartId, meta = {}) {
-  let cart = null;
-  if (meta.userId) {
-    cart = await Cart.findOne({ userId: meta.userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, meta.userId);
   if (!cart) return { cartId: null, items: [], itemCount: 0, subtotal: null };
 
   const beforeCount = cart.items.reduce((s, i) => s + i.quantity, 0);
@@ -386,13 +373,7 @@ async function clearCart(cartId, meta = {}) {
 }
 
 async function refreshCart(cartId, userId = null) {
-  let cart = null;
-  if (userId) {
-    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
   for (const item of cart.items) {
@@ -414,13 +395,7 @@ async function refreshCart(cartId, userId = null) {
 }
 
 async function applyPromoCode(cartId, userId, code) {
-  let cart = null;
-  if (userId) {
-    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
   const subtotal = computeSubtotal(cart.items);
@@ -441,13 +416,7 @@ async function applyPromoCode(cartId, userId, code) {
 }
 
 async function removePromoCode(cartId, userId) {
-  let cart = null;
-  if (userId) {
-    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
-  }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
-  }
+  const cart = await resolveCart(cartId, userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
   cart.appliedPromoCode = null;
