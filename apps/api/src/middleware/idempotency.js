@@ -15,10 +15,46 @@ const IN_PROGRESS_BODY = {
 };
 
 /**
+ * Try to insert the reservation. Returns an outcome for the two terminal cases
+ * (we won the insert, or the DB failed for a non-duplicate reason) and null on a
+ * duplicate-key collision, which the caller resolves by looking up the holder.
+ */
+async function tryInsertReservation(key) {
+  try {
+    await IdempotencyKey.create({ key, status: 'in_progress' });
+    return { outcome: 'reserved' };
+  } catch (err) {
+    return err?.code === 11000 ? null : { outcome: 'error', err };
+  }
+}
+
+/**
+ * After a duplicate-key collision, classify the record that beat us. Returns null
+ * when it vanished between our failed insert and this lookup (the original request
+ * released it after a non-2xx) — the slot is free again and the caller may retry.
+ */
+async function classifyExistingKey(key) {
+  let existing;
+  try {
+    existing = await IdempotencyKey.findOne({ key: { $eq: key } }).lean();
+  } catch (err) {
+    return { outcome: 'error', err };
+  }
+
+  if (!existing) {
+    return null;
+  }
+
+  return existing.status === 'completed'
+    ? { outcome: 'replay', statusCode: existing.statusCode || 200, response: existing.response }
+    : { outcome: 'in_progress' };
+}
+
+/**
  * Atomically reserve the key using a unique-index insert. Only one concurrent inserter
- * can win. If the reservation vanishes between our failed insert and the lookup (the
- * original request released it after a non-2xx), the slot is free again — re-attempt a
- * few times before giving up so a transient release doesn't turn into a spurious 409.
+ * can win. If the reservation vanishes between our failed insert and the lookup, the
+ * slot is free again — re-attempt a few times before giving up so a transient release
+ * doesn't turn into a spurious 409.
  *
  * Returns a tagged outcome the middleware dispatches on:
  *   { outcome: 'reserved' }                          — we own the key, run the handler
@@ -28,32 +64,19 @@ const IN_PROGRESS_BODY = {
  */
 async function reserveKey(key) {
   for (let attempt = 1; attempt <= MAX_RESERVE_ATTEMPTS; attempt += 1) {
-    try {
-      await IdempotencyKey.create({ key, status: 'in_progress' });
-      return { outcome: 'reserved' };
-    } catch (err) {
-      if (!err || err.code !== 11000) {
-        return { outcome: 'error', err };
-      }
+    const inserted = await tryInsertReservation(key);
+    if (inserted) {
+      return inserted;
+    }
 
-      let existing;
-      try {
-        existing = await IdempotencyKey.findOne({ key: { $eq: key } }).lean();
-      } catch (lookupErr) {
-        return { outcome: 'error', err: lookupErr };
-      }
+    const existing = await classifyExistingKey(key);
+    if (existing) {
+      return existing;
+    }
 
-      if (existing) {
-        return existing.status === 'completed'
-          ? { outcome: 'replay', statusCode: existing.statusCode || 200, response: existing.response }
-          : { outcome: 'in_progress' };
-      }
-
-      // existing === null: the reservation was released between our insert and lookup.
-      // Back off briefly, then retry.
-      if (attempt < MAX_RESERVE_ATTEMPTS) {
-        await sleep(RESERVE_RETRY_DELAY_MS);
-      }
+    // The reservation was released between our insert and lookup. Back off, retry.
+    if (attempt < MAX_RESERVE_ATTEMPTS) {
+      await sleep(RESERVE_RETRY_DELAY_MS);
     }
   }
 
@@ -62,8 +85,27 @@ async function reserveKey(key) {
 }
 
 /**
- * Wrap res.json so the reservation is filled with the response on a 2xx, or released
- * on a non-2xx so the client can retry a genuine failure.
+ * Release the reservation so a retry with the same key is not stuck behind a 409.
+ * Failure here is logged but not rethrown — the partial in_progress TTL index on
+ * IdempotencyKey is the backstop that eventually frees the slot.
+ */
+async function releaseReservation(key, context) {
+  try {
+    await IdempotencyKey.deleteOne({ key: { $eq: key } });
+  } catch (err) {
+    logger.error({ err, key }, `Failed to release idempotency reservation ${context}`);
+  }
+}
+
+/**
+ * Settle the reservation BEFORE the response bytes leave the process:
+ *   2xx     → mark completed with the stored body (replays serve this)
+ *   non-2xx → release the reservation so the client can retry a genuine failure
+ *
+ * If persisting the completed response fails, the reservation is released instead,
+ * so retries re-execute the handler rather than 409-ing until the in_progress TTL.
+ * The response is always sent afterwards — the handler's side effects are already
+ * committed, so withholding the 2xx would only desync the client further.
  */
 function persistResponseOnFinish(res, key) {
   const originalJson = res.json.bind(res);
@@ -71,20 +113,25 @@ function persistResponseOnFinish(res, key) {
   res.json = function patchedJson(body) {
     const statusCode = res.statusCode;
 
-    if (statusCode >= 200 && statusCode < 300) {
-      IdempotencyKey.findOneAndUpdate(
-        { key: { $eq: key } },
-        { status: 'completed', statusCode, response: body }
-      ).catch((err) => {
-        logger.error({ err, key }, 'Failed to persist idempotency response');
-      });
-    } else {
-      IdempotencyKey.deleteOne({ key: { $eq: key } }).catch((err) => {
-        logger.error({ err, key }, 'Failed to release idempotency reservation after error');
-      });
-    }
+    const settle = async () => {
+      if (statusCode >= 200 && statusCode < 300) {
+        try {
+          await IdempotencyKey.findOneAndUpdate(
+            { key: { $eq: key } },
+            { status: 'completed', statusCode, response: body }
+          );
+        } catch (err) {
+          logger.error({ err, key }, 'Failed to persist idempotency response');
+          await releaseReservation(key, 'after persist failure');
+        }
+      } else {
+        await releaseReservation(key, 'after error response');
+      }
+    };
 
-    return originalJson(body);
+    settle().finally(() => originalJson(body));
+
+    return res;
   };
 }
 

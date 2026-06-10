@@ -64,9 +64,23 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: true, message: 'Order not found' });
     }
 
-    // 3. Verify amount matches order total (within tolerance for decimal rounding)
-    const webhookAmount = typeof amountCents === 'number' ? amountCents : parseInt(amountCents, 10);
-    if (webhookAmount && webhookAmount !== order.total) {
+    // 3. Verify amount: must be a positive integer exactly equal to order.total.
+    // A missing/zero/NaN amount is a hard failure — never confirm an order
+    // without a verified amount.
+    const webhookAmount = typeof amountCents === 'number'
+      ? amountCents
+      : (typeof amountCents === 'string' && /^\d+$/.test(amountCents))
+        ? parseInt(amountCents, 10)
+        : NaN;
+    if (!Number.isInteger(webhookAmount) || webhookAmount <= 0) {
+      logger.error(
+        { orderId: order._id, expected: order.total, received: amountCents },
+        'Paymob webhook: missing or invalid amount'
+      );
+      return res.status(400).json({ error: true, message: 'Missing or invalid amount' });
+    }
+
+    if (webhookAmount !== order.total) {
       logger.error(
         { orderId: order._id, expected: order.total, received: webhookAmount },
         'Paymob webhook: amount mismatch'

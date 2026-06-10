@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, FormEvent } from "react";
+import { apiClient } from "../../lib/api";
 import { Review } from "../../types/nickline";
 import { Star, Check, PenTool, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +20,7 @@ export default function Reviews() {
   const [rating, setRating] = useState(5);
   const [product, setProduct] = useState("CAIRO");
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // Load reviews from API dynamic backend
   const fetchReviews = async () => {
@@ -48,11 +50,14 @@ export default function Reviews() {
   const handleSubmitReview = async (e: FormEvent) => {
     e.preventDefault();
     if (!name || !comment) return;
+    setSubmitError("");
 
     try {
-      const res = await fetch("/api/testimonials", {
+      // Goes through apiClient (direct API origin) so the CSRF cookie +
+      // x-csrf-token header travel with the request; the /api rewrite proxy
+      // would drop the API-domain cookies.
+      await apiClient("/testimonials", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           rating,
@@ -62,20 +67,19 @@ export default function Reviews() {
         })
       });
 
-      if (res.ok) {
-        setSuccess(true);
-        setName("");
-        setComment("");
-        setRating(5);
-        fetchReviews(); // immediately reload loop!
+      setSuccess(true);
+      setName("");
+      setComment("");
+      setRating(5);
+      fetchReviews(); // immediately reload loop!
 
-        setTimeout(() => {
-          setSuccess(false);
-          setShowForm(false);
-        }, 2500);
-      }
+      setTimeout(() => {
+        setSuccess(false);
+        setShowForm(false);
+      }, 2500);
     } catch (err) {
       console.error("Failed submitting review to live API:", err);
+      setSubmitError(err instanceof Error ? err.message : "Failed to submit review");
     }
   };
 
@@ -238,6 +242,11 @@ export default function Reviews() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmitReview} className="space-y-4 text-left">
+                  {submitError && (
+                    <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
+                      {submitError}
+                    </div>
+                  )}
                   <div>
                     <label className="text-[10px] tracking-wider font-mono text-neutral-400 uppercase block mb-1">Your Name</label>
                     <input

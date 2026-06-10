@@ -1,3 +1,5 @@
+import { getCsrfToken, invalidateCsrfToken, isSafeMethod } from './csrf';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 function generateCorrelationId(): string {
@@ -39,11 +41,30 @@ async function checkoutClient(path: string, options: ApiOptions = {}) {
     headers['idempotency-key'] = options.idempotencyKey;
   }
 
-  const response = await fetch(url, {
+  if (!isSafeMethod(options.method)) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) headers['x-csrf-token'] = csrfToken;
+  }
+
+  let response = await fetch(url, {
     ...options,
     headers,
     credentials: 'include',
   });
+
+  // Stale/missing CSRF token (e.g. cookie expired): fetch a fresh one and retry once
+  if (response.status === 403 && !isSafeMethod(options.method)) {
+    invalidateCsrfToken();
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken;
+      response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+    }
+  }
 
   const data = await response.json().catch(() => null);
 

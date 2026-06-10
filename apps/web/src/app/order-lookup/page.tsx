@@ -41,7 +41,7 @@ export default function OrderLookupPage() {
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-              placeholder="NECK-1234567890-ABCD"
+              placeholder="NECK-1234567890123-AB12CD34"
               required
             />
           </div>

@@ -5,8 +5,9 @@ const logger = require('../config/logger');
  * Express middleware that captures raw body and verifies Paymob webhook HMAC signature.
  * Must be mounted BEFORE express.json() to preserve raw body bytes.
  *
- * In mock/development mode (PAYMOB_HMAC_SECRET not set), signatures are skipped
- * but a warning is logged.
+ * If PAYMOB_HMAC_SECRET is not set: requests are rejected (503) unless
+ * NODE_ENV is explicitly 'development' or 'test', which skips verification
+ * with a warning.
  */
 function verifyPaymobWebhook(req, res, next) {
   const hmacSecret = process.env.PAYMOB_HMAC_SECRET;
@@ -30,11 +31,21 @@ function verifyPaymobWebhook(req, res, next) {
       return res.status(400).json({ error: true, message: 'Invalid JSON payload' });
     }
 
-    // Skip verification if no HMAC secret configured (mock/dev mode)
+    // Missing HMAC secret: fail closed — an unverifiable webhook must never
+    // confirm an order. Skipping is only allowed when NODE_ENV is explicitly
+    // 'development' or 'test'; undefined/misconfigured NODE_ENV rejects.
     if (!hmacSecret || hmacSecret.length === 0) {
+      const env = process.env.NODE_ENV;
+      if (env !== 'development' && env !== 'test') {
+        logger.error(
+          { path: req.path },
+          'Paymob webhook REJECTED — PAYMOB_HMAC_SECRET not set'
+        );
+        return res.status(503).json({ error: true, message: 'Webhook verification unavailable' });
+      }
       logger.warn(
         { path: req.path },
-        'Paymob webhook signature verification SKIPPED — PAYMOB_HMAC_SECRET not set'
+        'Paymob webhook signature verification SKIPPED — PAYMOB_HMAC_SECRET not set (development/test)'
       );
       return next();
     }

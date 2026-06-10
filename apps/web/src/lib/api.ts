@@ -1,3 +1,5 @@
+import { getCsrfToken, invalidateCsrfToken, isSafeMethod } from './csrf';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 function generateCorrelationId(): string {
@@ -13,9 +15,11 @@ interface ApiOptions extends RequestInit {
 
 async function refreshAccessToken(): Promise<boolean> {
   try {
+    const csrfToken = await getCsrfToken();
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
+      headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
     });
     return res.ok;
   } catch {
@@ -37,6 +41,11 @@ async function apiClient(path: string, options: ApiOptions = {}) {
     headers['idempotency-key'] = options.idempotencyKey;
   }
 
+  if (!isSafeMethod(options.method)) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) headers['x-csrf-token'] = csrfToken;
+  }
+
   let response = await fetch(url, {
     ...options,
     headers,
@@ -47,6 +56,20 @@ async function apiClient(path: string, options: ApiOptions = {}) {
   if (response.status === 401 && path !== '/auth/refresh') {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
+      response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+    }
+  }
+
+  // Stale/missing CSRF token (e.g. cookie expired): fetch a fresh one and retry once
+  if (response.status === 403 && !isSafeMethod(options.method)) {
+    invalidateCsrfToken();
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken;
       response = await fetch(url, {
         ...options,
         headers,

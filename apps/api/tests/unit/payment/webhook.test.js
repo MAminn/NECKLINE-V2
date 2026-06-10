@@ -95,6 +95,34 @@ describe('POST /webhooks/paymob', () => {
     expect(res.status).toBe(400);
   });
 
+  it.each([
+    ['decimal string', '100.50'],
+    ['trailing garbage', '10000abc'],
+    ['non-numeric', 'abc'],
+    ['negative', '-10000'],
+    ['zero', 0],
+    ['non-integer number', 100.5],
+    ['missing', undefined],
+  ])('returns 400 for malformed amount (%s)', async (_label, amount) => {
+    PaymentTransaction.findOne.mockReturnValue(leanResolving(null));
+    orderService.getOrderByIntentId.mockResolvedValue({
+      _id: 'order123',
+      total: 10000,
+      status: 'pending_payment',
+      paymentStatus: 'pending',
+    });
+
+    const res = await request(app)
+      .post('/webhooks/paymob')
+      .send({
+        type: 'transaction',
+        data: { intention_id: 'int_123', transaction_id: 'txn_123', amount },
+      });
+
+    expect(res.status).toBe(400);
+    expect(PaymentTransaction.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('confirms order on valid webhook', async () => {
     PaymentTransaction.findOne.mockReturnValue(leanResolving(null));
     orderService.getOrderByIntentId.mockResolvedValue({

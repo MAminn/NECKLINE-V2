@@ -5,10 +5,12 @@ const authenticate = require('../../middleware/authenticate');
 const maybeAuthenticate = require('../../middleware/maybeAuthenticate');
 const requireCheckoutEnabled = require('../../middleware/requireCheckoutEnabled');
 const { rateLimitOrderCreate } = require('../../middleware/rateLimitCheckout');
+const { rateLimitOrderLookup } = require('../../middleware/rateLimitOrderLookup');
 const idempotencyMiddleware = require('../../middleware/idempotency');
 const checkoutService = require('../../services/checkoutService');
 const orderService = require('../../services/orderService');
 const { CheckoutError } = require('../../services/checkoutService');
+const { timingSafeStringEqual } = require('../../utils/timingSafeStringEqual');
 
 const router = Router();
 
@@ -61,6 +63,7 @@ router.post(
 // GET /api/v1/orders/:orderNumber
 router.get(
   '/:orderNumber',
+  rateLimitOrderLookup,
   validate(orderLookupSchema),
   maybeAuthenticate,
   async (req, res, next) => {
@@ -81,7 +84,9 @@ router.get(
         }
       } else {
         // Guest order: email is required and must match
-        if (!email || order.customerEmail.toLowerCase() !== email.toLowerCase()) {
+        const customerEmail =
+          typeof order.customerEmail === 'string' ? order.customerEmail : '';
+        if (!email || !customerEmail || !timingSafeStringEqual(customerEmail.toLowerCase(), email.toLowerCase())) {
           return res.status(404).json({ error: true, message: 'Order not found' });
         }
       }

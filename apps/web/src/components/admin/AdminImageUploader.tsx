@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { apiClient } from '../../lib/api';
+import { getCsrfToken, invalidateCsrfToken } from '../../lib/csrf';
 
 interface AdminImageUploaderProps {
   value: string;
@@ -22,10 +22,21 @@ export default function AdminImageUploader({ value, onChange, label = 'Image URL
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/admin/uploads`,
-        { method: 'POST', body: formData, credentials: 'include' }
-      );
+      const uploadUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/admin/uploads`;
+      const doUpload = async (csrfToken: string | null) =>
+        fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+          headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
+        });
+      let res = await doUpload(await getCsrfToken());
+      // Stale/missing CSRF token (e.g. cookie expired): fetch a fresh one and retry once
+      if (res.status === 403) {
+        invalidateCsrfToken();
+        const csrfToken = await getCsrfToken();
+        if (csrfToken) res = await doUpload(csrfToken);
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || 'Upload failed');

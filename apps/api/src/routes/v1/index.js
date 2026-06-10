@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const { csrfProtection, issueCsrfToken } = require('../../middleware/csrf');
 const healthRoutes = require('./health');
 const productsRoutes = require('./products');
 const cartRoutes = require('./cart');
@@ -27,6 +28,15 @@ const adminActivityLogRoutes = require('./admin/activityLog');
 const adminUploadsRoutes = require('./admin/uploads');
 
 const router = Router();
+
+// CSRF bootstrap + protection. The token endpoint must be registered first;
+// csrfProtection only inspects state-changing methods, so GETs are unaffected.
+// The Paymob webhook is mounted in app.js BEFORE this router (HMAC-verified),
+// so it is intentionally outside CSRF protection.
+router.get('/csrf', (req, res) => {
+  res.json({ csrfToken: issueCsrfToken(res) });
+});
+router.use(csrfProtection);
 
 router.use('/health', healthRoutes);
 router.use('/products', productsRoutes);
