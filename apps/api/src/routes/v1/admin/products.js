@@ -6,6 +6,7 @@ const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { createProductSchema, updateProductSchema } = require('../../../validators/adminSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
+const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
 
@@ -47,13 +48,16 @@ router.get('/', async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.search) {
+    if (typeof req.query.search === 'string' && req.query.search) {
+      const search = escapeRegex(req.query.search);
       filter.$or = [
-        { name: { $regex: req.query.search, $options: 'i' } },
-        { sku: { $regex: req.query.search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { sku: { $regex: search, $options: 'i' } },
       ];
     }
-    if (req.query.category) filter.category = req.query.category;
+    if (typeof req.query.category === 'string' && req.query.category) {
+      filter.category = { $eq: req.query.category };
+    }
     if (req.query.status === 'OUT OF STOCK') {
       filter.$or = [{ stockOnHand: 0 }, { purchasable: false }];
     } else if (req.query.status === 'LOW STOCK') {

@@ -64,7 +64,7 @@ router.post('/register', rateLimitRegister, async (req, res, next) => {
     const guestCartId = req.cookies?.cartId;
     if (guestCartId) {
       await cartService.mergeGuestCart(guestCartId, result.user.id);
-      res.clearCookie('cartId', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
+      res.clearCookie('cartId', COOKIE_OPTIONS);
     }
 
     setAuthCookies(res, result.accessToken, result.refreshToken);
@@ -89,7 +89,7 @@ router.post('/login', rateLimitLogin, async (req, res, next) => {
     const guestCartId = req.cookies?.cartId;
     if (guestCartId) {
       await cartService.mergeGuestCart(guestCartId, result.user.id);
-      res.clearCookie('cartId', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
+      res.clearCookie('cartId', COOKIE_OPTIONS);
     }
 
     setAuthCookies(res, result.accessToken, result.refreshToken);

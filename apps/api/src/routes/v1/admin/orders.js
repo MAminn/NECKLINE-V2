@@ -6,8 +6,13 @@ const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { updateOrderSchema } = require('../../../validators/adminSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
+const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
+
+// Mirror the Order schema enums (models/Order.js).
+const ORDER_STATUSES = ['pending', 'pending_payment', 'confirmed', 'cancelled'];
+const FULFILLMENT_STATUSES = ['unfulfilled', 'processing', 'shipped', 'delivered'];
 
 router.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
@@ -42,15 +47,20 @@ router.get('/', async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.search) {
+    if (typeof req.query.search === 'string' && req.query.search) {
+      const search = escapeRegex(req.query.search);
       filter.$or = [
-        { orderNumber: { $regex: req.query.search, $options: 'i' } },
-        { customerEmail: { $regex: req.query.search, $options: 'i' } },
-        { customerName: { $regex: req.query.search, $options: 'i' } },
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { customerEmail: { $regex: search, $options: 'i' } },
+        { customerName: { $regex: search, $options: 'i' } },
       ];
     }
-    if (req.query.fulfillmentStatus) filter.fulfillmentStatus = req.query.fulfillmentStatus;
-    if (req.query.status) filter.status = req.query.status;
+    if (FULFILLMENT_STATUSES.includes(req.query.fulfillmentStatus)) {
+      filter.fulfillmentStatus = { $eq: req.query.fulfillmentStatus };
+    }
+    if (ORDER_STATUSES.includes(req.query.status)) {
+      filter.status = { $eq: req.query.status };
+    }
 
     const [orders, total] = await Promise.all([
       Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),

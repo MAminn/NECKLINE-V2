@@ -3,11 +3,12 @@
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from '../../components/LoginForm';
+import { safeInternalPath } from '../../lib/safeUrl';
 
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') || '/';
+  const returnUrl = safeInternalPath(searchParams.get('returnUrl'));
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">

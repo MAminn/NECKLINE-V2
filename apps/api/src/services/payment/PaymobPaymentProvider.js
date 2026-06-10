@@ -60,7 +60,7 @@ class PaymobPaymentProvider extends PaymentProvider {
     const payload = {
       amount: amountDecimal,
       currency: currency || 'EGP',
-      payment_methods: [parseInt(this.integrationId, 10)],
+      payment_methods: [Number.parseInt(this.integrationId, 10)],
       items: lineItems.map((item) => ({
         name: item.title || item.name || 'Product',
         amount: (item.unitPrice / 100).toFixed(2),
@@ -101,7 +101,7 @@ class PaymobPaymentProvider extends PaymentProvider {
 
       const intention = response.data;
       const clientSecret = intention.client_secret;
-      const payUrl = `${this.baseUrl}/unifiedcheckout/?publicKey=${this._publicKeyFromApiKey()}&clientSecret=${clientSecret}`;
+      const payUrl = `${this.baseUrl}/unifiedcheckout/?publicKey=${encodeURIComponent(this._publicKeyFromApiKey())}&clientSecret=${encodeURIComponent(clientSecret)}`;
 
       logger.info(
         { orderNumber, intentionId: intention.id, provider: 'paymob' },
@@ -136,7 +136,7 @@ class PaymobPaymentProvider extends PaymentProvider {
     }
 
     try {
-      const response = await axios.get(`${this.baseUrl}/v1/intention/${intentId}`, {
+      const response = await axios.get(`${this.baseUrl}/v1/intention/${encodeURIComponent(intentId)}`, {
         headers: {
           Authorization: `Token ${this.apiKey}`,
         },
@@ -152,7 +152,7 @@ class PaymobPaymentProvider extends PaymentProvider {
           success: true,
           transactionId: transaction?.id || `paymob_txn_${Date.now()}`,
           status: 'succeeded',
-          amount: Math.round(parseFloat(intention.amount) * 100),
+          amount: Math.round(Number.parseFloat(intention.amount) * 100),
           currency: intention.currency,
         };
       }
@@ -265,10 +265,10 @@ class PaymobPaymentProvider extends PaymentProvider {
   _publicKeyFromApiKey() {
     // Paymob public key is typically derived from the secret key prefix
     // In production, this should be a separate env var
-    if (this.apiKey && this.apiKey.startsWith('pk_')) {
+    if (this.apiKey?.startsWith('pk_')) {
       return this.apiKey;
     }
-    if (this.apiKey && this.apiKey.startsWith('skl_')) {
+    if (this.apiKey?.startsWith('skl_')) {
       return this.apiKey.replace('skl_', 'pk_');
     }
     return 'pk_mock';

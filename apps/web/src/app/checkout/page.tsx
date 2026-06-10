@@ -7,6 +7,7 @@ import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../contexts/ToastContext';
 import { createCheckoutSession, createOrder } from '../../lib/checkout-api';
+import { safePaymentUrl } from '../../lib/safeUrl';
 import PromoCodeInput from '../../components/checkout/PromoCodeInput';
 import ShippingStep from '../../components/checkout/ShippingStep';
 import ReviewStep from '../../components/checkout/ReviewStep';
@@ -96,11 +97,15 @@ export default function CheckoutPage() {
       const result = await createOrder({ checkoutToken, paymentMethod: 'paymob' });
 
       if (result.payUrl) {
-        window.location.href = result.payUrl;
+        const validatedPayUrl = safePaymentUrl(result.payUrl);
+        if (!validatedPayUrl) {
+          throw new Error('Received an invalid payment redirect URL. Please try again.');
+        }
+        window.location.href = validatedPayUrl;
         return;
       }
 
-      router.push(`/order-confirmation/${result.order.orderNumber}`);
+      router.push(`/order-confirmation/${encodeURIComponent(result.order.orderNumber)}`);
     } catch (err: any) {
       setIsProcessing(false);
       const msg =

@@ -8,6 +8,32 @@ const { createPromoCodeSchema, updatePromoCodeSchema } = require('../../../valid
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
 
+const PROMO_TYPES = ['percentage', 'fixed', 'free_shipping'];
+
+// Writable fields — keep in sync with validators/promoCodeSchemas.js.
+// Never include usageCount, usageLimit-bypass fields, or timestamps.
+const WRITABLE_FIELDS = [
+  'code',
+  'type',
+  'value',
+  'minOrderAmount',
+  'maxDiscountAmount',
+  'usageLimit',
+  'startDate',
+  'endDate',
+  'active',
+  'isAutomatic',
+  'description',
+];
+
+function pickWritable(body) {
+  const data = {};
+  for (const field of WRITABLE_FIELDS) {
+    if (body[field] !== undefined) data[field] = body[field];
+  }
+  return data;
+}
+
 const router = Router();
 
 router.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
@@ -40,9 +66,9 @@ router.get('/', async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.active !== undefined) filter.active = req.query.active === 'true';
-    if (req.query.type) filter.type = req.query.type;
-    if (req.query.isAutomatic !== undefined) filter.isAutomatic = req.query.isAutomatic === 'true';
+    if (req.query.active !== undefined) filter.active = { $eq: req.query.active === 'true' };
+    if (PROMO_TYPES.includes(req.query.type)) filter.type = { $eq: req.query.type };
+    if (req.query.isAutomatic !== undefined) filter.isAutomatic = { $eq: req.query.isAutomatic === 'true' };
 
     const [promoCodes, total] = await Promise.all([
       PromoCode.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
@@ -61,7 +87,7 @@ router.get('/', async (req, res, next) => {
 // POST /api/v1/admin/promo-codes
 router.post('/', validate(createPromoCodeSchema), async (req, res, next) => {
   try {
-    const data = req.body;
+    const data = pickWritable(req.body);
     if (data.code) data.code = data.code.toUpperCase().trim();
     if (data.startDate) data.startDate = new Date(data.startDate);
     if (data.endDate) data.endDate = new Date(data.endDate);
@@ -107,8 +133,7 @@ router.patch('/:id', validate(updatePromoCodeSchema), async (req, res, next) => 
     const promoCode = await PromoCode.findById(req.params.id);
     if (!promoCode) return res.status(404).json({ error: true, message: 'Promo code not found' });
 
-    const updates = { ...req.body };
-    delete updates.usageCount;
+    const updates = pickWritable(req.body);
 
     if (updates.code && updates.code !== promoCode.code && promoCode.usageCount > 0) {
       return res.status(409).json({ error: true, message: 'Cannot change code after it has been used' });

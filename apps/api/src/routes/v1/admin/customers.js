@@ -6,6 +6,7 @@ const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
+const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
 
@@ -33,10 +34,11 @@ router.get('/', async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = { role: 'customer' };
-    if (req.query.search) {
+    if (typeof req.query.search === 'string' && req.query.search) {
+      const search = escapeRegex(req.query.search);
       filter.$or = [
-        { name: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
       ];
     }
 

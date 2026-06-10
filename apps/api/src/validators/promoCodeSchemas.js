@@ -39,6 +39,7 @@ const createPromoCodeBody = z.object({
 const createPromoCodeSchema = z.object({ body: createPromoCodeBody });
 
 const updatePromoCodeBody = z.object({
+  code: z.string().trim().min(1).max(50).optional(),
   type: promoCodeTypeEnum.optional(),
   value: z.number().int().min(0).optional(),
   minOrderAmount: z.number().int().min(0).optional(),
