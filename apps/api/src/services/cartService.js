@@ -148,20 +148,27 @@ async function getOrCreateCart(cartId, userId = null) {
   }
   if (cartId && mongoose.Types.ObjectId.isValid(cartId)) {
     const existing = await Cart.findById(cartId);
-    if (existing) return existing;
+    // Only reuse an unowned guest cart; never adopt another user's cart by id.
+    if (existing && !existing.userId) return existing;
   }
   return Cart.create({ items: [] });
 }
 
 async function resolveCart(cartId, userId = null) {
-  let cart = null;
   if (userId) {
-    cart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+    const userCart = await Cart.findOne({ userId }).sort({ updatedAt: -1 });
+    if (userCart) return userCart;
   }
-  if (!cart && cartId && mongoose.Types.ObjectId.isValid(cartId)) {
-    cart = await Cart.findById(cartId);
+  if (cartId && mongoose.Types.ObjectId.isValid(cartId)) {
+    const cart = await Cart.findById(cartId);
+    // Only resolve the cartId fallback for an unowned guest cart or the
+    // requester's own cart — never another user's cart. Without this guard a
+    // caller could read or mutate an arbitrary cart by guessing/passing its id.
+    if (cart && (!cart.userId || (userId && cart.userId.toString() === userId.toString()))) {
+      return cart;
+    }
   }
-  return cart;
+  return null;
 }
 
 async function getCart(cartId, userId = null) {
