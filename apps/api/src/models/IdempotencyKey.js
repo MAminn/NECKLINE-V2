@@ -25,4 +25,18 @@ const idempotencyKeySchema = new mongoose.Schema(
   }
 );
 
+// Reservations that never complete (cleanup deleteOne failed, process died before
+// res.json, request aborted) would otherwise 409 the key until the 24h TTL above.
+// This partial TTL index expires only 'in_progress' records on a short fuse;
+// 'completed' records leave the partial index and keep the full replay window.
+// Explicit name required: the key pattern duplicates the `expires` index above.
+idempotencyKeySchema.index(
+  { createdAt: 1 },
+  {
+    name: 'in_progress_ttl',
+    expireAfterSeconds: env.IDEMPOTENCY_IN_PROGRESS_TTL_MINUTES * 60,
+    partialFilterExpression: { status: 'in_progress' },
+  }
+);
+
 module.exports = mongoose.model('IdempotencyKey', idempotencyKeySchema);

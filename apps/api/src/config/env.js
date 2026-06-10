@@ -16,6 +16,10 @@ const envSchema = z.object({
   STUB_PAYMENT_FAILURE_RATE: z.string().transform(Number).default('0'),
   STUB_PAYMENT_DECLINE_EMAILS: z.string().default(''),
   IDEMPOTENCY_TTL_HOURS: z.string().transform(Number).default('24'),
+  // How long an 'in_progress' reservation may live before it is presumed orphaned
+  // (e.g. cleanup deleteOne failed, process died mid-request) and auto-expired.
+  // Must comfortably exceed the longest legitimate request duration.
+  IDEMPOTENCY_IN_PROGRESS_TTL_MINUTES: z.string().transform(Number).default('10'),
 
   // Payment provider selection (Phase 5)
   PAYMENT_PROVIDER: z.enum(['stub', 'paymob']).default('stub'),

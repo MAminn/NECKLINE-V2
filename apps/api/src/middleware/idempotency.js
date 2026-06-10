@@ -38,7 +38,7 @@ async function reserveKey(key) {
 
       let existing;
       try {
-        existing = await IdempotencyKey.findOne({ key }).lean();
+        existing = await IdempotencyKey.findOne({ key: { $eq: key } }).lean();
       } catch (lookupErr) {
         return { outcome: 'error', err: lookupErr };
       }
@@ -73,13 +73,13 @@ function persistResponseOnFinish(res, key) {
 
     if (statusCode >= 200 && statusCode < 300) {
       IdempotencyKey.findOneAndUpdate(
-        { key },
+        { key: { $eq: key } },
         { status: 'completed', statusCode, response: body }
       ).catch((err) => {
         logger.error({ err, key }, 'Failed to persist idempotency response');
       });
     } else {
-      IdempotencyKey.deleteOne({ key }).catch((err) => {
+      IdempotencyKey.deleteOne({ key: { $eq: key } }).catch((err) => {
         logger.error({ err, key }, 'Failed to release idempotency reservation after error');
       });
     }
@@ -106,7 +106,7 @@ async function idempotencyMiddleware(req, res, next) {
     return next();
   }
 
-  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(key)) {
+  if (typeof key !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(key)) {
     return res.status(400).json({ error: true, message: 'Invalid Idempotency-Key format' });
   }
 
