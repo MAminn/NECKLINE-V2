@@ -55,11 +55,14 @@ router.get('/', async (req, res, next) => {
         { customerName: { $regex: search, $options: 'i' } },
       ];
     }
-    if (FULFILLMENT_STATUSES.includes(req.query.fulfillmentStatus)) {
-      filter.fulfillmentStatus = { $eq: req.query.fulfillmentStatus };
+    // Build the filter from the allowlist constants, never from req.query values.
+    const fulfillmentIdx = FULFILLMENT_STATUSES.indexOf(req.query.fulfillmentStatus);
+    if (fulfillmentIdx !== -1) {
+      filter.fulfillmentStatus = { $eq: FULFILLMENT_STATUSES[fulfillmentIdx] };
     }
-    if (ORDER_STATUSES.includes(req.query.status)) {
-      filter.status = { $eq: req.query.status };
+    const statusIdx = ORDER_STATUSES.indexOf(req.query.status);
+    if (statusIdx !== -1) {
+      filter.status = { $eq: ORDER_STATUSES[statusIdx] };
     }
 
     const [orders, total] = await Promise.all([
