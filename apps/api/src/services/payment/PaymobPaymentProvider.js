@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const PaymentProvider = require('./PaymentProvider');
 const env = require('../../config/env');
 const logger = require('../../config/logger');
@@ -26,6 +27,13 @@ class PaymobPaymentProvider extends PaymentProvider {
     this.mockMode = !this.apiKey || this.apiKey.length < 10;
 
     if (this.mockMode) {
+      // Mock confirmPayment approves every payment, so silently falling back to it
+      // in production would let orders complete without being paid.
+      if (env.NODE_ENV === 'production') {
+        throw new Error(
+          'PaymobPaymentProvider cannot run in mock mode in production — set a valid PAYMOB_API_KEY'
+        );
+      }
       logger.warn(
         { provider: 'paymob' },
         'PaymobPaymentProvider running in MOCK mode — no real API calls will be made. Set PAYMOB_API_KEY to enable live mode.'
@@ -221,8 +229,8 @@ class PaymobPaymentProvider extends PaymentProvider {
   // ─── Mock implementations for development / CI ───
 
   _mockCreateIntent({ orderNumber, total, currency }) {
-    const intentId = `paymob_mock_intent_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const clientSecret = `cs_mock_${Math.random().toString(36).slice(2, 16)}`;
+    const intentId = `paymob_mock_intent_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
+    const clientSecret = `cs_mock_${crypto.randomBytes(7).toString('hex')}`;
     const payUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=mock&clientSecret=${clientSecret}`;
 
     logger.info(

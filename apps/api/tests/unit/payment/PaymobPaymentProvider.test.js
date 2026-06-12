@@ -1,4 +1,5 @@
 const PaymobPaymentProvider = require('../../../src/services/payment/PaymobPaymentProvider');
+const env = require('../../../src/config/env');
 
 describe('PaymobPaymentProvider', () => {
   let provider;
@@ -76,6 +77,21 @@ describe('PaymobPaymentProvider', () => {
       p.apiKey = 'skl_test_valid_key_12345';
       p.mockMode = !p.apiKey || p.apiKey.length < 10;
       expect(p.mockMode).toBe(false);
+    });
+
+    it('throws instead of entering mock mode in production', () => {
+      const originalNodeEnv = env.NODE_ENV;
+      const originalApiKey = env.PAYMOB_API_KEY;
+      env.NODE_ENV = 'production';
+      env.PAYMOB_API_KEY = '';
+      try {
+        expect(() => new PaymobPaymentProvider()).toThrow(
+          'cannot run in mock mode in production'
+        );
+      } finally {
+        env.NODE_ENV = originalNodeEnv;
+        env.PAYMOB_API_KEY = originalApiKey;
+      }
     });
   });
 });
