@@ -179,7 +179,7 @@ export default function ProductPage({ scent, onAddToCart, onBack, suggestedScent
 
         {/* Quote Block Below Images (Replicating Design) */}
         <div className="mb-20 max-w-xl text-left border-l-2 border-[#D21B27] pl-6 py-2">
-          <div className="text-[#D21B27] text-3xl font-serif leading-none h-6 content-start mb-2">"</div>
+          <div className="text-[#D21B27] text-3xl font-serif leading-none h-6 content-start mb-2">&ldquo;</div>
           <p className="text-lg font-serif italic text-white leading-relaxed mb-4">
             {scent.name} wraps around you like silk—soft, sensual, and unforgettable. My go-to for date nights.
           </p>

@@ -150,7 +150,7 @@ export default function Reviews() {
                       </span>
                     </div>
                     <p className="text-xs sm:text-sm italic font-light leading-relaxed dark:text-stone-300 light:text-stone-700 min-h-[70px]">
-                      "{rev.comment}"
+                      &ldquo;{rev.comment}&rdquo;
                     </p>
                   </div>
 
@@ -186,7 +186,7 @@ export default function Reviews() {
                       </span>
                     </div>
                     <p className="text-xs sm:text-sm italic font-light leading-relaxed dark:text-stone-300 light:text-stone-700 min-h-[70px]">
-                      "{rev.comment}"
+                      &ldquo;{rev.comment}&rdquo;
                     </p>
                   </div>
 

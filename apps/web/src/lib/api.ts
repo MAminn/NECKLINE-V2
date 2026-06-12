@@ -27,6 +27,34 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
+async function parseResponseBody(response: Response, path: string) {
+  const hasBody =
+    response.status !== 204 && response.headers.get('content-length') !== '0';
+  if (!hasBody) return null;
+
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch (parseError) {
+    if (response.ok) {
+      // A 2xx with a malformed body is a contract bug — surface it
+      const error = new Error(
+        `Invalid JSON in response from ${path} (HTTP ${response.status}): ${text.slice(0, 200)}`
+      );
+      (error as any).status = response.status;
+      (error as any).code = 'INVALID_JSON';
+      (error as any).data = text;
+      (error as any).cause = parseError;
+      throw error;
+    }
+    // Error responses may have non-JSON bodies (e.g. proxy HTML);
+    // the caller throws the HTTP error with data = null
+    return null;
+  }
+}
+
 async function apiClient(path: string, options: ApiOptions = {}) {
   const url = `${API_BASE}${path}`;
   const correlationId = generateCorrelationId();
@@ -78,12 +106,17 @@ async function apiClient(path: string, options: ApiOptions = {}) {
     }
   }
 
+  const data = await parseResponseBody(response, path);
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
+    const error = new Error(data?.message || `HTTP ${response.status}`);
+    (error as any).status = response.status;
+    (error as any).code = data?.code;
+    (error as any).data = data;
+    throw error;
   }
 
-  return response.json();
+  return data;
 }
 
 export { apiClient, generateCorrelationId };

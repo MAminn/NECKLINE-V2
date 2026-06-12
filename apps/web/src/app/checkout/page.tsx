@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
@@ -42,12 +43,12 @@ export default function CheckoutPage() {
         <div className="mx-auto max-w-container px-4 py-12 text-center">
           <h1 className="font-display text-3xl uppercase tracking-wide">Checkout</h1>
           <p className="mt-4 text-text-secondary">Your cart is empty.</p>
-          <a
+          <Link
             href="/"
             className="mt-6 inline-block rounded-sm bg-primary px-8 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-primary-hover"
           >
             Continue Shopping
-          </a>
+          </Link>
         </div>
       </main>
     );

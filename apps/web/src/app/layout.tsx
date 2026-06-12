@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Plus_Jakarta_Sans, Oswald, Cinzel } from 'next/font/google';
 import '../styles/globals.css';
 import { CartProvider } from '../contexts/CartContext';
@@ -55,7 +56,7 @@ export default function RootLayout({
                 <div className="mx-auto flex max-w-container items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5 lg:py-4">
 
                   {/* Logo */}
-                  <a
+                  <Link
                     href="/"
                     className="group flex items-center gap-2 shrink-0"
                     aria-label="Neckline home"
@@ -73,7 +74,7 @@ export default function RootLayout({
                     <span className="font-display text-xl lg:text-2xl uppercase tracking-[0.15em] text-text-primary transition-colors duration-200 group-hover:text-primary">
                       NECKLINE
                     </span>
-                  </a>
+                  </Link>
 
                   {/* Desktop Navigation */}
                   <nav className="hidden md:flex items-center gap-6 lg:gap-8">

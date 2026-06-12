@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { X, Menu, ArrowRight } from 'lucide-react';
 import HeaderAuth from './HeaderAuth';
 
@@ -40,7 +41,7 @@ export default function MobileMenu() {
       >
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
-          <a
+          <Link
             href="/"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2"
@@ -50,7 +51,7 @@ export default function MobileMenu() {
               <path d="M6 0L12 6L6 12L0 6L6 0Z" />
             </svg>
             <span className="font-display text-lg uppercase tracking-[0.15em] text-white">NECKLINE</span>
-          </a>
+          </Link>
           <button
             onClick={() => setOpen(false)}
             className="p-2 text-text-muted hover:text-white transition-colors"

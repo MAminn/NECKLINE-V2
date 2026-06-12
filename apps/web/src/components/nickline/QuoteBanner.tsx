@@ -25,7 +25,7 @@ export default function QuoteBanner({ heroImage }: QuoteBannerProps) {
               “
             </span>
             <blockquote className="text-lg md:text-xl font-light leading-relaxed dark:text-neutral-200 light:text-stone-800 tracking-wide font-serif italic mb-6">
-              Neckline is far more than a simple fragrance — it's an intimate, skin-close, sensory experience. It's incredibly subtle, deeply sensual, and merges beautifully with my natural chemistry all day. Absolutely addictive.
+              Neckline is far more than a simple fragrance — it&apos;s an intimate, skin-close, sensory experience. It&apos;s incredibly subtle, deeply sensual, and merges beautifully with my natural chemistry all day. Absolutely addictive.
             </blockquote>
             <cite className="text-[10px] sm:text-xs font-semibold tracking-[0.3em] text-[#D21B27] not-italic uppercase block">
               — JESSICA M.
