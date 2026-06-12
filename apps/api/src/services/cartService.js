@@ -120,21 +120,32 @@ function formatCartResponse(cart, availabilityMap = {}, discountInfo = null) {
 }
 
 async function buildAvailabilityMap(cart) {
+  if (!cart.items || cart.items.length === 0) return {};
+
+  const productIds = cart.items.map((item) => item.productId);
+  const [products, ownReservations, reservedByOthers] = await Promise.all([
+    Product.find({ _id: { $in: productIds } }).lean(),
+    reservationService.findForCart(cart._id, productIds),
+    reservationService.getAvailabilityBulk(productIds, cart._id),
+  ]);
+
+  const productById = new Map(products.map((p) => [p._id.toString(), p]));
+  const ownReservationByProduct = new Map(
+    ownReservations.map((r) => [r.productId.toString(), r])
+  );
+
+  const now = new Date();
   const map = {};
   for (const item of cart.items) {
     const pid = item.productId.toString();
-    const product = await Product.findById(item.productId).lean();
-    const reservedDoc = await mongoose
-      .model('Reservation')
-      .findOne({ cartId: cart._id, productId: item.productId })
-      .lean();
-
-    const otherReserved = await reservationService.getAvailability(item.productId, cart._id);
+    const product = productById.get(pid);
+    const reservedDoc = ownReservationByProduct.get(pid);
+    const otherReserved = reservedByOthers[pid] || 0;
     const available = product && product.purchasable && !product.deletedAt && product.stockOnHand - otherReserved >= item.quantity;
 
     map[pid] = {
       available,
-      reserved: !!reservedDoc && reservedDoc.expiresAt > new Date(),
+      reserved: !!reservedDoc && reservedDoc.expiresAt > now,
     };
   }
   return map;
@@ -383,14 +394,26 @@ async function refreshCart(cartId, userId = null) {
   const cart = await resolveCart(cartId, userId);
   if (!cart) throw new CartError('Cart not found', 404);
 
-  for (const item of cart.items) {
-    const product = await Product.findById(item.productId).lean();
-    const otherReserved = await reservationService.getAvailability(item.productId, cart._id);
-    const available = product && product.purchasable && !product.deletedAt && product.stockOnHand - otherReserved >= item.quantity;
+  if (cart.items.length > 0) {
+    const productIds = cart.items.map((item) => item.productId);
+    const [products, reservedByOthers] = await Promise.all([
+      Product.find({ _id: { $in: productIds } }).lean(),
+      reservationService.getAvailabilityBulk(productIds, cart._id),
+    ]);
+    const productById = new Map(products.map((p) => [p._id.toString(), p]));
 
-    if (available) {
-      await reservationService.extend(cart._id, item.productId, item.quantity);
-    }
+    await Promise.all(
+      cart.items.map((item) => {
+        const pid = item.productId.toString();
+        const product = productById.get(pid);
+        const otherReserved = reservedByOthers[pid] || 0;
+        const available = product && product.purchasable && !product.deletedAt && product.stockOnHand - otherReserved >= item.quantity;
+
+        return available
+          ? reservationService.extend(cart._id, item.productId, item.quantity)
+          : Promise.resolve();
+      })
+    );
   }
 
   cart.updatedAt = new Date();
@@ -484,9 +507,11 @@ async function mergeGuestCart(guestCartId, userId) {
 
   // Transfer reservations from guest cart to user cart
   await reservationService.releaseAll(guestCart._id);
-  for (const item of userCart.items) {
-    await reservationService.reserve(userCart._id, item.productId, item.quantity);
-  }
+  await Promise.all(
+    userCart.items.map((item) =>
+      reservationService.reserve(userCart._id, item.productId, item.quantity)
+    )
+  );
 
   // Delete guest cart
   await Cart.findByIdAndDelete(guestCart._id);

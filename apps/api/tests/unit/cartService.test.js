@@ -57,16 +57,11 @@ describe('cartService — cartId ownership enforcement', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // mongoose.model('Reservation') is used directly inside buildAvailabilityMap.
-    jest.spyOn(mongoose, 'model').mockImplementation((name) => {
-      if (name === 'Reservation') {
-        return { findOne: jest.fn(() => leanResolving(null)) };
-      }
-      throw new Error(`unexpected mongoose.model(${name}) call in test`);
-    });
-
     // Sensible async defaults for the collaborators.
+    Product.find.mockReturnValue(leanResolving([]));
     reservationService.getAvailability.mockResolvedValue(0);
+    reservationService.getAvailabilityBulk.mockResolvedValue({});
+    reservationService.findForCart.mockResolvedValue([]);
     reservationService.extend.mockResolvedValue(undefined);
     reservationService.release.mockResolvedValue(undefined);
     reservationService.releaseAll.mockResolvedValue(undefined);
@@ -138,6 +133,7 @@ describe('cartService — cartId ownership enforcement', () => {
     const newCart = mockCart({ id: newCartId, userId: null });
 
     Product.findById.mockReturnValue(leanResolving(mockProduct(productId)));
+    Product.find.mockReturnValue(leanResolving([mockProduct(productId)]));
     // Guest passes a cartId that actually belongs to ownerId.
     Cart.findById.mockResolvedValue(ownedCart);
     Cart.create.mockResolvedValue(newCart);
@@ -150,5 +146,77 @@ describe('cartService — cartId ownership enforcement', () => {
     expect(newCart.items).toHaveLength(1);
     // The owner's cart was never written to.
     expect(ownedCart.save).not.toHaveBeenCalled();
+  });
+});
+
+describe('cartService — availability math (AD-2: stockOnHand − Σ active reservations)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    discountService.findBestDiscount.mockResolvedValue(null);
+    shippingService.getDefaultShippingMethod.mockResolvedValue(null);
+  });
+
+  const cartItem = (productId, quantity) => ({
+    productId,
+    name: 'Necklace',
+    sku: 'NL-1',
+    image: 'img.jpg',
+    quantity,
+    unitPrice: { amount: 500, currency: 'EGP' },
+  });
+
+  it('computes per-item availability for a multi-item cart with batched queries', async () => {
+    const cartId = oid();
+    const [pA, pB, pC] = [oid(), oid(), oid()];
+    const cart = mockCart({
+      id: cartId,
+      items: [cartItem(pA, 2), cartItem(pB, 5), cartItem(pC, 1)],
+    });
+    Cart.findById.mockResolvedValue(cart);
+
+    // pA: stock 10, others reserve 0 → 10 ≥ 2 → available.
+    // pB: stock 6, others reserve 2 → 6 − 2 = 4 < 5 → NOT available.
+    // pC: product missing (deleted) → NOT available.
+    Product.find.mockReturnValue(
+      leanResolving([
+        { ...mockProduct(pA), stockOnHand: 10 },
+        { ...mockProduct(pB), stockOnHand: 6 },
+      ])
+    );
+    reservationService.getAvailabilityBulk.mockResolvedValue({ [pB]: 2 });
+    // pA has a live reservation for this cart; pB's has expired; pC has none.
+    reservationService.findForCart.mockResolvedValue([
+      { productId: pA, expiresAt: new Date(Date.now() + 60_000) },
+      { productId: pB, expiresAt: new Date(Date.now() - 60_000) },
+    ]);
+
+    const result = await cartService.getCart(cartId);
+
+    const byId = Object.fromEntries(result.items.map((i) => [i.productId, i]));
+    expect(byId[pA]).toMatchObject({ available: true, reserved: true });
+    expect(byId[pB]).toMatchObject({ available: false, reserved: false });
+    expect(byId[pC]).toMatchObject({ available: false, reserved: false });
+
+    // Batched: exactly one product fetch, one reservation-sum aggregation,
+    // and one own-reservation lookup — regardless of cart size.
+    expect(Product.find).toHaveBeenCalledTimes(1);
+    expect(Product.find).toHaveBeenCalledWith({ _id: { $in: [pA, pB, pC] } });
+    expect(reservationService.getAvailabilityBulk).toHaveBeenCalledTimes(1);
+    expect(reservationService.getAvailabilityBulk).toHaveBeenCalledWith([pA, pB, pC], cartId);
+    expect(reservationService.findForCart).toHaveBeenCalledTimes(1);
+    expect(Product.findById).not.toHaveBeenCalled();
+    expect(reservationService.getAvailability).not.toHaveBeenCalled();
+  });
+
+  it('skips all queries for an empty cart', async () => {
+    const cart = mockCart({ id: oid(), items: [] });
+    Cart.findById.mockResolvedValue(cart);
+
+    const result = await cartService.getCart(cart._id);
+
+    expect(result.items).toEqual([]);
+    expect(Product.find).not.toHaveBeenCalled();
+    expect(reservationService.getAvailabilityBulk).not.toHaveBeenCalled();
+    expect(reservationService.findForCart).not.toHaveBeenCalled();
   });
 });
