@@ -27,6 +27,7 @@ function timeAgo(date) {
 
 async function getMetrics() {
   const today = todayMidnight();
+  const last7 = daysAgo(7);
   const last30 = daysAgo(30);
 
   const [
@@ -38,7 +39,7 @@ async function getMetrics() {
     processingCount,
     userStats,
     newCustomers,
-    categoryShareAgg,
+    productShareAgg,
     topProductAgg,
     visitsHistoryAgg,
   ] = await Promise.all([
@@ -65,7 +66,7 @@ async function getMetrics() {
         },
       },
     ]),
-    User.countDocuments({ createdAt: { $gte: daysAgo(7) } }),
+    User.countDocuments({ createdAt: { $gte: last7 } }),
     Order.aggregate([
       { $match: { status: 'confirmed' } },
       { $unwind: '$lineItems' },
@@ -74,7 +75,7 @@ async function getMetrics() {
       { $limit: 5 },
     ]),
     Order.aggregate([
-      { $match: { status: 'confirmed' }, },
+      { $match: { status: 'confirmed' } },
       { $sort: { total: -1 } },
       { $limit: 1 },
       { $project: { _id: 0, lineItems: 1 } },
@@ -88,22 +89,25 @@ async function getMetrics() {
         },
       },
       { $sort: { _id: 1 } },
+      // visits has no real source yet, so it mirrors checkouts to keep the chart's two
+      // series populated. Replace '$checkouts' with a real visit count when tracking exists.
       { $project: { _id: 0, date: '$_id', visits: '$checkouts', checkouts: '$checkouts' } },
     ]),
   ]);
 
   const totalRevenue = revenueAgg[0]?.total ?? 0;
-  const confirmedCount = revenueAgg[0]?.count ?? 1;
+  const confirmedCount = revenueAgg[0]?.count ?? 0;
   const revenueToday = revenueTodayAgg[0]?.total ?? 0;
   const averageOrderValue = confirmedCount > 0 ? Math.round(totalRevenue / confirmedCount) : 0;
 
   const userStatsData = userStats[0] ?? { total: 0, returning: 0 };
   const returningRate = userStatsData.total > 0
-    ? parseFloat((userStatsData.returning / userStatsData.total).toFixed(2))
+    ? Number.parseFloat((userStatsData.returning / userStatsData.total).toFixed(2))
     : 0;
 
-  const grandTotal = categoryShareAgg.reduce((s, c) => s + c.total, 0) || 1;
-  const categoryShare = categoryShareAgg.map((c) => ({
+  // grandTotal guards against divide-by-zero when there are no confirmed line items.
+  const grandTotal = productShareAgg.reduce((s, c) => s + c.total, 0) || 1;
+  const productShare = productShareAgg.map((c) => ({
     name: c._id || 'Other',
     share: Math.round((c.total / grandTotal) * 100),
     color: '#D21B27',
@@ -116,15 +120,18 @@ async function getMetrics() {
     totalRevenue,
     ordersCount,
     todayOrdersCount,
-    conversionRate: 0,
+    conversionRate: 0, // TODO: no session/visit tracking yet — placeholder until analytics lands
     returningRate,
     newCustomers,
     pendingCount,
     processingCount,
     averageOrderValue,
-    liveSessions: 0,
+    liveSessions: 0, // TODO: requires real-time session tracking — placeholder
+    // visits mirrors checkouts until visit tracking exists (see visitsHistory $project below)
     visitsHistory: visitsHistoryAgg,
-    categoryShare,
+    productShare,
+    // TODO: forecast figures (increase/recommendedStock/projectedRevenue) are hardcoded
+    // heuristics — replace with a real forecasting model. topProduct is derived from data.
     forecast: {
       increase: 12,
       recommendedStock: 45,

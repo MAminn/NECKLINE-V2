@@ -1,20 +1,12 @@
-const rateLimit = require('express-rate-limit');
+const createRateLimiter = require('./createRateLimiter');
 
-const rateLimitCart = rateLimit({
+const { ipKeyGenerator } = createRateLimiter;
+
+const rateLimitCart = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
   max: 50,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator(req) {
-    return req.cookies?.cartId || req.ip;
-  },
-  handler(req, res) {
-    res.status(429).json({
-      error: true,
-      message: 'Too many cart operations. Please try again later.',
-    });
-  },
+  message: 'Too many cart operations. Please try again later.',
+  keyGenerator: (req) => req.cookies?.cartId || ipKeyGenerator(req.ip),
 });
 
 module.exports = rateLimitCart;

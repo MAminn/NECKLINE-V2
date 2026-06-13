@@ -3,6 +3,7 @@ const HeaderSlide = require('../../models/HeaderSlide');
 const authenticate = require('../../middleware/authenticate');
 const requirePermission = require('../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../middleware/validate');
 const { headerSlideSchema } = require('../../validators/contentSchemas');
 const { createAuditEvent } = require('../../domain/audit');
 const logger = require('../../config/logger');
@@ -26,14 +27,9 @@ const adminRouter = Router();
 adminRouter.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
 // POST /api/v1/admin/header-slides
-adminRouter.post('/', async (req, res, next) => {
+adminRouter.post('/', validateBody(headerSlideSchema), async (req, res, next) => {
   try {
-    const parsed = headerSlideSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const doc = await HeaderSlide.create(parsed.data);
+    const doc = await HeaderSlide.create(req.body);
     createAuditEvent({
       actor: req.user.id,
       action: 'headerSlide.created',
@@ -51,21 +47,16 @@ adminRouter.post('/', async (req, res, next) => {
 });
 
 // PUT /api/v1/admin/header-slides/:id
-adminRouter.put('/:id', async (req, res, next) => {
+adminRouter.put('/:id', validateBody(headerSlideSchema.partial()), async (req, res, next) => {
   try {
-    const parsed = headerSlideSchema.partial().safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const doc = await HeaderSlide.findByIdAndUpdate(req.params.id, parsed.data, { new: true });
+    const doc = await HeaderSlide.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!doc) return res.status(404).json({ error: true, message: 'Slide not found' });
     createAuditEvent({
       actor: req.user.id,
       action: 'headerSlide.updated',
       target: doc._id.toString(),
       targetType: 'HeaderSlide',
-      after: parsed.data,
+      after: req.body,
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),

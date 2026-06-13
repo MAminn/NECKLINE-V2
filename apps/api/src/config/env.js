@@ -10,6 +10,20 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  // Number of trusted reverse proxies in front of the app (nginx, Cloudflare, ELB…).
+  // Express counts this many hops from the RIGHT of X-Forwarded-For to derive req.ip,
+  // which the rate limiters key on. Default 0 = trust nothing → req.ip is the direct
+  // socket address and X-Forwarded-For is ignored, so a client cannot spoof its IP.
+  // Set to the exact proxy count per deployment (1 behind a single nginx/Cloudflare).
+  TRUST_PROXY: z
+    .string()
+    .default('0')
+    .transform((v) => Number(v))
+    .refine((n) => Number.isInteger(n) && n >= 0, {
+      message:
+        'TRUST_PROXY must be a non-negative integer (number of trusted proxy hops); ' +
+        'do not use true — it lets clients spoof X-Forwarded-For',
+    }),
   FEATURE_CHECKOUT_V2: z.string().transform((v) => v === 'true').default('false'),
   CHECKOUT_ENABLED: z.string().transform((v) => v === 'true').default('true'),
   STUB_PAYMENT_LATENCY_MS: z.string().transform(Number).default('500'),

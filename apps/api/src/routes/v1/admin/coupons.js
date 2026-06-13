@@ -3,6 +3,7 @@ const PromoCode = require('../../../models/PromoCode');
 const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../../middleware/validate');
 const { createCouponSchema } = require('../../../validators/adminSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
@@ -40,14 +41,9 @@ router.get('/', async (req, res, next) => {
 });
 
 // POST /api/v1/admin/coupons
-router.post('/', async (req, res, next) => {
+router.post('/', validateBody(createCouponSchema), async (req, res, next) => {
   try {
-    const parsed = createCouponSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const data = { ...parsed.data, isAutomatic: false };
+    const data = { ...req.body, isAutomatic: false };
     if (data.endDate) data.endDate = new Date(data.endDate);
     const coupon = await PromoCode.create(data);
     createAuditEvent({

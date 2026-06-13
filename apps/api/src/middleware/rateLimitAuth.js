@@ -1,55 +1,21 @@
-const rateLimit = require('express-rate-limit');
+const createRateLimiter = require('./createRateLimiter');
 
-const rateLimitLogin = rateLimit({
+const rateLimitLogin = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  skipSuccessfulRequests: false,
-  keyGenerator(req) {
-    return req.ip;
-  },
-  handler(req, res) {
-    res.status(429).json({
-      error: true,
-      message: 'Too many login attempts. Please try again later.',
-    });
-  },
+  message: 'Too many login attempts. Please try again later.',
 });
 
-const rateLimitRegister = rateLimit({
+const rateLimitRegister = createRateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator(req) {
-    return req.ip;
-  },
-  handler(req, res) {
-    res.status(429).json({
-      error: true,
-      message: 'Too many registration attempts. Please try again later.',
-    });
-  },
+  message: 'Too many registration attempts. Please try again later.',
 });
 
-const rateLimitReset = rateLimit({
+const rateLimitReset = createRateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator(req) {
-    return req.ip;
-  },
-  handler(req, res) {
-    res.status(429).json({
-      error: true,
-      message: 'Too many password reset attempts. Please try again later.',
-    });
-  },
+  message: 'Too many password reset attempts. Please try again later.',
 });
 
 module.exports = {

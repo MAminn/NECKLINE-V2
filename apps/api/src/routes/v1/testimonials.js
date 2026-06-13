@@ -3,6 +3,7 @@ const Testimonial = require('../../models/Testimonial');
 const authenticate = require('../../middleware/authenticate');
 const requirePermission = require('../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../middleware/validate');
 const { testimonialSchema } = require('../../validators/contentSchemas');
 const { createAuditEvent } = require('../../domain/audit');
 const logger = require('../../config/logger');
@@ -26,14 +27,9 @@ const adminRouter = Router();
 adminRouter.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
 // POST /api/v1/testimonials
-adminRouter.post('/', async (req, res, next) => {
+adminRouter.post('/', validateBody(testimonialSchema), async (req, res, next) => {
   try {
-    const parsed = testimonialSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const doc = await Testimonial.create(parsed.data);
+    const doc = await Testimonial.create(req.body);
     createAuditEvent({
       actor: req.user.id,
       action: 'testimonial.created',
@@ -51,21 +47,16 @@ adminRouter.post('/', async (req, res, next) => {
 });
 
 // PUT /api/v1/testimonials/:id
-adminRouter.put('/:id', async (req, res, next) => {
+adminRouter.put('/:id', validateBody(testimonialSchema.partial()), async (req, res, next) => {
   try {
-    const parsed = testimonialSchema.partial().safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const doc = await Testimonial.findByIdAndUpdate(req.params.id, parsed.data, { new: true });
+    const doc = await Testimonial.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!doc) return res.status(404).json({ error: true, message: 'Testimonial not found' });
     createAuditEvent({
       actor: req.user.id,
       action: 'testimonial.updated',
       target: doc._id.toString(),
       targetType: 'Testimonial',
-      after: parsed.data,
+      after: req.body,
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),

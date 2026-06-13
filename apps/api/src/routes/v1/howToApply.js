@@ -3,6 +3,7 @@ const HowToApply = require('../../models/HowToApply');
 const authenticate = require('../../middleware/authenticate');
 const requirePermission = require('../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../middleware/validate');
 const { howToApplySchema } = require('../../validators/contentSchemas');
 const { createAuditEvent } = require('../../domain/audit');
 const logger = require('../../config/logger');
@@ -25,16 +26,11 @@ const adminRouter = Router();
 adminRouter.use(authenticate, requirePermission('admin:access'), rateLimiterAdmin);
 
 // POST /api/v1/admin/how-to-apply — upsert
-adminRouter.post('/', async (req, res, next) => {
+adminRouter.post('/', validateBody(howToApplySchema), async (req, res, next) => {
   try {
-    const parsed = howToApplySchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
     const doc = await HowToApply.findOneAndUpdate(
       { configKey: 'default' },
-      { $set: { color: parsed.data.color, steps: parsed.data.steps } },
+      { $set: { color: req.body.color, steps: req.body.steps } },
       { upsert: true, new: true }
     );
     createAuditEvent({
@@ -42,7 +38,7 @@ adminRouter.post('/', async (req, res, next) => {
       action: 'howToApply.updated',
       target: 'default',
       targetType: 'HowToApply',
-      after: { color: parsed.data.color, stepCount: parsed.data.steps.length },
+      after: { color: req.body.color, stepCount: req.body.steps.length },
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),

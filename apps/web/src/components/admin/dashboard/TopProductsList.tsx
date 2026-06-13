@@ -2,24 +2,24 @@
 
 import { adminCard } from '../adminStyles';
 
-interface CategoryShare { name: string; share: number; color: string; }
-interface Props { categoryShare: CategoryShare[] | null; }
+interface ProductShare { name: string; share: number; color: string; }
+interface Props { productShare: ProductShare[] | null; }
 
 const cardStyle = { ...adminCard, borderRadius: 12 } as const;
 
-export default function TopProductsList({ categoryShare }: Props) {
-  if (!categoryShare) return null;
-  if (!categoryShare.length) return null;
+export default function TopProductsList({ productShare }: Props) {
+  if (!productShare) return null;
+  if (!productShare.length) return null;
 
-  const max = Math.max(...categoryShare.map((i) => i.share));
+  const max = Math.max(...productShare.map((i) => i.share));
 
   return (
     <div className="rounded-xl p-4" style={cardStyle}>
       <h3 className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--color-gold)' }}>
-        Top Categories
+        Top Products
       </h3>
       <ul className="space-y-2.5">
-        {categoryShare.map((item, idx) => (
+        {productShare.map((item, idx) => (
           <li key={item.name}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs" style={{ color: 'var(--color-text)' }}>

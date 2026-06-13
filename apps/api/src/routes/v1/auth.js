@@ -10,6 +10,7 @@ const {
   changePasswordSchema,
 } = require('../../validators/authSchemas');
 const authenticate = require('../../middleware/authenticate');
+const { validateBody } = require('../../middleware/validate');
 const {
   rateLimitLogin,
   rateLimitRegister,
@@ -50,15 +51,9 @@ function getMeta(req) {
 }
 
 // POST /api/v1/auth/register
-router.post('/register', rateLimitRegister, async (req, res, next) => {
+router.post('/register', rateLimitRegister, validateBody(registerSchema), async (req, res, next) => {
   try {
-    const parsed = registerSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    const result = await authService.register(parsed.data, getMeta(req));
+    const result = await authService.register(req.body, getMeta(req));
 
     // Merge guest cart if present
     const guestCartId = req.cookies?.cartId;
@@ -75,15 +70,9 @@ router.post('/register', rateLimitRegister, async (req, res, next) => {
 });
 
 // POST /api/v1/auth/login
-router.post('/login', rateLimitLogin, async (req, res, next) => {
+router.post('/login', rateLimitLogin, validateBody(loginSchema), async (req, res, next) => {
   try {
-    const parsed = loginSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    const result = await authService.login(parsed.data, getMeta(req));
+    const result = await authService.login(req.body, getMeta(req));
 
     // Merge guest cart if present
     const guestCartId = req.cookies?.cartId;
@@ -139,15 +128,9 @@ router.get('/me', authenticate, async (req, res, next) => {
 });
 
 // PATCH /api/v1/auth/me
-router.patch('/me', authenticate, async (req, res, next) => {
+router.patch('/me', authenticate, validateBody(updateProfileSchema), async (req, res, next) => {
   try {
-    const parsed = updateProfileSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    const user = await authService.updateProfile(req.user.id, parsed.data);
+    const user = await authService.updateProfile(req.user.id, req.body);
     res.status(200).json({ success: true, data: { user } });
   } catch (err) {
     next(err);
@@ -155,15 +138,9 @@ router.patch('/me', authenticate, async (req, res, next) => {
 });
 
 // PATCH /api/v1/auth/password
-router.patch('/password', authenticate, async (req, res, next) => {
+router.patch('/password', authenticate, validateBody(changePasswordSchema), async (req, res, next) => {
   try {
-    const parsed = changePasswordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    const { currentPassword, newPassword } = parsed.data;
+    const { currentPassword, newPassword } = req.body;
     await authService.updateProfile(req.user.id, { currentPassword, newPassword });
     res.status(200).json({ success: true, message: 'Password updated successfully.' });
   } catch (err) {
@@ -175,15 +152,9 @@ router.patch('/password', authenticate, async (req, res, next) => {
 });
 
 // POST /api/v1/auth/forgot-password
-router.post('/forgot-password', rateLimitReset, async (req, res, next) => {
+router.post('/forgot-password', rateLimitReset, validateBody(forgotPasswordSchema), async (req, res, next) => {
   try {
-    const parsed = forgotPasswordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    await authService.requestPasswordReset(parsed.data.email);
+    await authService.requestPasswordReset(req.body.email);
     res.status(200).json({
       success: true,
       message: 'If an account exists, a reset link has been sent.',
@@ -194,15 +165,9 @@ router.post('/forgot-password', rateLimitReset, async (req, res, next) => {
 });
 
 // POST /api/v1/auth/reset-password
-router.post('/reset-password', rateLimitReset, async (req, res, next) => {
+router.post('/reset-password', rateLimitReset, validateBody(resetPasswordSchema), async (req, res, next) => {
   try {
-    const parsed = resetPasswordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-
-    await authService.resetPassword(parsed.data.token, parsed.data.newPassword);
+    await authService.resetPassword(req.body.token, req.body.newPassword);
     res.status(200).json({
       success: true,
       message: 'Password updated successfully.',

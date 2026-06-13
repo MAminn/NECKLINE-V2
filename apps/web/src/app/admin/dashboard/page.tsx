@@ -33,7 +33,7 @@ export default function DashboardPage() {
           <RecentOrdersTable />
         </div>
         <div className="flex flex-col gap-4">
-          <TopProductsList categoryShare={metrics?.categoryShare ?? null} />
+          <TopProductsList productShare={metrics?.productShare ?? null} />
           <ActivityFeed initial={activities} />
         </div>
       </div>

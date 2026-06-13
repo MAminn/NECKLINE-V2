@@ -3,6 +3,7 @@ const Product = require('../../../models/Product');
 const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../../middleware/validate');
 const { createProductSchema, updateProductSchema } = require('../../../validators/adminSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
@@ -103,14 +104,9 @@ router.get('/', async (req, res, next) => {
 });
 
 // POST /api/v1/admin/products
-router.post('/', async (req, res, next) => {
+router.post('/', validateBody(createProductSchema), async (req, res, next) => {
   try {
-    const parsed = createProductSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
-    const product = await Product.create(parsed.data);
+    const product = await Product.create(req.body);
     createAuditEvent({
       actor: req.user.id,
       action: 'product.created',
@@ -131,23 +127,18 @@ router.post('/', async (req, res, next) => {
 });
 
 // PUT /api/v1/admin/products/:id
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', validateBody(updateProductSchema), async (req, res, next) => {
   try {
-    const parsed = updateProductSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
     const before = await Product.findById(req.params.id).lean();
     if (!before) return res.status(404).json({ error: true, message: 'Product not found' });
-    const product = await Product.findByIdAndUpdate(req.params.id, parsed.data, { new: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
     createAuditEvent({
       actor: req.user.id,
       action: 'product.updated',
       target: product._id.toString(),
       targetType: 'Product',
       before: { name: before.name, price: before.price, stockOnHand: before.stockOnHand },
-      after: parsed.data,
+      after: req.body,
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),

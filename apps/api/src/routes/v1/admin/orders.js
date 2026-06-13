@@ -3,6 +3,7 @@ const Order = require('../../../models/Order');
 const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
+const { validateBody } = require('../../../middleware/validate');
 const { updateOrderSchema } = require('../../../validators/adminSchemas');
 const { createAuditEvent } = require('../../../domain/audit');
 const logger = require('../../../config/logger');
@@ -82,23 +83,18 @@ router.get('/', async (req, res, next) => {
 });
 
 // PUT /api/v1/admin/orders/:id
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', validateBody(updateOrderSchema), async (req, res, next) => {
   try {
-    const parsed = updateOrderSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join('; ');
-      return res.status(400).json({ error: true, message });
-    }
     const before = await Order.findById(req.params.id).lean();
     if (!before) return res.status(404).json({ error: true, message: 'Order not found' });
-    const order = await Order.findByIdAndUpdate(req.params.id, parsed.data, { new: true });
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
     createAuditEvent({
       actor: req.user.id,
       action: 'order.updated',
       target: order._id.toString(),
       targetType: 'Order',
       before: { fulfillmentStatus: before.fulfillmentStatus, trackingNumber: before.trackingNumber },
-      after: parsed.data,
+      after: req.body,
       requestId: req.id,
       ip: req.ip,
       userAgent: req.get('user-agent'),

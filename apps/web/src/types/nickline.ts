@@ -80,7 +80,7 @@ export interface AdminMetrics {
   averageOrderValue: number;
   liveSessions: number;
   visitsHistory: { date: string; visits: number; checkouts: number }[];
-  categoryShare: { name: string; share: number; color: string }[];
+  productShare: { name: string; share: number; color: string }[];
   forecast: { increase: number; recommendedStock: number; topProduct: string; projectedRevenue: number; };
 }
 

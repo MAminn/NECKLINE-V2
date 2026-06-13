@@ -53,7 +53,7 @@ const discountSnapshotSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    orderNumber: { type: String, required: true, unique: true, index: true },
+    orderNumber: { type: String, required: true, unique: true }, // unique already builds the index
     status: {
       type: String,
       enum: ['pending', 'pending_payment', 'confirmed', 'cancelled'],
@@ -62,7 +62,8 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      index: true,
+      // No single-field index here: the compound { userId: 1, createdAt: -1 } below
+      // serves equality lookups on userId via its prefix.
       default: null,
     },
     customerEmail: { type: String, required: true, lowercase: true, trim: true },
@@ -103,6 +104,16 @@ orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ customerEmail: 1 });
 orderSchema.index({ fulfillmentStatus: 1, createdAt: -1 });
 orderSchema.index({ createdAt: -1 });
+// Admin metrics (adminMetricsService.getMetrics). Equality on status first, then the
+// range/sort key — so each index also serves the status-only queries via its prefix.
+// { status: 1, createdAt: -1 } serves the "confirmed revenue today" match
+// ({ status, createdAt: { $gte } }) and, by prefix, every status-only / status:$in
+// count + aggregation (total revenue, pending count, category share, top-product unwind).
+orderSchema.index({ status: 1, createdAt: -1 });
+// { status: 1, total: -1 } serves the highest-value confirmed order lookup
+// ({ $match: { status: 'confirmed' } }, { $sort: { total: -1 } }, { $limit: 1 }) —
+// match + sort + limit satisfied entirely from the index, no in-memory sort.
+orderSchema.index({ status: 1, total: -1 });
 // Defense-in-depth: at most one order per idempotency key. Partial filter so the many
 // guest orders with a null key (no key supplied) don't collide on the unique constraint.
 orderSchema.index(
