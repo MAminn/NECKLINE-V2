@@ -86,7 +86,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
 
       {/* CONTENT */}
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-20 py-16">
-        <div className="max-w-xl md:max-w-2xl flex flex-col space-y-6 text-left" id="hero-left-content">
+        <div className="max-w-xl md:max-w-2xl flex flex-col space-y-6 text-left stagger-children" id="hero-left-content">
           
           {/* META */}
           <div className="flex items-center gap-2 gpu-layer">
@@ -99,7 +99,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           {/* TITLE */}
           <h1 
             key={`title-${currentSlide.id}`}
-            className="text-4xl sm:text-5xl lg:text-6xl t-display leading-none text-white gpu-layer"
+            className="text-4xl sm:text-5xl lg:text-6xl t-display font-black leading-none text-white gpu-layer"
             id="hero-title-headline"
           >
             {currentSlide.title}
@@ -124,11 +124,11 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
               {currentSlide.buttonText || "Shop Now"}
             </button>
             <button
-              onClick={() => onScrollToSection("story")}
+              onClick={() => onScrollToSection("how-to-apply")}
               className="px-8 py-4 bg-transparent border border-border-strong text-text-secondary hover:text-white hover:border-white text-xs tracking-[0.25em] font-semibold uppercase transition-colors duration-300 inline-flex items-center gap-2 cursor-pointer rounded-none group gpu-layer"
-              id="hero-btn-story"
+              id="hero-btn-ritual"
             >
-              Our Story <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+              Our Ritual <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
 
@@ -139,7 +139,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
               <span>Sensory Skin Release</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-500" />
+              <Flame className="w-3.5 h-3.5 text-gold" />
               <span>Pheromone Active</span>
             </div>
           </div>

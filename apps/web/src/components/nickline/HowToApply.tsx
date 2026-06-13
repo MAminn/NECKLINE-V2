@@ -108,7 +108,7 @@ export default function HowToApply({ config }: HowToApplyProps) {
                         />
                       </div>
                     ) : (
-                      <PresetIcon className="w-18 h-18 text-primary" strokeWidth={1} style={{ color }} />
+                      <PresetIcon className="w-14 h-14 text-primary" strokeWidth={1} style={{ color }} />
                     )}
                   </div>
                   <h3 className="text-white text-lg t-headline tracking-wider mb-3 flex items-center justify-center gap-2">

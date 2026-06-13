@@ -8,6 +8,7 @@ import { ToastProvider } from '../contexts/ToastContext';
 import CartIcon from '../components/CartIcon';
 import CartDrawer from '../components/CartDrawer';
 import HeaderAuth from '../components/HeaderAuth';
+import HeaderNav from '../components/HeaderNav';
 import MobileMenu from '../components/MobileMenu';
 import ToastContainer from '../components/ToastContainer';
 
@@ -77,22 +78,7 @@ export default function RootLayout({
                   </Link>
 
                   {/* Desktop Navigation */}
-                  <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-                    {[
-                      { href: '/shop', label: 'Shop' },
-                      { href: '/#collection', label: 'Collection' },
-                      { href: '/#how-to-apply', label: 'Ritual' },
-                      { href: '/#reviews', label: 'Reviews' },
-                    ].map((link) => (
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        className="nav-link text-sm uppercase tracking-[0.12em] text-text-secondary transition-colors duration-200 hover:text-text-primary font-medium"
-                      >
-                        {link.label}
-                      </a>
-                    ))}
-                  </nav>
+                  <HeaderNav />
 
                   {/* Right side: Auth + Cart */}
                   <div className="flex items-center gap-[10px]">

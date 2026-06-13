@@ -2,13 +2,14 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Scent, HeaderSlide } from '../types/nickline';
 import { useCart } from '../hooks/useCart';
 import { apiClient } from '../lib/api';
 import { mapProductToScent, LocalProduct } from '../lib/mapProductToScent';
 import Features from '../components/nickline/Features';
 import HowToApply from '../components/nickline/HowToApply';
-import QuoteBanner from '../components/nickline/QuoteBanner';
 import { Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
 
 const Hero = dynamic(() => import('../components/nickline/Hero'));
@@ -16,8 +17,6 @@ const Collection = dynamic(() => import('../components/nickline/Collection'));
 const Reviews = dynamic(() => import('../components/nickline/Reviews'));
 
 const ScentQuiz = dynamic(() => import('../components/nickline/ScentQuiz'), { ssr: false });
-const ShopPage = dynamic(() => import('../components/nickline/ShopPage'), { ssr: false });
-const ProductPage = dynamic(() => import('../components/nickline/ProductPage'), { ssr: false });
 
 import { useToast } from '../contexts/ToastContext';
 
@@ -26,6 +25,7 @@ interface CatalogResponse {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
   const { addItem } = useCart();
   const { addToast } = useToast();
   const [scentsList, setScentsList] = useState<Scent[]>([]);
@@ -36,8 +36,6 @@ export default function LandingPage() {
   });
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
-  const [view, setView] = useState<'home' | 'shop' | 'product'>('home');
-  const [activeProduct, setActiveProduct] = useState<Scent | null>(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
 
   const heroImage = '/images/neckline_hero_panoramic_1779647796500.png';
@@ -80,9 +78,7 @@ export default function LandingPage() {
   };
 
   const handleOpenProduct = (scent: Scent) => {
-    setActiveProduct(scent);
-    setView('product');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push(`/products/${scent.id}`);
   };
 
   const handleNewsletterJoin = (e: FormEvent) => {
@@ -101,57 +97,33 @@ export default function LandingPage() {
       {/* Dynamic ambient pulse active overlay */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 shadow-sm" />
 
-      {view === 'home' ? (
-        <>
-          <Hero
-            onScrollToSection={(sectionId) => {
-              if (sectionId === 'collection' || sectionId === 'shop') {
-                setView('shop');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              } else {
-                const el = document.getElementById(sectionId);
-                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }}
-            onOpenQuiz={() => setIsQuizOpen(true)}
-            heroImage={heroImage}
-            slides={headerSlides}
-          />
+      <Hero
+        onScrollToSection={(sectionId) => {
+          if (sectionId === 'collection' || sectionId === 'shop') {
+            router.push('/shop');
+          } else {
+            const el = document.getElementById(sectionId);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
+        onOpenQuiz={() => setIsQuizOpen(true)}
+        heroImage={heroImage}
+        slides={headerSlides}
+      />
 
-          <Features />
+      <Features />
 
-          <Collection
-            onAddToCart={handleAddToCart}
-            onOpenQuiz={() => setIsQuizOpen(true)}
-            scents={scentsList}
-            onOpenShop={() => setView('shop')}
-            onOpenProduct={handleOpenProduct}
-          />
+      <Collection
+        onAddToCart={handleAddToCart}
+        onOpenQuiz={() => setIsQuizOpen(true)}
+        scents={scentsList}
+        onOpenShop={() => router.push('/shop')}
+        onOpenProduct={handleOpenProduct}
+      />
 
-          <HowToApply config={howToApplyConfig} />
+      <HowToApply config={howToApplyConfig} />
 
-          <QuoteBanner heroImage={heroImage} />
-
-          <Reviews />
-        </>
-      ) : view === 'shop' ? (
-        <ShopPage
-          onAddToCart={handleAddToCart}
-          onBackToHome={() => setView('home')}
-          scents={scentsList}
-          onOpenProduct={handleOpenProduct}
-        />
-      ) : (
-        activeProduct && (
-          <ProductPage
-            scent={activeProduct}
-            onAddToCart={handleAddToCart}
-            onBack={() => setView('shop')}
-            suggestedScents={scentsList.filter((s) => s.id !== activeProduct.id)}
-            onOpenProduct={handleOpenProduct}
-          />
-        )
-      )}
+      <Reviews />
 
       <ScentQuiz
         isOpen={isQuizOpen}
@@ -185,30 +157,18 @@ export default function LandingPage() {
               Fragrance Exploration
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs font-light">
-              <button
-                onClick={() => setView('shop')}
-                className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary"
-              >
+              <Link href="/shop" className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary">
                 Cairo (Spicy)
-              </button>
-              <button
-                onClick={() => setView('shop')}
-                className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary"
-              >
+              </Link>
+              <Link href="/shop" className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary">
                 Midnight (Musk)
-              </button>
-              <button
-                onClick={() => setView('shop')}
-                className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary"
-              >
+              </Link>
+              <Link href="/shop" className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary">
                 Velvet (Floral)
-              </button>
-              <button
-                onClick={() => setView('shop')}
-                className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary"
-              >
+              </Link>
+              <Link href="/shop" className="hover:text-primary cursor-pointer transition-colors text-left py-1 text-text-tertiary">
                 Ember (Smoky)
-              </button>
+              </Link>
             </div>
           </div>
 

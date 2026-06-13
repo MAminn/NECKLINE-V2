@@ -20,6 +20,7 @@ function formatProduct(p) {
     name: p.name,
     sku: p.sku,
     category: p.category || '',
+    tags: p.tags || [],
     price: p.price,
     currency: p.currency,
     stockOnHand: p.stockOnHand,

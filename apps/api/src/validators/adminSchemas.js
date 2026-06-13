@@ -10,6 +10,7 @@ const createProductSchema = z.object({
   subtitle:     z.string().trim().max(200).optional(),
   description:  z.string().trim().optional(),
   images:       z.array(z.string()).optional(),
+  tags:         z.array(z.string().trim()).optional(),
   purchasable:  z.boolean().optional(),
 });
 

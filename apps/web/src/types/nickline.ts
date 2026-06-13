@@ -98,6 +98,7 @@ export interface AdminProduct {
   name: string;
   sku: string;
   category: string;
+  tags?: string[];
   price: number;
   currency: string;
   stockOnHand: number;

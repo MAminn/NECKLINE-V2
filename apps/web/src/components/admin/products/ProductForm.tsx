@@ -6,6 +6,7 @@ import type { AdminProduct } from '../../../types/nickline';
 import { adminInput, adminLabel } from '../adminStyles';
 
 const CATEGORIES = ['Balms & Solid Perfumes', 'Accessories', 'Gift Sets', 'Limited Edition'];
+const AUDIENCE_TAGS = ['men', 'women', 'unisex'];
 
 interface Props {
   initial?: Partial<AdminProduct>;
@@ -25,6 +26,7 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
     image0:      initial.galleryImages?.[0] ?? initial.image ?? '',
     image1:      initial.galleryImages?.[1] ?? '',
     image2:      initial.galleryImages?.[2] ?? '',
+    tags:        initial.tags ?? [],
     purchasable: initial.purchasable ?? true,
   });
   const [saving, setSaving] = useState(false);
@@ -45,7 +47,7 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
         price: Math.round(Number(form.price)),
         stockOnHand: Math.round(Number(form.stockOnHand)),
         subtitle: form.subtitle, description: form.description,
-        images, purchasable: form.purchasable,
+        images, tags: form.tags, purchasable: form.purchasable,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save product');
@@ -70,6 +72,21 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
           <option value="">— Select —</option>
           {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
         </select>
+      </div>
+      <div>
+        <label style={adminLabel}>Shop audience</label>
+        <div className="flex gap-4">
+          {AUDIENCE_TAGS.map((tag) => (
+            <label key={tag} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.tags.includes(tag)}
+                onChange={(e) => set('tags', e.target.checked ? [...form.tags, tag] : form.tags.filter((t) => t !== tag))}
+              />
+              <span style={{ color: 'var(--color-text)', fontSize: 13, textTransform: 'capitalize' }}>{tag}</span>
+            </label>
+          ))}
+        </div>
       </div>
       <div><label style={adminLabel}>Subtitle</label><input style={adminInput} value={form.subtitle} onChange={(e) => set('subtitle', e.target.value)} /></div>
       <div><label style={adminLabel}>Description</label><textarea rows={3} style={{ ...adminInput, resize: 'vertical' }} value={form.description} onChange={(e) => set('description', e.target.value)} /></div>
