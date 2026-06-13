@@ -132,7 +132,7 @@ export default async function ProductDetailPage({ params }: Props) {
                       {step.icon}
                     </div>
                     <p className="text-xs font-medium text-text-secondary leading-tight">{step.label}</p>
-                    <p className="text-[11px] text-text-muted leading-tight">{step.sub}</p>
+                    <p className="text-xs text-text-muted leading-tight">{step.sub}</p>
                   </div>
                 ))}
               </div>

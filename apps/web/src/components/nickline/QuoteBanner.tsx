@@ -12,22 +12,21 @@ export default function QuoteBanner({ heroImage }: QuoteBannerProps) {
     <section className="py-12 select-none" id="story">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
-          className="relative overflow-hidden rounded-2xl border flex flex-col lg:flex-row items-center justify-between text-left
-            dark:bg-[#1E080A]/85 dark:border-red-950/20 light:bg-stone-50 light:border-stone-200"
+          className="relative overflow-hidden rounded-2xl border flex flex-col lg:flex-row items-center justify-between text-left bg-bg-secondary/85 border-primary/10"
           id="quote-banner-container"
         >
           {/* Decorative glowing gradient backdrop */}
-          <div className="absolute inset-0 bg-gradient-to-r from-red-950/20 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent pointer-events-none" />
 
           {/* Left Side: Sensory Quote text block */}
           <div className="w-full lg:w-3/5 p-8 md:p-12 z-10">
-            <span className="text-4xl md:text-5xl font-serif text-[#D21B27] leading-none select-none italic font-bold">
+            <span className="text-4xl md:text-5xl font-serif text-primary leading-none select-none italic font-bold">
               “
             </span>
-            <blockquote className="text-lg md:text-xl font-light leading-relaxed dark:text-neutral-200 light:text-stone-800 tracking-wide font-serif italic mb-6">
-              Neckline is far more than a simple fragrance — it&apos;s an intimate, skin-close, sensory experience. It&apos;s incredibly subtle, deeply sensual, and merges beautifully with my natural chemistry all day. Absolutely addictive.
+            <blockquote className="text-lg md:text-xl font-light leading-relaxed text-text-secondary tracking-wide font-serif italic mb-6">
+              Neckline is far more than a simple fragrance: intimate, skin-close, sensory. Incredibly subtle, deeply sensual, it merges beautifully with my natural chemistry all day. Absolutely addictive.
             </blockquote>
-            <cite className="text-[10px] sm:text-xs font-semibold tracking-[0.3em] text-[#D21B27] not-italic uppercase block">
+            <cite className="text-xs font-semibold tracking-[0.3em] text-primary not-italic uppercase block">
               — JESSICA M.
             </cite>
           </div>
@@ -42,7 +41,7 @@ export default function QuoteBanner({ heroImage }: QuoteBannerProps) {
               id="quote-illustration-img"
             />
             {/* Soft dark burgundy edge overlay */}
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#1E080A] to-transparent pointer-events-none hidden lg:block" />
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-bg-secondary to-transparent pointer-events-none hidden lg:block" />
           </div>
 
         </div>

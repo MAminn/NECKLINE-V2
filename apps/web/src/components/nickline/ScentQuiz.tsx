@@ -115,13 +115,13 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 12 }}
             transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
-            className="relative w-full max-w-xl overflow-hidden border border-white/[0.08] shadow-2xl z-10 p-6 md:p-8 rounded-2xl text-left bg-[#0D0506]"
+            className="relative w-full max-w-xl overflow-hidden border border-white/[0.08] shadow-2xl z-10 p-6 md:p-8 rounded-2xl text-left bg-bg-deep"
             id="scent-aura-quiz-modal"
           >
             {/* Close */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-1.5 rounded-full bg-white/5 border border-white/[0.08] text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              className="absolute top-4 right-4 z-20 p-1.5 rounded-full bg-white/5 border border-white/[0.08] text-text-tertiary hover:text-white transition-colors cursor-pointer"
               title="Close Scent Finder"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
@@ -137,12 +137,12 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                 id="quiz-result-view"
               >
                 <div className="flex justify-center mb-2">
-                  <div className="p-2.5 bg-[#D21B27]/10 rounded-full border border-[#D21B27]/30 text-[#D21B27]">
+                  <div className="p-2.5 bg-primary/10 rounded-full border border-primary/30 text-primary">
                     <Sparkles className="w-5 h-5" />
                   </div>
                 </div>
 
-                <span className="text-xs font-bold tracking-[0.3em] text-[#C29F68] uppercase block">
+                <span className="text-xs font-bold tracking-[0.3em] text-gold uppercase block">
                   Your Scent Match
                 </span>
 
@@ -150,30 +150,30 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                   {resultScent.name}
                 </h3>
 
-                <p className="text-sm text-[#D21B27] italic tracking-wider mb-6 mt-1">
+                <p className="text-sm text-primary italic tracking-wider mb-6 mt-1">
                   {resultScent.subtitle}
                 </p>
 
-                <div className="w-48 h-48 mx-auto rounded-sm overflow-hidden border border-zinc-800 shadow-xl mb-6 relative">
+                <div className="w-48 h-48 mx-auto rounded-sm overflow-hidden border border-border-strong shadow-xl mb-6 relative">
                   <img
                     src={resultScent.image}
                     alt={resultScent.name}
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 bg-black/70 rounded-full text-[8.5px] text-amber-400 font-bold border border-amber-500/20">
-                    <Star className="w-2.5 h-2.5 fill-amber-400" /> MATCHED
+                  <div className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 glass-panel rounded-full text-xs text-gold font-bold">
+                    <Star className="w-2.5 h-2.5 fill-gold" /> MATCHED
                   </div>
                 </div>
 
                 <div className="max-w-md mx-auto mb-6 bg-white/[0.03] border border-white/[0.06] p-4 text-left rounded-sm">
-                  <p className="text-xs text-stone-300 leading-relaxed font-light mb-4">
+                  <p className="text-xs text-text-secondary leading-relaxed font-light mb-4">
                     Based on your sensory profile,{' '}
                     <strong className="text-white uppercase font-serif">{resultScent.name}</strong>{' '}
                     was matched to emphasize intimacy closest to your skin.
                   </p>
-                  <div className="text-[10px] font-mono text-neutral-500">
-                    <strong className="text-neutral-400">Notes:</strong>{' '}
+                  <div className="text-xs font-mono text-text-muted">
+                    <strong className="text-text-tertiary">Notes:</strong>{' '}
                     {resultScent.notes.top} · {resultScent.notes.heart} · {resultScent.notes.base}
                   </div>
                 </div>
@@ -181,14 +181,14 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                 <div className="space-y-3 max-w-sm mx-auto">
                   <button
                     onClick={() => { onAddToCart(resultScent); onClose(); }}
-                    className="w-full py-3 bg-[#D21B27] hover:bg-[#B0151E] text-white text-xs tracking-[0.25em] font-extrabold uppercase transition-colors duration-200 shadow-lg cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-primary hover:bg-primary-pressed text-white text-xs tracking-[0.25em] font-extrabold uppercase transition-colors duration-200 shadow-lg cursor-pointer flex items-center justify-center gap-2"
                   >
                     <ShoppingBag className="w-4 h-4" /> Add to Cart
                   </button>
 
                   <button
                     onClick={resetQuiz}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 text-neutral-400 hover:text-white text-[10px] tracking-[0.2em] font-semibold uppercase transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-transparent hover:bg-white/5 text-text-tertiary hover:text-white text-xs tracking-[0.2em] font-semibold uppercase transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Retake Quiz
                   </button>
@@ -199,20 +199,20 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
               <div id="quiz-active-step">
                 {quizQuestions.length === 0 ? (
                   <div className="py-12 text-center">
-                    <div className="w-8 h-8 mx-auto mb-4 rounded-full border-2 border-[#D21B27]/30 border-t-[#D21B27] animate-spin" />
-                    <p className="text-sm text-neutral-400 tracking-wide">Loading your profile…</p>
+                    <div className="w-8 h-8 mx-auto mb-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                    <p className="text-sm text-text-tertiary tracking-wide">Loading your profile…</p>
                   </div>
                 ) : (
                   <>
                     {/* Header */}
                     <div className="mb-5 flex items-center justify-between border-b border-white/[0.06] pb-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#D21B27] font-serif text-xl leading-none">✦</span>
-                        <span className="text-xs font-bold tracking-[0.25em] text-neutral-400 uppercase">
+                        <span className="text-primary font-serif text-xl leading-none">✦</span>
+                        <span className="text-xs font-bold tracking-[0.25em] text-text-tertiary uppercase">
                           Neckline Aura Finder
                         </span>
                       </div>
-                      <span className="text-xs font-mono text-neutral-500">
+                      <span className="text-xs font-mono text-text-muted">
                         {currentStep + 1} / {quizQuestions.length}
                       </span>
                     </div>
@@ -220,7 +220,7 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                     {/* Progress bar */}
                     <div className="w-full bg-white/[0.06] h-1 mb-7 overflow-hidden rounded-full">
                       <div
-                        className="bg-[#D21B27] h-full transition-all duration-300 ease-out rounded-full"
+                        className="bg-primary h-full transition-all duration-300 ease-out rounded-full"
                         style={{ width: `${((currentStep + 1) / quizQuestions.length) * 100}%` }}
                       />
                     </div>
@@ -244,17 +244,17 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: Scen
                               key={idx}
                               onClick={() => handleOptionSelect(opt.value)}
                               className="group w-full p-4 border border-white/[0.07] bg-white/[0.02] text-left rounded-xl cursor-pointer flex justify-between items-center
-                                transition-colors duration-150 hover:border-[#D21B27]/50 hover:bg-[#D21B27]/5"
+                                transition-colors duration-150 hover:border-primary/50 hover:bg-primary/5"
                             >
                               <div>
-                                <span className="text-sm uppercase tracking-widest text-[#D21B27] block mb-1 font-semibold">
+                                <span className="text-sm uppercase tracking-widest text-primary block mb-1 font-semibold">
                                   0{idx + 1}. {opt.label}
                                 </span>
-                                <p className="text-xs text-neutral-400 font-light max-w-sm leading-relaxed">
+                                <p className="text-xs text-text-tertiary font-light max-w-sm leading-relaxed">
                                   {opt.description}
                                 </p>
                               </div>
-                              <div className="w-3 h-3 rounded-full border border-neutral-600 group-hover:border-[#D21B27] group-hover:bg-[#D21B27]/20 transition-all duration-150 shrink-0 ml-4" />
+                              <div className="w-3 h-3 rounded-full border border-text-muted group-hover:border-primary group-hover:bg-primary/20 transition-all duration-150 shrink-0 ml-4" />
                             </button>
                           ))}
                         </div>

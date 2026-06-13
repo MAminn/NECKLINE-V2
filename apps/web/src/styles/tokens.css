@@ -38,6 +38,11 @@
   --color-surface-input: #0a0a0a;
   --color-surface-overlay: rgba(0, 0, 0, 0.5);
 
+  /* Frosted glass — for UI floating over photography only (header, controls/labels
+     over hero + product imagery). Functional legibility, never decorative card-glass. */
+  --glass-bg: rgba(7, 6, 6, 0.55);
+  --glass-blur: 14px;
+
   /* ---------- Surfaces / Neutrals — Admin ---------- */
   --color-admin-bg: #09090b;
   --color-admin-surface: #18181b;

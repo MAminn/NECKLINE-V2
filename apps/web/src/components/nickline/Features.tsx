@@ -13,22 +13,22 @@ export default function Features() {
 
   const list = [
     {
-      icon: <HeartPulse className="w-5 h-5 text-[#D21B27]" />,
+      icon: <HeartPulse className="w-5 h-5 text-primary" />,
       title: "PULSE ACTIVATED",
       description: "Melts with your body heat for a lasting, intimate scent.",
     },
     {
-      icon: <ShieldCheck className="w-5 h-5 text-[#D21B27]" />,
+      icon: <ShieldCheck className="w-5 h-5 text-primary" />,
       title: "SKIN SAFE",
       description: "Made with clean, skin-loving ingredients.",
     },
     {
-      icon: <Pocket className="w-5 h-5 text-[#D21B27]" />,
+      icon: <Pocket className="w-5 h-5 text-primary" />,
       title: "DISCREET & PORTABLE",
       description: "Compact tin. No spills. Take it anywhere.",
     },
     {
-      icon: <Heart className="w-5 h-5 text-[#D21B27]" />,
+      icon: <Heart className="w-5 h-5 text-primary" />,
       title: "MADE FOR INTIMACY",
       description: "Subtle. Seductive. Unforgettable.",
     },
@@ -37,12 +37,12 @@ export default function Features() {
   return (
     <section
       ref={ref}
-      className="py-12 bg-[#070606] reveal"
+      className="py-12 bg-bg reveal"
       id="features-section"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className="border border-white/[0.06] bg-[#0a0a0a] rounded-2xl py-8 px-2 grid grid-cols-1 md:grid-cols-4 gap-y-6 md:gap-y-0 md:divide-x divide-white/[0.06]"
+          className="border border-white/[0.06] bg-surface-input rounded-2xl py-8 px-2 grid grid-cols-1 md:grid-cols-4 gap-y-6 md:gap-y-0 md:divide-x divide-white/[0.06]"
           id="features-banner-container"
         >
           {list.map((feat, index) => (
@@ -58,7 +58,7 @@ export default function Features() {
                 <h4 className="text-xs tracking-[0.15em] font-bold text-white uppercase">
                   {feat.title}
                 </h4>
-                <p className="text-sm text-[#C0C0C0] leading-relaxed">
+                <p className="text-sm text-text-tertiary leading-relaxed">
                   {feat.description}
                 </p>
               </div>

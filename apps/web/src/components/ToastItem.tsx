@@ -59,7 +59,7 @@ export default function ToastItem({ toast, onDismiss }: ToastItemProps) {
             {toast.message}
           </p>
           {toast.sub && (
-            <p className="text-[11px] text-neutral-400 mt-0.5 leading-snug truncate">
+            <p className="text-xs text-neutral-400 mt-0.5 leading-snug truncate">
               {toast.sub}
             </p>
           )}

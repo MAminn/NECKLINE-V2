@@ -32,6 +32,55 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text);
 }
 
+/* ---------- Typography roles (DESIGN.md §3 — The Condensed Voice) ----------
+   These set family, weight, case, and rhythm. SIZE always comes from a
+   text-* utility so the role composes with the token scale, e.g.
+   `class="t-headline text-4xl"`. Never use arbitrary text-[Npx]; the
+   token floor is text-xs (0.75rem / 12px) — nothing readable goes below it.
+   - t-display : Oswald, hero/identity. Always uppercase. Caps at --fs-6xl (4rem).
+   - t-headline: Oswald, section + product names. Always uppercase.
+   - t-eyebrow : Plus Jakarta label/kicker. Use sparingly, never above every heading.
+   - t-meta    : mono micro-data (timestamps, counts, "verified"). */
+@layer components {
+  .t-display {
+    font-family: var(--font-display);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    text-transform: uppercase;
+  }
+  .t-headline {
+    font-family: var(--font-display);
+    font-weight: var(--fw-bold);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+  }
+  .t-eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+  }
+  .t-meta {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+    letter-spacing: 0.08em;
+  }
+
+  /* Frosted plate for labels/controls floating over imagery. The 0.55 bg alpha
+     keeps text legible even where backdrop-filter is unsupported. */
+  .glass-panel {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(125%);
+    border: 1px solid var(--color-border-strong);
+  }
+}
+
 /* ---------- Global input baseline ---------- */
 input, textarea, select {
   font-family: var(--font-sans);

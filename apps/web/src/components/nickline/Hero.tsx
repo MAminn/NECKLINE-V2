@@ -63,7 +63,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
   return (
     <section 
       id="hero" 
-      className="relative min-h-[calc(100vh-80px)] xl:min-h-[85vh] flex items-center justify-start overflow-hidden select-none bg-[#070606]"
+      className="relative min-h-[calc(100vh-80px)] xl:min-h-[85vh] flex items-center justify-start overflow-hidden select-none bg-bg"
     >
       {/* BACKGROUND IMAGE CAROUSEL — GPU-accelerated crossfade */}
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden gpu-layer" id="hero-background-wrapper">
@@ -80,8 +80,8 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           />
         ))}
         
-        <div className="absolute inset-0 bg-gradient-to-r from-[#070606]/95 via-[#070606]/85 sm:via-[#070606]/70 md:via-[#070606]/55 to-transparent z-10 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#070606] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg/95 via-bg/85 sm:via-bg/70 md:via-bg/55 to-transparent z-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-bg to-transparent z-10 pointer-events-none" />
       </div>
 
       {/* CONTENT */}
@@ -90,16 +90,16 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           
           {/* META */}
           <div className="flex items-center gap-2 gpu-layer">
-            <span className="h-[1px] w-6 bg-[#D21B27]" />
-            <h3 className="text-[10px] sm:text-xs font-semibold tracking-[0.3em] text-[#D21B27] uppercase">
-              {currentSlide.subtitle || "Solid Fragrance – Designed For Intimacy"}
+            <span className="h-[1px] w-6 bg-primary" />
+            <h3 className="t-eyebrow text-primary">
+              {currentSlide.subtitle || "Solid Fragrance, Designed For Intimacy"}
             </h3>
           </div>
 
           {/* TITLE */}
           <h1 
             key={`title-${currentSlide.id}`}
-            className="text-4xl sm:text-6xl lg:text-7xl font-display font-medium leading-[1.0] tracking-tight text-white uppercase gpu-layer"
+            className="text-4xl sm:text-5xl lg:text-6xl t-display leading-none text-white gpu-layer"
             id="hero-title-headline"
           >
             {currentSlide.title}
@@ -108,7 +108,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           {/* DESCRIPTION */}
           <p
             key={`desc-${currentSlide.id}`}
-            className="text-sm sm:text-base leading-relaxed max-w-lg font-light text-neutral-200 gpu-layer"
+            className="text-sm sm:text-base leading-relaxed max-w-lg font-light text-text-secondary gpu-layer"
             id="hero-description"
           >
             {currentSlide.description}
@@ -118,14 +118,14 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           <div className="flex flex-wrap items-center gap-4 pt-4 gpu-layer" id="hero-action-buttons">
             <button
               onClick={() => onScrollToSection(currentSlide.linkTo || "collection")}
-              className="px-8 py-4 bg-[#D21B27] hover:bg-[#B0151E] text-white text-xs tracking-[0.25em] font-semibold uppercase transition-colors duration-300 shadow-xl cursor-pointer hover:shadow-red-950/20 hover:-translate-y-0.5 rounded-none flex items-center gap-2 gpu-layer"
+              className="px-8 py-4 bg-primary hover:bg-primary-pressed text-white text-xs tracking-[0.25em] font-semibold uppercase transition-colors duration-300 shadow-xl cursor-pointer hover:shadow-red-950/20 hover:-translate-y-0.5 rounded-none flex items-center gap-2 gpu-layer"
               id="hero-btn-shop"
             >
               {currentSlide.buttonText || "Shop Now"}
             </button>
             <button
               onClick={() => onScrollToSection("story")}
-              className="px-8 py-4 bg-transparent border border-neutral-800 text-stone-300 hover:text-white hover:border-white text-xs tracking-[0.25em] font-semibold uppercase transition-colors duration-300 inline-flex items-center gap-2 cursor-pointer rounded-none group gpu-layer"
+              className="px-8 py-4 bg-transparent border border-border-strong text-text-secondary hover:text-white hover:border-white text-xs tracking-[0.25em] font-semibold uppercase transition-colors duration-300 inline-flex items-center gap-2 cursor-pointer rounded-none group gpu-layer"
               id="hero-btn-story"
             >
               Our Story <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -133,9 +133,9 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
           </div>
 
           {/* FEATURES */}
-          <div className="flex items-center gap-6 pt-4 text-xs text-neutral-400 font-mono tracking-wider border-t border-neutral-900/40 w-full max-w-sm">
+          <div className="flex items-center gap-6 pt-4 text-xs text-text-tertiary font-mono tracking-wider border-t border-border w-full max-w-sm">
             <div className="flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5 text-[#D21B27]" />
+              <Compass className="w-3.5 h-3.5 text-primary" />
               <span>Sensory Skin Release</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -152,7 +152,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
         <div className="absolute right-8 bottom-8 z-30 flex items-center gap-3">
           <button
             onClick={handlePrev}
-            className="w-10 h-10 rounded-full border border-white/10 hover:border-[#D21B27]/40 bg-[#070606]/40 hover:bg-[#D21B27]/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full glass-panel hover:border-primary/40 hover:bg-primary/10 flex items-center justify-center text-text-tertiary hover:text-white transition-colors cursor-pointer"
             aria-label="Previous Slide"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -165,8 +165,8 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
                 onClick={(e) => handleDotClick(i, e)}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${
                   i === activeIndex 
-                    ? "w-6 h-1.5 bg-[#D21B27]" 
-                    : "w-1.5 h-1.5 bg-neutral-600 hover:bg-neutral-400"
+                    ? "w-6 h-1.5 bg-primary" 
+                    : "w-1.5 h-1.5 bg-text-muted hover:bg-text-tertiary"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
@@ -175,7 +175,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
 
           <button
             onClick={handleNext}
-            className="w-10 h-10 rounded-full border border-white/10 hover:border-[#D21B27]/40 bg-[#070606]/40 hover:bg-[#D21B27]/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full glass-panel hover:border-primary/40 hover:bg-primary/10 flex items-center justify-center text-text-tertiary hover:text-white transition-colors cursor-pointer"
             aria-label="Next Slide"
           >
             <ChevronRight className="w-4 h-4" />
@@ -190,16 +190,16 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
             <defs>
               <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
             </defs>
-            <text className="font-mono text-[7px] uppercase tracking-widest fill-stone-300 select-none">
+            <text className="font-mono text-[7px] uppercase tracking-widest fill-text-secondary select-none">
               <textPath href="#circlePath" startOffset="0%">
                 • Scent finder quiz • find your vibe • wear intimacy •
               </textPath>
             </text>
           </svg>
-          <div className="absolute inset-4 rounded-full bg-[#070606] flex items-center justify-center border border-[#D21B27]/40 shadow-xl hover:scale-105 transition-transform duration-300 gpu-layer">
+          <div className="absolute inset-4 rounded-full bg-bg flex items-center justify-center border border-primary/40 shadow-xl hover:scale-105 transition-transform duration-300 gpu-layer">
             <div className="flex flex-col items-center justify-center text-center">
-              <span className="text-[#D21B27] text-lg font-serif inline-flex items-center justify-center w-[21.6875px] h-[25px]">✦</span>
-              <span className="text-[12px] tracking-widest text-[#C29F68] font-bold uppercase mt-1">Quiz</span>
+              <span className="text-primary text-lg font-serif inline-flex items-center justify-center w-[21.6875px] h-[25px]">✦</span>
+              <span className="text-xs tracking-widest text-gold font-bold uppercase mt-1">Quiz</span>
             </div>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function Hero({ onScrollToSection, onOpenQuiz, heroImage, slides 
       <div className="lg:hidden absolute bottom-8 right-4 z-20 gpu-layer">
         <button
           onClick={onOpenQuiz}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#D21B27]/90 hover:bg-[#D21B27] text-white text-[11px] tracking-[0.2em] font-bold uppercase rounded-full border border-[#D21B27]/50 shadow-lg transition-colors duration-300 active:scale-95 gpu-layer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary/90 hover:bg-primary text-white text-xs tracking-[0.2em] font-bold uppercase rounded-full border border-primary/50 shadow-lg transition-colors duration-300 active:scale-95 gpu-layer"
         >
           <Sparkles className="w-3.5 h-3.5" />
           Scent Finder

@@ -87,7 +87,7 @@ export default function RootLayout({
                       <a
                         key={link.href}
                         href={link.href}
-                        className="nav-link text-sm lg:text-base uppercase tracking-[0.12em] text-text-secondary transition-colors duration-200 hover:text-text-primary font-medium"
+                        className="nav-link text-sm uppercase tracking-[0.12em] text-text-secondary transition-colors duration-200 hover:text-text-primary font-medium"
                       >
                         {link.label}
                       </a>

@@ -70,22 +70,16 @@ export default function HowToApply({ config }: HowToApplyProps) {
   const stepsData = config?.steps && config.steps.length > 0 ? config.steps : DEFAULT_STEPS;
 
   return (
-    <section className="py-24 bg-[#070606] select-none text-center" id="how-to-apply">
+    <section className="py-24 bg-bg select-none text-center" id="how-to-apply">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* HEADER */}
         <div className="mb-14">
-          <span 
-            className="text-[15px] leading-[24px] tracking-[0.2em] font-mono uppercase mb-6 block"
-            style={{ color }}
-          >
-            HOW TO APPLY
-          </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black font-sans uppercase tracking-[0.02em] leading-[0.95]">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl t-headline tracking-[0.02em] leading-[0.95]">
             <span className="text-white block mb-1">APPLY WITH INTENTION.</span>
-            <span className="block italic" style={{ color }}>FEEL THE PRESENCE.</span>
+            <span className="block" style={{ color }}>FEEL THE PRESENCE.</span>
           </h2>
-          <p className="mt-8 text-neutral-400 text-[14px] font-normal leading-relaxed max-w-2xl mx-auto">
+          <p className="mt-8 text-text-tertiary text-sm font-normal leading-relaxed max-w-2xl mx-auto">
             NECKLINE Solid Perfume is designed to melt with your body heat
             and reveal its scent throughout the day. A little goes a long way.
             Follow these simple steps for the best experience.
@@ -93,7 +87,7 @@ export default function HowToApply({ config }: HowToApplyProps) {
         </div>
 
         {/* STEPS GRID BOX */}
-        <div className="bg-[#111111] border border-white/[0.04] rounded-3xl p-8 md:p-12 mb-10 shadow-2xl">
+        <div className="bg-surface border border-white/[0.04] rounded-3xl p-8 md:p-12 mb-10 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-y-12 md:gap-y-0 md:divide-x divide-white/[0.05]">
             {stepsData.map((step) => {
               // Resolve the preset Lucide icon
@@ -114,14 +108,14 @@ export default function HowToApply({ config }: HowToApplyProps) {
                         />
                       </div>
                     ) : (
-                      <PresetIcon className="w-18 h-18 text-[#D21B27]" strokeWidth={1} style={{ color }} />
+                      <PresetIcon className="w-18 h-18 text-primary" strokeWidth={1} style={{ color }} />
                     )}
                   </div>
-                  <h3 className="text-white text-[18px] leading-[30.5px] font-bold uppercase tracking-wider mb-3 flex items-center justify-center gap-2">
+                  <h3 className="text-white text-lg t-headline tracking-wider mb-3 flex items-center justify-center gap-2">
                     <span style={{ color, fontFamily: "system-ui" }}>{step.num}</span>
                     <span>{step.title}</span>
                   </h3>
-                  <p className="text-neutral-400 text-[13px] font-bold leading-relaxed max-w-xs mx-auto">
+                  <p className="text-text-tertiary text-sm font-light leading-relaxed max-w-xs mx-auto">
                     {step.desc}
                   </p>
                 </div>
@@ -131,18 +125,18 @@ export default function HowToApply({ config }: HowToApplyProps) {
         </div>
 
         {/* PRO TIP BANNER */}
-        <div className="inline-flex flex-col lg:flex-row items-center gap-4 lg:gap-6 px-6 py-4 border border-white/[0.04] bg-[#111111] rounded-xl text-left">
+        <div className="inline-flex flex-col lg:flex-row items-center gap-4 lg:gap-6 px-6 py-4 border border-white/[0.04] bg-surface rounded-xl text-left">
           <div className="flex items-center gap-3 shrink-0">
             {/* Custom abstract star/spark icon */}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <path d="M12 2v20 M17 7l-10 10 M22 12H2 M17 17L7 7" />
             </svg>
-            <span className="text-[11px] font-bold tracking-[0.15em] uppercase whitespace-nowrap" style={{ color }}>
+            <span className="text-xs font-bold tracking-[0.15em] uppercase whitespace-nowrap" style={{ color }}>
               PRO TIP
             </span>
           </div>
           <div className="hidden lg:block w-[1px] h-6 bg-white/10" />
-          <p className="text-neutral-400 text-[13px] font-light text-center lg:text-left">
+          <p className="text-text-tertiary text-sm font-light text-center lg:text-left">
             For a longer-lasting scent, apply after moisturizing or layering with unscented lotion.
           </p>
         </div>

@@ -22,13 +22,13 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
   return (
     <section 
       id="collection" 
-      className="py-6 select-none transition-colors duration-500 overflow-hidden bg-[#070606]"
+      className="py-6 select-none transition-colors duration-500 overflow-hidden bg-bg"
     >
       <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ width: '1290px', maxWidth: '100%' }}>
         
         {/* Unified Luxury Container Box matching the reference design */}
         <div 
-          className="bg-[#090909] border border-white/[0.04] p-3 sm:p-4 lg:p-5 rounded-2xl" 
+          className="bg-surface-alt border border-white/[0.04] p-3 sm:p-4 lg:p-5 rounded-2xl" 
           id="intimacy-bento-container"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[0.95fr_1.25fr_1.25fr_1.25fr_1.25fr] gap-3 xl:gap-3.5 items-stretch text-left">
@@ -36,21 +36,21 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
             {/* Left Column Brand Intro Panel */}
             <div className="col-span-1 md:col-span-2 lg:col-span-1 flex flex-col justify-between p-4 border border-white/[0.02] bg-white/[0.01]/30 rounded-2xl text-left" id="intimacy-brand-intro">
               <div className="space-y-4">
-                <span className="text-[10px] tracking-[0.3em] font-extrabold text-[#D21B27] uppercase block font-mono">
+                <span className="t-eyebrow text-primary block">
                   OUR SIGNATURE
                 </span>
-                
-                <h3 className="text-2xl sm:text-3xl lg:text-[20px] xl:text-[26px] font-black tracking-tight text-white uppercase leading-[0.95] font-sans">
+
+                <h3 className="text-2xl sm:text-3xl lg:text-xl xl:text-2xl t-headline text-white leading-[0.95]">
                   INTIMACY <br className="hidden lg:block" /> COLLECTION
                 </h3>
                 
                 {/* Visual signature star/line ornament */}
                 <div className="flex items-center gap-2 my-2">
-                  <div className="w-8 h-[1.5px] bg-[#D21B27]" />
-                  <span className="text-[#D21B27] text-xs leading-none">✦</span>
+                  <div className="w-8 h-[1.5px] bg-primary" />
+                  <span className="text-primary text-xs leading-none">✦</span>
                 </div>
 
-                <p className="text-neutral-400 text-[11px] font-light leading-relaxed max-w-[240px] opacity-90">
+                <p className="text-text-tertiary text-xs font-light leading-relaxed max-w-[240px] opacity-90">
                   Four unique scents. Four different moods. One unforgettable experience.
                 </p>
               </div>
@@ -59,7 +59,7 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                 <div className="space-y-2">
                   <button
                     onClick={onOpenShop}
-                    className="py-2.5 px-4 bg-[#D21B27] hover:bg-[#E32B37] text-white text-[10px] tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] hover:shadow-[0_0_24px_rgba(210,27,39,0.35)] cursor-pointer active:scale-95 w-full flex items-center justify-center font-sans animate-glow-pulse gpu-layer"
+                    className="py-2.5 px-4 bg-primary hover:bg-primary-hover text-white text-xs tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] hover:shadow-[0_0_24px_rgba(210,27,39,0.35)] cursor-pointer active:scale-95 w-full flex items-center justify-center font-sans animate-glow-pulse gpu-layer"
                     id="btn-explore-scents"
                   >
                     EXPLORE ALL SCENTS
@@ -67,10 +67,10 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                   {onOpenQuiz && (
                     <button
                       onClick={onOpenQuiz}
-                      className="py-2 px-4 bg-transparent border border-white/10 hover:border-[#D21B27]/50 text-neutral-300 hover:text-white text-[10px] tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] cursor-pointer w-full flex items-center justify-center gap-1.5 font-sans"
+                      className="py-2 px-4 bg-transparent border border-white/10 hover:border-primary/50 text-text-secondary hover:text-white text-xs tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] cursor-pointer w-full flex items-center justify-center gap-1.5 font-sans"
                       id="btn-find-scent"
                     >
-                      <Sparkles className="w-3 h-3 text-[#D21B27]" />
+                      <Sparkles className="w-3 h-3 text-primary" />
                       FIND YOUR SCENT
                     </button>
                   )}
@@ -85,7 +85,7 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                 onClick={() => onOpenProduct(scent)}
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="group relative flex flex-col justify-between p-4 overflow-hidden border border-white/[0.05] hover:border-[#D21B27]/35 hover:shadow-[0_22px_50px_rgba(210,27,39,0.14)] transition-colors duration-500 rounded-2xl cursor-pointer min-h-[340px] lg:min-h-[320px] col-span-1 gpu-layer"
+                className="group relative flex flex-col justify-between p-4 overflow-hidden border border-white/[0.05] hover:border-primary/35 hover:shadow-[0_22px_50px_rgba(210,27,39,0.14)] transition-colors duration-500 rounded-2xl cursor-pointer min-h-[340px] lg:min-h-[320px] col-span-1 gpu-layer"
                 id={`scent-item-${scent.id}`}
               >
                 {/* Full image filling card behind overlays with smooth hover zoom */}
@@ -98,16 +98,16 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                   />
                   
                   {/* Dense vignette for high-contrast legible texts */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070606]/85 via-[#070606]/10 to-[#070606]/55 z-0 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg/85 via-bg/10 to-bg/55 z-0 pointer-events-none" />
                 </div>
 
                 {/* Center pill box tag top */}
                 <div className="w-full text-center pt-2 z-10 pointer-events-none flex justify-center">
-                  <div className="bg-black/40 border border-white/5 py-1.5 px-4 rounded-xl text-center shadow-lg inline-block w-auto max-w-[190px]">
-                    <h3 className="text-white text-[12px] font-extrabold tracking-[0.18em] font-sans uppercase">
+                  <div className="glass-panel py-1.5 px-4 rounded-xl text-center shadow-lg inline-block w-auto max-w-[190px]">
+                    <h3 className="text-white text-xs t-headline tracking-[0.12em]">
                       {scent.name}
                     </h3>
-                    <p className="text-[8px] text-zinc-300 font-medium tracking-wide mt-0.5 block break-words leading-tight">
+                    <p className="text-xs text-text-secondary font-medium tracking-wide mt-0.5 block break-words leading-tight">
                       {scent.subtitle}
                     </p>
                   </div>
@@ -115,7 +115,7 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
 
                 {/* Centered price & shop now bottom line */}
                 <div className="text-center z-10 w-full mt-auto flex flex-col items-center gap-3">
-                  <span className="text-[13px] font-bold tracking-[0.14em] font-sans text-white block">
+                  <span className="text-sm font-bold tracking-[0.14em] text-white block">
                     {formatPrice(scent.price, scent.currency || 'EGP')}
                   </span>
                   
@@ -128,7 +128,7 @@ export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop
                         onAddToCart(scent);
                       }
                     }}
-                    className="w-full py-2.5 border border-white/10 hover:border-white/30 bg-black/20 hover:bg-black/55 hover:shadow-[0_4px_16px_rgba(255,255,255,0.02)] text-white text-[9px] tracking-[0.16em] font-bold uppercase transition-colors duration-300 flex items-center justify-center gap-2 rounded-lg cursor-pointer"
+                    className="w-full py-2.5 border border-white/10 hover:border-white/30 bg-black/20 hover:bg-black/55 hover:shadow-[0_4px_16px_rgba(255,255,255,0.02)] text-white text-xs tracking-[0.16em] font-bold uppercase transition-colors duration-300 flex items-center justify-center gap-2 rounded-lg cursor-pointer"
                     title={`Browse ${scent.name} in shop`}
                   >
                     <span>SHOP NOW</span>
