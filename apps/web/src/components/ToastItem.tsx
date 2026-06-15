@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Heart, X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Info, ShoppingBag } from 'lucide-react';
 import { Toast, ToastType } from '../contexts/ToastContext';
 
 interface ToastItemProps {
@@ -9,69 +9,71 @@ interface ToastItemProps {
   onDismiss: () => void;
 }
 
-const typeConfig: Record<ToastType, { icon: React.ReactNode; border: string; bg: string }> = {
+const typeConfig: Record<ToastType, { icon: React.ReactNode; accent: string }> = {
   brand: {
-    icon: <Heart className="w-3.5 h-3.5 text-[#D21B27] fill-[#D21B27] shrink-0" />,
-    border: 'border-[#D21B27]/30',
-    bg: 'bg-neutral-950',
+    icon: <ShoppingBag className="w-4 h-4 text-crimson shrink-0" strokeWidth={1.5} />,
+    accent: 'border-l-crimson',
   },
   success: {
-    icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#22C55E] shrink-0" strokeWidth={1.5} />,
-    border: 'border-[#22C55E]/25',
-    bg: 'bg-[#080f08]',
+    icon: <CheckCircle2 className="w-4 h-4 text-success shrink-0" strokeWidth={1.5} />,
+    accent: 'border-l-success',
   },
   error: {
-    icon: <AlertCircle className="w-3.5 h-3.5 text-[#EF4444] shrink-0" strokeWidth={1.5} />,
-    border: 'border-[#EF4444]/25',
-    bg: 'bg-[#0f0808]',
+    icon: <AlertCircle className="w-4 h-4 text-crimson shrink-0" strokeWidth={1.5} />,
+    accent: 'border-l-crimson',
   },
   info: {
-    icon: <Info className="w-3.5 h-3.5 text-[#3B82F6] shrink-0" strokeWidth={1.5} />,
-    border: 'border-[#3B82F6]/25',
-    bg: 'bg-[#080a0f]',
+    icon: <Info className="w-4 h-4 text-muted shrink-0" strokeWidth={1.5} />,
+    accent: 'border-l-muted',
   },
 };
 
 export default function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { icon, border, bg } = typeConfig[toast.type];
+  const { icon, accent } = typeConfig[toast.type];
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
     timerRef.current = setTimeout(() => {
       setVisible(false);
-      setTimeout(onDismiss, 200);
+      setTimeout(onDismiss, 250);
     }, 3300);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [onDismiss]);
 
   return (
     <div
-      className={`${bg} border ${border} text-white px-4 py-3 flex items-start justify-between gap-3
-        shadow-2xl rounded pointer-events-auto transition-all duration-200
-        ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}
+      className={`pointer-events-auto max-w-sm w-full transform-gpu transition-all duration-300 ease-out
+        ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-[0.96]'}`}
     >
-      <div className="flex items-start gap-2.5 min-w-0">
-        <span className="mt-0.5">{icon}</span>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold tracking-wide text-white leading-snug">
-            {toast.message}
-          </p>
-          {toast.sub && (
-            <p className="text-xs text-neutral-400 mt-0.5 leading-snug truncate">
-              {toast.sub}
-            </p>
-          )}
-        </div>
-      </div>
-      <button
-        onClick={() => { setVisible(false); setTimeout(onDismiss, 200); }}
-        className="text-neutral-500 hover:text-white transition-colors shrink-0 mt-0.5"
-        aria-label="Dismiss"
+      <div
+        className={`glass-card-strong rounded-lg border-l-4 ${accent} p-4 shadow-modal flex items-start justify-between gap-3`}
       >
-        <X className="w-3.5 h-3.5" strokeWidth={1.5} />
-      </button>
+        <div className="flex items-start gap-3 min-w-0">
+          <span className="mt-0.5">{icon}</span>
+          <div className="min-w-0">
+            <p className="text-sm font-display font-medium tracking-wide text-warm-white leading-snug">
+              {toast.message}
+            </p>
+            {toast.sub && (
+              <p className="text-xs text-muted mt-1 leading-snug truncate">{toast.sub}</p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            setVisible(false);
+            setTimeout(onDismiss, 250);
+          }}
+          className="text-muted hover:text-warm-white transition-colors shrink-0 mt-0.5"
+          aria-label="Dismiss"
+        >
+          <X className="w-4 h-4" strokeWidth={1.5} />
+        </button>
+      </div>
     </div>
   );
 }

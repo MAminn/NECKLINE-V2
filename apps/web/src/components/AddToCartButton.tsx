@@ -34,8 +34,8 @@ export default function AddToCartButton({ productId, quantity, disabled, size = 
         disabled:cursor-not-allowed disabled:opacity-50
         ${sizeClasses}
         ${justAdded
-          ? 'bg-gold text-bg scale-95'
-          : 'bg-primary text-white hover:bg-primary-hover hover:shadow-glow active:scale-95'
+          ? 'bg-original-gold text-noir scale-95'
+          : 'bg-crimson text-warm-white hover:bg-crimson-light hover:shadow-glow active:scale-95'
         }`}
     >
       {isLoading ? (

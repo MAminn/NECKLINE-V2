@@ -3,316 +3,182 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, FormEvent } from "react";
-import { apiClient } from "../../lib/api";
-import { Review } from "../../types/nickline";
-import { Star, Check, PenTool, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+'use client';
 
-export default function Reviews() {
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star } from 'lucide-react';
+import { Review } from '../../types/nickline';
+import { LOCAL_REVIEWS } from '../../data/products';
+import { easeOutExpo } from '../../lib/motion';
+
+interface ReviewsProps {
+  reviews?: Review[];
+}
+
+export default function Reviews({ reviews: reviewsProp }: ReviewsProps) {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [reviewsList, setReviewsList] = useState<Review[]>([]);
-  const [showForm, setShowForm] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Form states
-  const [name, setName] = useState("");
-  const [comment, setComment] = useState("");
-  const [rating, setRating] = useState(5);
-  const [product, setProduct] = useState("CAIRO");
-  const [success, setSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  // Load reviews from API dynamic backend
-  const fetchReviews = async () => {
-    try {
-      const res = await fetch("/api/testimonials");
-      if (res.ok) {
-        const data = await res.json();
-        setReviewsList(data);
-      }
-    } catch (err) {
-      console.error("Failed to read reviews from live API endpoint:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const res = await fetch('/api/testimonials');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setReviewsList(data);
+            return;
+          }
+        }
+      } catch {
+        // fall through to local reviews
+      }
+      setReviewsList(LOCAL_REVIEWS);
+    }
     fetchReviews();
-    
-    // Poll reviews occasionally to sync live with backend admin modifications
-    const timer = setInterval(() => {
-      fetchReviews();
-    }, 6000);
-    return () => clearInterval(timer);
   }, []);
 
-  const handleSubmitReview = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!name || !comment) return;
-    setSubmitError("");
+  const reviews = reviewsProp && reviewsProp.length > 0 ? reviewsProp : reviewsList;
 
-    try {
-      // Goes through apiClient (direct API origin) so the CSRF cookie +
-      // x-csrf-token header travel with the request; the /api rewrite proxy
-      // would drop the API-domain cookies.
-      await apiClient("/testimonials", {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          rating,
-          comment,
-          product,
-          verified: true
-        })
-      });
+  const next = useCallback(() => {
+    if (reviews.length === 0) return;
+    setDirection(1);
+    setCurrent((prev) => (prev + 1) % reviews.length);
+  }, [reviews.length]);
 
-      setSuccess(true);
-      setName("");
-      setComment("");
-      setRating(5);
-      fetchReviews(); // immediately reload loop!
+  useEffect(() => {
+    if (reviews.length === 0) return;
+    const timer = setInterval(next, 5000);
+    return () => clearInterval(timer);
+  }, [next, reviews.length]);
 
-      setTimeout(() => {
-        setSuccess(false);
-        setShowForm(false);
-      }, 2500);
-    } catch (err) {
-      console.error("Failed submitting review to live API:", err);
-      setSubmitError(err instanceof Error ? err.message : "Failed to submit review");
+  const goTo = (index: number) => {
+    setDirection(index > current ? 1 : -1);
+    setCurrent(index);
+  };
+
+  const visibleReviews = [];
+  if (reviews.length > 0) {
+    for (let i = 0; i < 3; i++) {
+      visibleReviews.push(reviews[(current + i) % reviews.length]);
     }
-  };
+  }
 
-  // Helper render of stars
-  const renderStars = (count: number) => {
+  if (reviews.length === 0) {
     return (
-      <div className="flex items-center gap-0.5" aria-label={`${count} out of 5 stars`}>
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-3.5 h-3.5 ${
-              i < count ? "text-primary fill-primary" : "text-text-disabled"
-            }`}
-          />
-        ))}
-      </div>
+      <section id="reviews" className="py-24 md:py-32 bg-noir-lift">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 text-center">
+          <h2 className="font-display font-bold text-3xl md:text-4xl lg:text-5xl tracking-[-0.02em] text-warm-white uppercase mb-4">
+            LOVED BY THOUSANDS
+          </h2>
+        </div>
+      </section>
     );
-  };
+  }
 
   return (
-    <section className="py-12 select-none bg-bg overflow-hidden" id="reviews">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* TOP INTRO */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-display font-medium tracking-[0.08em] uppercase text-text-primary">
-            Loved By Thousands
+    <section id="reviews" className="py-24 md:py-32 bg-noir-lift">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: easeOutExpo }}
+          className="text-center mb-12"
+        >
+          <h2 className="font-display font-bold text-3xl md:text-4xl lg:text-5xl tracking-[-0.02em] text-warm-white uppercase mb-4">
+            LOVED BY THOUSANDS
           </h2>
-          <div className="flex justify-center items-center gap-1 mt-3 mb-1">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-4 h-4 text-primary fill-primary" />
-            ))}
-          </div>
-          <p className="text-xs text-text-tertiary font-light tracking-wide font-mono">
-            4.9/5 From 4,200+ Verified Buyers
-          </p>
-        </div>
-
-        {/* REVIEWS SCROLLING MARQUEE CONTEXT */}
-        {isLoading ? (
-          <div className="py-12 text-center text-xs text-text-muted font-mono">
-            Calibrating sensory feedback loop...
-          </div>
-        ) : reviewsList.length === 0 ? (
-          <div className="py-12 text-center text-xs text-text-muted font-mono">
-            No aura reviews loaded. Write the first dynamic review!
-          </div>
-        ) : (
-          <div className="relative w-full overflow-hidden py-4 mb-8 select-none" id="reviews-marquee-parent">
-            {/* Edge feathering custom gradient overlays */}
-            <div className="absolute left-0 top-0 bottom-0 w-20 sm:w-48 bg-gradient-to-r from-bg via-bg/80 to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 sm:w-48 bg-gradient-to-l from-bg via-bg/80 to-transparent z-10 pointer-events-none" />
-
-            {/* Seamless Double-copied track */}
-            <div className="animate-marquee flex gap-6" id="marquee-track">
-              {/* First Track copy */}
-              {reviewsList.map((rev) => (
-                <div
-                  key={`marq-1-${rev.id}`}
-                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-colors duration-500 rounded-2xl relative
-                    bg-white/[0.02] border-white/[0.05] hover:border-primary/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm gpu-layer"
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      {renderStars(rev.rating)}
-                      <span className="text-xs uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 font-bold font-serif shadow-sm">
-                        {rev.product}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm italic font-light leading-relaxed text-text-secondary min-h-[70px]">
-                      &ldquo;{rev.comment}&rdquo;
-                    </p>
-                  </div>
-
-                  <div className="border-t border-border pt-4 mt-4 flex items-center justify-between">
-                    <span className="text-xs font-serif font-medium text-text-primary">
-                      — {rev.name}
-                    </span>
-                    
-                    {rev.verified && (
-                      <div className="flex items-center gap-1 text-xs text-primary font-bold tracking-wider font-mono">
-                        <div className="w-3.5 h-3.5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                          <Check className="w-2.5 h-2.5" />
-                        </div>
-                        Verified
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Second Track copy (identical copy enabling seamless visual wrap) */}
-              {reviewsList.map((rev) => (
-                <div
-                  key={`marq-2-${rev.id}`}
-                  className="w-[280px] sm:w-[350px] flex-shrink-0 flex flex-col justify-between p-6 border text-left transition-colors duration-500 rounded-2xl relative
-                    bg-white/[0.02] border-white/[0.05] hover:border-primary/30 hover:shadow-[0_15px_30px_rgba(210,27,39,0.06)] shadow-sm gpu-layer"
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      {renderStars(rev.rating)}
-                      <span className="text-xs uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 font-bold font-serif shadow-sm">
-                        {rev.product}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm italic font-light leading-relaxed text-text-secondary min-h-[70px]">
-                      &ldquo;{rev.comment}&rdquo;
-                    </p>
-                  </div>
-
-                  <div className="border-t border-border pt-4 mt-4 flex items-center justify-between">
-                    <span className="text-xs font-serif font-medium text-text-primary">
-                      — {rev.name}
-                    </span>
-                    
-                    {rev.verified && (
-                      <div className="flex items-center gap-1 text-xs text-primary font-bold tracking-wider font-mono">
-                        <div className="w-3.5 h-3.5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                          <Check className="w-2.5 h-2.5" />
-                        </div>
-                        Verified
-                      </div>
-                    )}
-                  </div>
-                </div>
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} size={18} className="text-crimson fill-crimson" />
               ))}
             </div>
+            <span className="font-mono text-sm text-warm-white">4.9/5</span>
+            <span className="text-xs text-muted">From 4,200+ Verified Buyers</span>
           </div>
-        )}
+        </motion.div>
 
-        {/* TRIGGER BUTTONS */}
-        <div className="flex justify-center items-center gap-4">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-8 py-3 bg-primary hover:bg-primary-pressed text-white text-xs tracking-[0.2em] font-bold uppercase transition-transform hover:-translate-y-0.5 cursor-pointer rounded-none flex items-center gap-2 shadow-lg"
-            id="btn-write-review"
-          >
-            <PenTool className="w-3.5 h-3.5" /> Write A Review
-          </button>
+        {/* Review cards - desktop shows 3, mobile shows 1 */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
+          <AnimatePresence mode="popLayout" custom={direction}>
+            {visibleReviews.map((review, i) => (
+              <motion.div
+                key={review.id}
+                layout
+                custom={direction}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, delay: i * 0.1, ease: easeOutExpo }}
+                className="glass-card rounded-lg p-6"
+              >
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} size={14} className="text-crimson fill-crimson" />
+                  ))}
+                </div>
+                <p className="text-sm text-warm-white/90 italic leading-relaxed mb-4">
+                  &ldquo;{review.comment}&rdquo;
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted">— {review.name}, Verified Buyer</span>
+                  <span className="text-xs text-crimson bg-crimson/10 px-3 py-1 rounded-full">
+                    {review.product}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
-        {/* REVIEWS INPUT FORM */}
-        <AnimatePresence>
-          {showForm && (
+        {/* Mobile: single card */}
+        <div className="md:hidden mb-8">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="mt-12 max-w-lg mx-auto overflow-hidden border p-6 md:p-8 rounded-2xl bg-surface-alt/95 border-white/[0.08]"
-              id="write-review-drawer"
+              key={reviews[current].id}
+              custom={direction}
+              initial={{ opacity: 0, x: direction * 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -50 }}
+              transition={{ duration: 0.4, ease: easeOutExpo }}
+              className="glass-card rounded-lg p-6"
             >
-              <h4 className="text-xl font-serif text-text-primary mb-6 uppercase tracking-wider text-left flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" /> Share Your Sensory Review
-              </h4>
-
-              {success ? (
-                <div className="py-12 text-center text-success font-mono font-medium text-xs">
-                  Review submitted successfully! Your feedback melts with Neckline.
-                </div>
-              ) : (
-                <form onSubmit={handleSubmitReview} className="space-y-4 text-left">
-                  {submitError && (
-                    <div className="p-3 bg-error-bg border border-error-border text-error-fg text-xs font-mono">
-                      {submitError}
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-xs tracking-wider font-mono text-text-tertiary uppercase block mb-1">Your Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Sandra L."
-                      className="w-full bg-surface-input border border-border-strong p-3 text-xs text-white outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs tracking-wider font-mono text-text-tertiary uppercase block mb-1">Select Scent</label>
-                      <select
-                        value={product}
-                        onChange={(e) => setProduct(e.target.value)}
-                        className="w-full bg-surface-input border border-border-strong p-3 text-xs text-white outline-none focus:border-primary transition-colors"
-                      >
-                        <option value="CAIRO">CAIRO</option>
-                        <option value="MIDNIGHT">MIDNIGHT</option>
-                        <option value="VELVET">VELVET</option>
-                        <option value="EMBER">EMBER</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs tracking-wider font-mono text-text-tertiary uppercase block mb-1">Sensory Rating</label>
-                      <select
-                        value={rating}
-                        onChange={(e) => setRating(Number(e.target.value))}
-                        className="w-full bg-surface-input border border-border-strong p-3 text-xs text-white outline-none focus:border-primary transition-colors"
-                      >
-                        <option value={5}>5 Stars (Flawless)</option>
-                        <option value={4}>4 Stars (Intoxicating)</option>
-                        <option value={3}>3 Stars (Decent)</option>
-                        <option value={2}>2 Stars (Faint)</option>
-                        <option value={1}>1 Star (None)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs tracking-wider font-mono text-text-tertiary uppercase block mb-1">Fragrance Comment</label>
-                    <textarea
-                      required
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      rows={3}
-                      placeholder="Describe the melt, skin performance, compliments..."
-                      className="w-full bg-surface-input border border-border-strong p-3 text-xs text-white outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-primary hover:bg-primary-pressed text-white text-xs tracking-[0.2em] font-bold uppercase transition-colors duration-200 cursor-pointer"
-                  >
-                    Submit Review
-                  </button>
-                </form>
-              )}
+              <div className="flex gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} size={14} className="text-crimson fill-crimson" />
+                ))}
+              </div>
+              <p className="text-sm text-warm-white/90 italic leading-relaxed mb-4">
+                &ldquo;{reviews[current].comment}&rdquo;
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted">— {reviews[current].name}, Verified Buyer</span>
+                <span className="text-xs text-crimson bg-crimson/10 px-3 py-1 rounded-full">
+                  {reviews[current].product}
+                </span>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
 
+        {/* Dots */}
+        <div className="flex items-center justify-center gap-2">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === current ? 'bg-crimson w-6' : 'bg-muted/30 hover:bg-muted/50'
+              }`}
+              aria-label={`Go to review ${i + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

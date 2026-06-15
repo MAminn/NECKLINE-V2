@@ -69,7 +69,7 @@ export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-sm bg-primary py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all duration-200 hover:bg-primary-hover hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-sm bg-crimson py-3 text-button font-semibold uppercase tracking-button text-warm-white transition-all duration-200 hover:bg-crimson-light hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? 'Signing in…' : 'Sign In'}
       </button>

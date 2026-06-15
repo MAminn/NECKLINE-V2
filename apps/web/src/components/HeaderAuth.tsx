@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { User, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -10,46 +11,46 @@ export default function HeaderAuth() {
     return (
       <div className="flex items-center gap-4">
         {user.role === 'admin' && (
-          <a
+          <Link
             href="/admin"
-            className="text-xs uppercase tracking-[0.16em] text-gold transition-all duration-200 pb-[2px] border-b border-gold/50 hover:border-gold"
+            className="hidden md:block font-display font-medium text-xs tracking-[0.1em] text-muted hover:text-warm-white transition-colors duration-200"
           >
-            Dashboard
-          </a>
+            DASHBOARD
+          </Link>
         )}
-        <a
+        <Link
           href="/account"
-          className="flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-text-secondary transition-colors hover:text-text-primary"
+          className="flex items-center gap-1.5 font-display font-medium text-xs tracking-[0.1em] text-muted hover:text-warm-white transition-colors duration-200"
         >
           <User className="h-3.5 w-3.5" strokeWidth={1.5} />
-          <span>{user.name}</span>
-        </a>
+          <span className="hidden sm:inline">{user.name}</span>
+        </Link>
         <button
           onClick={() => logout()}
-          className="flex items-center gap-1 text-xs uppercase tracking-[0.14em] text-text-muted transition-colors hover:text-text-secondary"
+          className="flex items-center gap-1 font-display font-medium text-xs tracking-[0.1em] text-muted hover:text-warm-white transition-colors duration-200"
           aria-label="Log out"
         >
           <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
-          <span className="hidden lg:inline">Out</span>
+          <span className="hidden sm:inline">OUT</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <a
+    <div className="flex items-center gap-4">
+      <Link
         href="/login"
-        className="text-xs uppercase tracking-[0.16em] text-text-secondary transition-all duration-200 hover:text-gold pb-[2px] border-b border-transparent hover:border-gold/50"
+        className="hidden md:block font-display font-medium text-xs tracking-[0.1em] text-muted hover:text-warm-white transition-colors duration-200"
       >
-        Sign In
-      </a>
-      <a
+        SIGN IN
+      </Link>
+      <Link
         href="/register"
-        className="inline-flex items-center px-4 py-[7px] text-xs font-semibold uppercase tracking-[0.16em] bg-gold text-text-inverse transition-all duration-200 hover:brightness-90"
+        className="inline-flex items-center justify-center h-9 px-5 bg-crimson text-noir font-display font-semibold text-xs tracking-[0.1em] rounded-full hover:bg-crimson-light transition-colors duration-200"
       >
-        Join
-      </a>
+        JOIN
+      </Link>
     </div>
   );
 }

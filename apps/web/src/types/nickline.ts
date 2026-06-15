@@ -8,19 +8,11 @@ export interface Scent {
   name: string;
   subtitle: string;
   description: string;
-  longDescription: string;
   price: number;
   currency: string;
-  originalPrice?: number;
   image: string;
-  galleryImages?: string[];
-  notes: { top: string; heart: string; base: string; };
-  intensity: number;
-  vibe: string;
-  ingredients: string[];
   tag?: string;
   category?: string;
-  bgProfileLabel?: string;
 }
 
 export interface Review {
@@ -31,18 +23,6 @@ export interface Review {
   product: string;
   verified: boolean;
   date: string;
-}
-
-export interface CartItem { scent: Scent; quantity: number; }
-
-export interface HeaderSlide {
-  id: string;
-  image: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  buttonText: string;
-  linkTo: string;
 }
 
 export interface Testimonial {

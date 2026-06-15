@@ -3,141 +3,88 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Scent } from "../../types/nickline";
-import { ArrowRight, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
-import { formatPrice } from "../../lib/formatPrice";
+'use client';
+
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { Scent } from '../../types/nickline';
+import ProductCard from './ProductCard';
+import { easeOutExpo } from '../../lib/motion';
 
 interface CollectionProps {
-  onAddToCart: (scent: Scent) => void;
-  onOpenQuiz: () => void;
+  onOpenQuiz?: () => void;
   scents?: Scent[];
-  onOpenShop?: () => void;
-  onOpenProduct: (scent: Scent) => void;
 }
 
-export default function Collection({ onAddToCart, onOpenQuiz, scents, onOpenShop, onOpenProduct }: CollectionProps) {
-  const displayScents = scents || [];
+export default function Collection({ onOpenQuiz, scents = [] }: CollectionProps) {
+  const router = useRouter();
+  const displayProducts = scents.filter((p) => p.id !== 'giftset').slice(0, 4);
 
   return (
-    <section 
-      id="collection" 
-      className="py-6 select-none transition-colors duration-500 overflow-hidden bg-bg"
-    >
-      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ width: '1290px', maxWidth: '100%' }}>
-        
-        {/* Unified Luxury Container Box matching the reference design */}
-        <div 
-          className="bg-surface-alt border border-white/[0.04] p-3 sm:p-4 lg:p-5 rounded-2xl" 
-          id="intimacy-bento-container"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[0.95fr_1.25fr_1.25fr_1.25fr_1.25fr] gap-3 xl:gap-3.5 items-stretch text-left">
-            
-            {/* Left Column Brand Intro Panel */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-1 flex flex-col justify-between p-4 border border-white/[0.02] bg-white/[0.01]/30 rounded-2xl text-left" id="intimacy-brand-intro">
-              <div className="space-y-4">
-                <span className="t-eyebrow text-primary block">
-                  OUR SIGNATURE
-                </span>
+    <section id="collection" className="py-24 md:py-32 bg-noir-deep">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        {/* Section header */}
+        <div className="text-center mb-12">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.3, ease: easeOutExpo }}
+            className="text-overline text-crimson block mb-3"
+          >
+            OUR SIGNATURE
+          </motion.span>
 
-                <h3 className="text-2xl sm:text-3xl lg:text-xl xl:text-2xl t-headline text-white leading-[0.95]">
-                  INTIMACY <br className="hidden lg:block" /> COLLECTION
-                </h3>
-                
-                {/* Visual signature star/line ornament */}
-                <div className="flex items-center gap-2 my-2">
-                  <div className="w-8 h-[1.5px] bg-primary" />
-                  <span className="text-primary text-xs leading-none">✦</span>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1, ease: easeOutExpo }}
+            className="flex items-center justify-center gap-3 mb-4"
+          >
+            <h2 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] text-warm-white uppercase">
+              INTIMACY
+            </h2>
+            <span className="text-crimson text-lg">&#10022;</span>
+            <h2 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] text-warm-white uppercase">
+              COLLECTION
+            </h2>
+          </motion.div>
 
-                <p className="text-text-tertiary text-xs font-light leading-relaxed max-w-[240px] opacity-90">
-                  Four unique scents. Four different moods. One unforgettable experience.
-                </p>
-              </div>
-              
-              <div className="pt-6 lg:pt-0">
-                <div className="space-y-2">
-                  <button
-                    onClick={onOpenShop}
-                    className="py-2.5 px-4 bg-primary hover:bg-primary-hover text-white text-xs tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] hover:shadow-[0_0_24px_rgba(210,27,39,0.35)] cursor-pointer active:scale-95 w-full flex items-center justify-center font-sans animate-glow-pulse gpu-layer"
-                    id="btn-explore-scents"
-                  >
-                    EXPLORE ALL SCENTS
-                  </button>
-                  {onOpenQuiz && (
-                    <button
-                      onClick={onOpenQuiz}
-                      className="py-2 px-4 bg-transparent border border-white/10 hover:border-primary/50 text-text-secondary hover:text-white text-xs tracking-[0.2em] font-bold uppercase transition-colors duration-300 rounded-[3px] cursor-pointer w-full flex items-center justify-center gap-1.5 font-sans"
-                      id="btn-find-scent"
-                    >
-                      <Sparkles className="w-3 h-3 text-primary" />
-                      FIND YOUR SCENT
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.3, ease: easeOutExpo }}
+            className="text-base text-muted max-w-md mx-auto"
+          >
+            Four unique scents. Four different moods. One unforgettable experience.
+          </motion.p>
 
-            {/* Right Column Product Cards - exactly 4 sibling columns in the same grid */}
-            {displayScents.slice(0, 4).map((scent) => (
-              <motion.div 
-                key={scent.id}
-                onClick={() => onOpenProduct(scent)}
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="group relative flex flex-col justify-between p-4 overflow-hidden border border-white/[0.05] hover:border-primary/35 hover:shadow-[0_22px_50px_rgba(210,27,39,0.14)] transition-colors duration-500 rounded-2xl cursor-pointer min-h-[340px] lg:min-h-[320px] col-span-1 gpu-layer"
-                id={`scent-item-${scent.id}`}
-              >
-                {/* Full image filling card behind overlays with smooth hover zoom */}
-                <div className="absolute inset-0 z-0">
-                  <img
-                    src={scent.image}
-                    alt={`${scent.name} Solid Scent Container Slide`}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-90 pointer-events-none gpu-layer"
-                    referrerPolicy="no-referrer"
-                  />
-                  
-                  {/* Dense vignette for high-contrast legible texts */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-bg/85 via-bg/10 to-bg/55 z-0 pointer-events-none" />
-                </div>
+          {/* Action buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.5, ease: easeOutExpo }}
+            className="flex flex-wrap items-center justify-center gap-4 mt-8"
+          >
+            <button onClick={() => router.push('/shop')} className="btn-primary">
+              EXPLORE ALL SCENTS
+            </button>
+            {onOpenQuiz && (
+              <button onClick={onOpenQuiz} className="btn-ghost">
+                FIND YOUR SCENT
+              </button>
+            )}
+          </motion.div>
+        </div>
 
-                {/* Center pill box tag top */}
-                <div className="w-full text-center pt-2 z-10 pointer-events-none flex justify-center">
-                  <div className="glass-panel py-1.5 px-4 rounded-xl text-center shadow-lg inline-block w-auto max-w-[190px]">
-                    <h3 className="text-white text-xs t-headline tracking-[0.12em]">
-                      {scent.name}
-                    </h3>
-                    <p className="text-xs text-text-secondary font-medium tracking-wide mt-0.5 block break-words leading-tight">
-                      {scent.subtitle}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Centered price & shop now bottom line */}
-                <div className="text-center z-10 w-full mt-auto flex flex-col items-center gap-3">
-                  <span className="text-sm font-bold tracking-[0.14em] text-white block">
-                    {formatPrice(scent.price, scent.currency || 'EGP')}
-                  </span>
-                  
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Stop opening modal details click
-                      if (onOpenShop) {
-                        onOpenShop();
-                      } else {
-                        onAddToCart(scent);
-                      }
-                    }}
-                    className="w-full py-2.5 border border-white/10 hover:border-white/30 bg-black/20 hover:bg-black/55 hover:shadow-[0_4px_16px_rgba(255,255,255,0.02)] text-white text-xs tracking-[0.16em] font-bold uppercase transition-colors duration-300 flex items-center justify-center gap-2 rounded-lg cursor-pointer"
-                    title={`Browse ${scent.name} in shop`}
-                  >
-                    <span>SHOP NOW</span>
-                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+        {/* Product grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {displayProducts.map((product, i) => (
+            <ProductCard key={product.id} product={product} index={i} />
+          ))}
         </div>
       </div>
     </section>

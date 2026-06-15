@@ -20,7 +20,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-text-secondary">No products found.</p>
+        <p className="text-muted">No products found.</p>
       </div>
     );
   }

@@ -75,7 +75,7 @@ export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) 
           className="input-field"
           autoComplete="new-password"
         />
-        <p className="mt-1.5 text-xs text-text-muted">
+        <p className="mt-1.5 text-body-sm text-muted">
           Min 8 characters — uppercase, lowercase, and a number.
         </p>
       </div>
@@ -83,7 +83,7 @@ export default function RegisterForm({ onSuccess }: { onSuccess?: () => void }) 
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-sm bg-primary py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all duration-200 hover:bg-primary-hover hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-sm bg-crimson py-3 text-button font-semibold uppercase tracking-button text-warm-white transition-all duration-200 hover:bg-crimson-light hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? 'Creating Account…' : 'Create Account'}
       </button>

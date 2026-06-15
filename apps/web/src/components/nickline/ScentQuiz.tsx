@@ -3,269 +3,264 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from "react";
-import { Scent, QuizQuestion } from "../../types/nickline";
-import { X, Sparkles, ShoppingBag, RefreshCw, Star } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+'use client';
+
+import { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { Scent, QuizQuestion } from '../../types/nickline';
+import { useCart } from '../../hooks/useCart';
+import { QUIZ_QUESTIONS, getQuizResult } from '../../data/products';
+import { easeOutExpo } from '../../lib/motion';
 
 interface ScentQuizProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (scent: Scent) => void;
-  scents: Scent[];
+  onAddToCart?: (scent: Scent, quantity?: number) => void;
+  scents?: Scent[];
 }
 
-
-export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents }: ScentQuizProps) {
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [resultScent, setResultScent] = useState<Scent | null>(null);
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents = [] }: ScentQuizProps) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [direction, setDirection] = useState(1);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(QUIZ_QUESTIONS);
+  const { addItem } = useCart();
 
   useEffect(() => {
-    if (isOpen && quizQuestions.length === 0) {
-      fetch("/api/quiz")
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setQuizQuestions(data);
-          } else {
-            setQuizQuestions([]);
-          }
-        })
-        .catch(() => setQuizQuestions([]));
-    }
+    if (!isOpen) return;
+    fetch('/api/quiz')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setQuizQuestions(data);
+        }
+      })
+      .catch(() => {
+        // keep local questions
+      });
   }, [isOpen]);
+
+  const handleClose = useCallback(() => {
+    onClose();
+    setTimeout(() => {
+      setStep(0);
+      setAnswers([]);
+      setDirection(1);
+      setQuizQuestions(QUIZ_QUESTIONS);
+    }, 300);
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
-  const calculateResult = (userAnswers: Record<number, string>) => {
-    if (!scents?.length) return null;
-
-    const answerWords = Object.values(userAnswers)
-      .flatMap(v => v.toLowerCase().split(/\s+/));
-
-    const keywords = (s: Scent) =>
-      `${s.name} ${s.subtitle} ${s.vibe} ${s.category} ${s.tag} ${Object.values(s.notes).join(' ')}`.toLowerCase();
-
-    let best = scents[0];
-    let bestScore = -1;
-
-    for (const scent of scents) {
-      let score = 0;
-      const text = keywords(scent);
-      for (const word of answerWords) {
-        if (text.includes(word)) score += 3;
-        if (scent.id.toLowerCase().includes(word)) score += 5;
-        if (word === 'low' && scent.intensity <= 2) score += 2;
-        if (word === 'medium' && scent.intensity === 3) score += 2;
-        if (word === 'high' && scent.intensity >= 4) score += 2;
+  const handleSelect = useCallback(
+    (optionId: string) => {
+      const newAnswers = [...answers, optionId];
+      setAnswers(newAnswers);
+      if (step < quizQuestions.length - 1) {
+        setDirection(1);
+        setStep((prev) => prev + 1);
+      } else {
+        setDirection(1);
+        setStep((prev) => prev + 1);
       }
-      if (score > bestScore) {
-        bestScore = score;
-        best = scent;
+    },
+    [answers, step, quizQuestions.length]
+  );
+
+  const handleBack = useCallback(() => {
+    if (step > 0) {
+      setDirection(-1);
+      setStep((prev) => prev - 1);
+      setAnswers((prev) => prev.slice(0, -1));
+    }
+  }, [step]);
+
+  const handleAddToCart = useCallback(() => {
+    const result = getQuizResult(answers);
+    if (result) {
+      const apiScent = scents.find((s) => s.id === result.id);
+      const scentToAdd = apiScent || result;
+      if (onAddToCart) {
+        onAddToCart(scentToAdd, 1);
+      } else {
+        addItem(scentToAdd.id, 1);
       }
     }
-    return best;
-  };
+    handleClose();
+  }, [answers, scents, onAddToCart, addItem, handleClose]);
 
-  const handleOptionSelect = (optionValue: string) => {
-    if (quizQuestions.length === 0) return;
-    const questionId = quizQuestions[currentStep].id;
-    const updatedAnswers = { ...answers, [questionId]: optionValue };
-    setAnswers(updatedAnswers);
+  const progress = (step / quizQuestions.length) * 100;
+  const result = step >= quizQuestions.length ? getQuizResult(answers) : null;
 
-    if (currentStep < quizQuestions.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      setResultScent(calculateResult(updatedAnswers));
-    }
-  };
-
-  const resetQuiz = () => {
-    setCurrentStep(0);
-    setAnswers({});
-    setResultScent(null);
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? -100 : 100,
+      opacity: 0,
+    }),
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
-          {/* Backdrop — no backdrop-blur, GPU opacity only */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/80 cursor-pointer"
-          />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+        >
+          {/* Backdrop */}
+          <div onClick={handleClose} className="absolute inset-0 bg-noir/70 backdrop-blur-md" />
 
-          {/* Quiz panel — solid bg, no backdrop-blur */}
+          {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 12 }}
-            transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
-            className="relative w-full max-w-xl overflow-hidden border border-white/[0.08] shadow-2xl z-10 p-6 md:p-8 rounded-2xl text-left bg-bg-deep"
-            id="scent-aura-quiz-modal"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.3, ease: easeOutExpo }}
+            className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto glass-card-strong rounded-lg"
           >
-            {/* Close */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-1.5 rounded-full bg-white/5 border border-white/[0.08] text-text-tertiary hover:text-white transition-colors cursor-pointer"
-              title="Close Scent Finder"
-            >
-              <X className="w-4 h-4" strokeWidth={1.5} />
-            </button>
-
-            {/* RESULT SCREEN */}
-            {resultScent ? (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="text-center py-4"
-                id="quiz-result-view"
-              >
-                <div className="flex justify-center mb-2">
-                  <div className="p-2.5 bg-primary/10 rounded-full border border-primary/30 text-primary">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                </div>
-
-                <span className="text-xs font-bold tracking-[0.3em] text-gold uppercase block">
-                  Your Scent Match
-                </span>
-
-                <h3 className="text-2xl md:text-3xl font-serif tracking-[0.08em] font-semibold text-white mt-2 uppercase">
-                  {resultScent.name}
-                </h3>
-
-                <p className="text-sm text-primary italic tracking-wider mb-6 mt-1">
-                  {resultScent.subtitle}
-                </p>
-
-                <div className="w-48 h-48 mx-auto rounded-sm overflow-hidden border border-border-strong shadow-xl mb-6 relative">
-                  <img
-                    src={resultScent.image}
-                    alt={resultScent.name}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 glass-panel rounded-full text-xs text-gold font-bold">
-                    <Star className="w-2.5 h-2.5 fill-gold" /> MATCHED
-                  </div>
-                </div>
-
-                <div className="max-w-md mx-auto mb-6 bg-white/[0.03] border border-white/[0.06] p-4 text-left rounded-sm">
-                  <p className="text-xs text-text-secondary leading-relaxed font-light mb-4">
-                    Based on your sensory profile,{' '}
-                    <strong className="text-white uppercase font-serif">{resultScent.name}</strong>{' '}
-                    was matched to emphasize intimacy closest to your skin.
-                  </p>
-                  <div className="text-xs font-mono text-text-muted">
-                    <strong className="text-text-tertiary">Notes:</strong>{' '}
-                    {resultScent.notes.top} · {resultScent.notes.heart} · {resultScent.notes.base}
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-w-sm mx-auto">
-                  <button
-                    onClick={() => { onAddToCart(resultScent); onClose(); }}
-                    className="w-full py-3 bg-primary hover:bg-primary-pressed text-white text-xs tracking-[0.25em] font-extrabold uppercase transition-colors duration-200 shadow-lg cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <ShoppingBag className="w-4 h-4" /> Add to Cart
-                  </button>
-
-                  <button
-                    onClick={resetQuiz}
-                    className="w-full py-2 bg-transparent hover:bg-white/5 text-text-tertiary hover:text-white text-xs tracking-[0.2em] font-semibold uppercase transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" /> Retake Quiz
-                  </button>
-                </div>
-              </motion.div>
-            ) : (
-              /* ACTIVE QUIZ STEP */
-              <div id="quiz-active-step">
-                {quizQuestions.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <div className="w-8 h-8 mx-auto mb-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                    <p className="text-sm text-text-tertiary tracking-wide">Loading your profile…</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Header */}
-                    <div className="mb-5 flex items-center justify-between border-b border-white/[0.06] pb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-primary font-serif text-xl leading-none">✦</span>
-                        <span className="text-xs font-bold tracking-[0.25em] text-text-tertiary uppercase">
-                          Neckline Aura Finder
-                        </span>
-                      </div>
-                      <span className="text-xs font-mono text-text-muted">
-                        {currentStep + 1} / {quizQuestions.length}
-                      </span>
-                    </div>
-
-                    {/* Progress bar */}
-                    <div className="w-full bg-white/[0.06] h-1 mb-7 overflow-hidden rounded-full">
-                      <div
-                        className="bg-primary h-full transition-all duration-300 ease-out rounded-full"
-                        style={{ width: `${((currentStep + 1) / quizQuestions.length) * 100}%` }}
-                      />
-                    </div>
-
-                    {/* Question + options — slide on step change */}
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentStep}
-                        initial={{ opacity: 0, x: 12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -12 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                      >
-                        <h4 className="text-xl md:text-2xl font-serif text-white tracking-wide mb-7 leading-snug">
-                          {quizQuestions[currentStep].question}
-                        </h4>
-
-                        <div className="space-y-3">
-                          {quizQuestions[currentStep].options.map((opt, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleOptionSelect(opt.value)}
-                              className="group w-full p-4 border border-white/[0.07] bg-white/[0.02] text-left rounded-xl cursor-pointer flex justify-between items-center
-                                transition-colors duration-150 hover:border-primary/50 hover:bg-primary/5"
-                            >
-                              <div>
-                                <span className="text-sm uppercase tracking-widest text-primary block mb-1 font-semibold">
-                                  0{idx + 1}. {opt.label}
-                                </span>
-                                <p className="text-xs text-text-tertiary font-light max-w-sm leading-relaxed">
-                                  {opt.description}
-                                </p>
-                              </div>
-                              <div className="w-3 h-3 rounded-full border border-text-muted group-hover:border-primary group-hover:bg-primary/20 transition-all duration-150 shrink-0 ml-4" />
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-glass-border">
+              <div className="flex items-center gap-2">
+                <span className="text-crimson text-xs">&#10022;</span>
+                <span className="text-overline text-warm-white">NECKLINE AURA FINDER</span>
+              </div>
+              <div className="flex items-center gap-4">
+                {step < quizQuestions.length && (
+                  <span className="font-mono text-xs text-muted">
+                    {Math.min(step + 1, quizQuestions.length)} / {quizQuestions.length}
+                  </span>
                 )}
+                <button
+                  onClick={handleClose}
+                  className="p-1 text-muted hover:text-warm-white transition-colors"
+                  aria-label="Close quiz"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            {step < quizQuestions.length && (
+              <div className="h-[2px] bg-glass-border">
+                <motion.div
+                  className="h-full bg-crimson"
+                  initial={false}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.4, ease: easeOutExpo }}
+                />
               </div>
             )}
+
+            {/* Content */}
+            <div className="p-6 min-h-[400px]">
+              <AnimatePresence mode="wait" custom={direction}>
+                {result ? (
+                  /* Result screen */
+                  <motion.div
+                    key="result"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="text-center"
+                  >
+                    <span className="text-overline text-crimson mb-4 block">YOUR SIGNATURE SCENT</span>
+                    <img
+                      src={result.image}
+                      alt={result.name}
+                      className="w-48 h-48 object-cover rounded-md mx-auto mb-6"
+                    />
+                    <h3 className="font-display font-semibold text-2xl text-warm-white mb-2">
+                      {result.name}
+                    </h3>
+                    <p className="text-muted text-sm mb-2 max-w-sm mx-auto">{result.description}</p>
+                    <p className="font-mono text-lg text-warm-white mb-6">
+                      {result.price.toLocaleString()} {result.currency}
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        onClick={handleAddToCart}
+                        className="h-12 px-8 bg-crimson text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-light transition-colors"
+                      >
+                        SHOP THIS SCENT
+                      </button>
+                      <button
+                        onClick={handleClose}
+                        className="h-12 px-8 border border-glass-border text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-glow transition-colors"
+                      >
+                        CLOSE
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* Question screen */
+                  <motion.div
+                    key={step}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.4, ease: easeOutExpo }}
+                  >
+                    <h3 className="font-display font-semibold text-xl text-warm-white mb-6 leading-tight">
+                      {quizQuestions[step]?.question}
+                    </h3>
+                    <div className="space-y-3">
+                      {quizQuestions[step]?.options.map((option, i) => (
+                        <motion.button
+                          key={option.value}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          onClick={() => handleSelect(option.value)}
+                          className="w-full text-left p-4 rounded-md border border-glass-border bg-transparent hover:bg-crimson-glow hover:border-crimson/30 transition-all duration-200 group"
+                        >
+                          <div className="flex items-start gap-4">
+                            <span className="font-mono text-sm text-crimson mt-0.5">
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+                            <div>
+                              <span className="font-display font-medium text-sm text-warm-white tracking-wide uppercase block mb-1">
+                                {option.label}
+                              </span>
+                              <span className="text-xs text-muted">{option.description}</span>
+                            </div>
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                    {step > 0 && (
+                      <button
+                        onClick={handleBack}
+                        className="mt-6 font-display font-medium text-xs tracking-[0.1em] text-muted hover:text-warm-white uppercase transition-colors"
+                      >
+                        BACK
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

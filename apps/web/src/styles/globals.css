@@ -4,44 +4,254 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  scroll-behavior: smooth;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  scrollbar-width: thin;
+/* ================================================================
+   BASE STYLES
+   ================================================================ */
+
+@layer base {
+  :root {
+    /* shadcn/ui compatibility variables */
+    --background: 0 0% 4%;
+    --foreground: 30 14% 95%;
+    --card: 0 0% 5%;
+    --card-foreground: 30 14% 95%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 30 14% 95%;
+    --primary: 0 79% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 30 14% 95%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 24 6% 63%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 30 14% 95%;
+    --destructive: 0 79% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 0 79% 50%;
+    --radius: 0.625rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--noir-deep);
+    color: var(--warm-white);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+
+  body {
+    background-color: var(--noir-deep);
+    color: var(--warm-white);
+    min-height: 100dvh;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    font-weight: 400;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: var(--leading-headline);
+    letter-spacing: var(--tracking-headline);
+    color: var(--warm-white);
+  }
+
+  /* Text selection */
+  ::selection {
+    background: var(--crimson-glow);
+    color: var(--warm-white);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--noir);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3A3A3A;
+  }
+
+  /* Focus visible — accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus ring on mouse click */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
-body {
-  font-family: var(--font-sans);
-  font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  font-weight: 400;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern" 1, "liga" 1;
-}
+/* ================================================================
+   COMPONENT UTILITIES
+   ================================================================ */
 
-/* ---------- Heading hierarchy ---------- */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-wide);
-  color: var(--color-text);
-}
-
-/* ---------- Typography roles (DESIGN.md §3 — The Condensed Voice) ----------
-   These set family, weight, case, and rhythm. SIZE always comes from a
-   text-* utility so the role composes with the token scale, e.g.
-   `class="t-headline text-4xl"`. Never use arbitrary text-[Npx]; the
-   token floor is text-xs (0.75rem / 12px) — nothing readable goes below it.
-   - t-display : Oswald, hero/identity. Always uppercase. Caps at --fs-6xl (4rem).
-   - t-headline: Oswald, section + product names. Always uppercase.
-   - t-eyebrow : Plus Jakarta label/kicker. Use sparingly, never above every heading.
-   - t-meta    : mono micro-data (timestamps, counts, "verified"). */
 @layer components {
+  /* Glassmorphism Cards */
+  .glass-card {
+    background: var(--glass-surface);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid var(--glass-border);
+    border-top: 1px solid var(--glass-highlight);
+  }
+
+  .glass-card-strong {
+    background: var(--glass-surface);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid var(--glass-border);
+    border-top: 1px solid var(--glass-highlight);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 32px;
+    background-color: var(--crimson);
+    color: var(--warm-white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-button);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    transition: all var(--duration-fast) ease;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--crimson-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.97);
+    background-color: var(--crimson-dark);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 32px;
+    background: transparent;
+    color: var(--warm-white);
+    border: 1px solid var(--glass-border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-button);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    transition: all var(--duration-fast) ease;
+  }
+
+  .btn-ghost:hover {
+    background: var(--crimson-glow);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-ghost:active {
+    transform: scale(0.97);
+  }
+
+  /* Typography utilities */
+  .text-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    text-transform: uppercase;
+  }
+
+  .text-headline {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-headline);
+    line-height: var(--leading-headline);
+    letter-spacing: var(--tracking-headline);
+  }
+
+  .text-overline {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-overline);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+  }
+
+  .text-label {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-label);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .text-price {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: var(--text-price);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Noise grain overlay */
+  .noise-overlay::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-noise);
+    pointer-events: none;
+    opacity: 0.03;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* Scent aura utilities */
+  .scent-aura {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-normal) ease;
+  }
+
+  .scent-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    pointer-events: none;
+  }
+
+  /* Legacy compatibility utilities */
   .t-display {
     font-family: var(--font-display);
     font-weight: var(--fw-medium);
@@ -49,6 +259,7 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: var(--ls-tight);
     text-transform: uppercase;
   }
+
   .t-headline {
     font-family: var(--font-display);
     font-weight: var(--fw-bold);
@@ -56,14 +267,16 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
   }
+
   .t-eyebrow {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
     line-height: var(--lh-tight);
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
   }
+
   .t-meta {
     font-family: var(--font-mono);
     font-size: var(--fs-xs);
@@ -71,8 +284,6 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.08em;
   }
 
-  /* Frosted plate for labels/controls floating over imagery. The 0.55 bg alpha
-     keeps text legible even where backdrop-filter is unsupported. */
   .glass-panel {
     background-color: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(125%);
@@ -80,82 +291,77 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid var(--color-border-strong);
   }
 
+  .input-field {
+    display: block;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--fs-sm);
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-surface-input);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--duration-base) var(--ease-standard),
+                box-shadow var(--duration-base) var(--ease-standard);
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.18);
+  }
+
+  .input-field::placeholder { color: var(--color-text-muted); }
+
+  .field-label {
+    display: block;
+    margin-bottom: var(--space-1);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+
+  .alert-error {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-error-bg);
+    border: 1px solid var(--color-error-border);
+    color: var(--color-error-fg);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+  }
+
+  .alert-success {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-success-bg);
+    border: 1px solid rgba(122, 155, 118, 0.2);
+    color: var(--color-success-fg);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background-color: var(--color-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-link:hover::after { transform: scaleX(1); }
 }
 
-/* ---------- Global input baseline ---------- */
-input, textarea, select {
-  font-family: var(--font-sans);
-  color: var(--color-text);
-  background-color: var(--color-surface-input);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  transition: border-color var(--duration-base) var(--ease-standard),
-              box-shadow var(--duration-base) var(--ease-standard);
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(210, 27, 39, 0.18);
-}
-
-/* ---------- Design-system input field class ---------- */
-.input-field {
-  display: block;
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--fs-sm);
-  font-family: var(--font-sans);
-  color: var(--color-text);
-  background-color: var(--color-surface-input);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  transition: border-color var(--duration-base) var(--ease-standard),
-              box-shadow var(--duration-base) var(--ease-standard);
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(210, 27, 39, 0.18);
-}
-
-.input-field::placeholder { color: var(--color-text-muted); }
-
-.field-label {
-  display: block;
-  margin-bottom: var(--space-1);
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  letter-spacing: var(--ls-wide);
-  text-transform: uppercase;
-  color: var(--color-text-tertiary);
-}
-
-.alert-error {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-error-bg);
-  border: 1px solid var(--color-error-border);
-  color: var(--color-error-fg);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-}
-
-.alert-success {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-success-bg);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  color: var(--color-success-fg);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-}
-
-::selection {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
-}
+/* ================================================================
+   ANIMATION UTILITIES
+   ================================================================ */
 
 .gpu-layer {
   transform: translateZ(0);
@@ -187,25 +393,31 @@ input:focus, textarea:focus, select:focus {
 .animate-scale-in { animation: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: transform, opacity; }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(210, 27, 39, 0); }
-  50% { box-shadow: 0 0 20px 4px rgba(210, 27, 39, 0.25); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(220, 38, 38, 0.25); }
 }
 .animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
 
-.nav-link { position: relative; }
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 1.5px;
-  background-color: var(--color-primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+/* Aurora background animations */
+@keyframes aurora-1 {
+  0% { transform: translate(-20%, -20%) scale(1); }
+  100% { transform: translate(30%, 20%) scale(1.2); }
 }
-.nav-link:hover::after { transform: scaleX(1); }
+
+@keyframes aurora-2 {
+  0% { transform: translate(20%, 20%) scale(1); }
+  100% { transform: translate(-30%, -20%) scale(1.1); }
+}
+
+.animate-aurora-1 { animation: aurora-1 25s ease-in-out infinite alternate; }
+.animate-aurora-2 { animation: aurora-2 30s ease-in-out infinite alternate; }
+
+/* Scroll indicator pulse */
+@keyframes scroll-pulse {
+  0%, 100% { opacity: 0.4; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(8px); }
+}
+.animate-scroll-pulse { animation: scroll-pulse 2s ease-in-out infinite; }
 
 .reveal {
   opacity: 0;
@@ -215,7 +427,20 @@ input:focus, textarea:focus, select:focus {
 }
 .reveal.revealed { opacity: 1; transform: translateY(0) translateZ(0); }
 
+/* ================================================================
+   REDUCED MOTION
+   ================================================================ */
+
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   .animate-fade-up, .animate-scale-in, .stagger-children > * {
     animation: none;
     opacity: 1;
@@ -228,6 +453,12 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
-/* Admin tokens are defined in tokens.css under --color-admin-*.
-   The legacy --admin-* block (cream/gold palette) was removed in the design-system unification —
-   admin now uses the dark-luxury crimson palette from the dashboard images (§2.1). */
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .glass-card,
+  .glass-card-strong,
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}

@@ -10,7 +10,7 @@ interface PriceDisplayProps {
 
 export default function PriceDisplay({ amount, currency, className = '' }: PriceDisplayProps) {
   return (
-    <span className={`font-semibold text-text-primary ${className}`}>
+    <span className={`font-semibold text-warm-white ${className}`}>
       {formatPrice(amount, currency)}
     </span>
   );

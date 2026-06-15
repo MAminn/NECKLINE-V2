@@ -1,111 +1,280 @@
-/* ============================================================
-   NECKLINE — Design Tokens (code-consumable baseline)
-   Source of truth: design/DESIGN_TOKENS.md (Constitution §2.1).
-   Components consume these variables — NO ad-hoc values.
-   Any change to a COLOR is a /clarify gate (§2.1).
+/**
+ * NECKLINE — Design Tokens (CSS Custom Properties)
+ * 
+ * These tokens are the single source of truth for the entire design system.
+ * Import this file at the top of your global CSS before any other styles.
+ */
 
-   Synced with DESIGN_TOKENS.md — extracted from src/index.css
-   and component source. v2.0
-   ============================================================ */
+/* ================================================================
+   1. COLOR TOKENS
+   ================================================================ */
 
 :root {
-  /* ---------- Brand / Primary ---------- */
-  --color-primary: #D21B27;
-  --color-primary-hover: #E32B37;
-  --color-primary-pressed: #B0151E;
-  --color-primary-glow: rgba(210, 27, 39, 0.3);
-  --color-gold: #C29F68;
+  /* Primary Palette */
+  --noir: #0A0A0A;
+  --noir-rgb: 10, 10, 10;
+  --noir-lift: #141414;
+  --noir-lift-rgb: 20, 20, 20;
+  --noir-deep: #070707;
+  --noir-deep-rgb: 7, 7, 7;
 
-  /* ---------- Status ---------- */
-  --color-success: #22C55E;
-  --color-success-hover: #4ADE80;
+  /* Accent */
+  --crimson: #DC2626;
+  --crimson-rgb: 220, 38, 38;
+  --crimson-light: #E53E3E;
+  --crimson-dark: #B91C1C;
+  --crimson-glow: rgba(220, 38, 38, 0.15);
+
+  /* Neutral */
+  --warm-white: #F5F0EB;
+  --warm-white-rgb: 245, 240, 235;
+  --muted: #A09890;
+  --muted-rgb: 160, 152, 144;
+  --muted-deep: #6B6560;
+  --muted-deep-rgb: 107, 101, 96;
+
+  /* Semantic */
+  --success: #7A9B76;
+  --success-rgb: 122, 155, 118;
+  --error: #DC2626;
+
+  /* Scent Aura Colors */
+  --oud-amber: #C87941;
+  --oud-amber-rgb: 200, 121, 65;
+  --rose-blush: #C97B7B;
+  --rose-blush-rgb: 201, 123, 123;
+  --musk-silver: #9BA4A9;
+  --musk-silver-rgb: 155, 164, 169;
+  --original-gold: #B8A88A;
+  --original-gold-rgb: 184, 168, 138;
+
+  /* Glassmorphism */
+  --glass-surface: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.04);
+  --glass-strong: rgba(255, 255, 255, 0.06);
+  --glass-input: rgba(255, 255, 255, 0.05);
+
+  /* ================================================================
+     2. TYPOGRAPHY TOKENS
+     ================================================================ */
+
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Type Scale */
+  --text-display: clamp(3rem, 8vw, 7rem);
+  --text-headline: clamp(2rem, 4vw, 3.5rem);
+  --text-headline-sm: 1.5rem;
+  --text-overline: 0.75rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-label: 0.8125rem;
+  --text-button: 0.875rem;
+  --text-mono: 0.75rem;
+  --text-price: 1rem;
+
+  /* Line Heights */
+  --leading-display: 1.0;
+  --leading-headline: 1.1;
+  --leading-headline-sm: 1.2;
+  --leading-body: 1.7;
+  --leading-body-sm: 1.6;
+  --leading-tight: 1.4;
+
+  /* Letter Spacing */
+  --tracking-display: -0.03em;
+  --tracking-headline: -0.02em;
+  --tracking-headline-sm: -0.01em;
+  --tracking-overline: 0.2em;
+  --tracking-label: 0.08em;
+  --tracking-button: 0.12em;
+  --tracking-mono: 0.05em;
+  --tracking-body: 0.01em;
+
+  /* ================================================================
+     3. SPACING TOKENS (8pt Grid)
+     ================================================================ */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Layout */
+  --content-max: 1280px;
+  --content-padding: clamp(1.5rem, 5vw, 4rem);
+  --section-gap: 120px;
+  --section-gap-mobile: 80px;
+  --nav-height: 72px;
+  --card-padding: 1.5rem;
+
+  /* ================================================================
+     4. BORDER RADIUS TOKENS
+     ================================================================ */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ================================================================
+     5. SHADOW TOKENS
+     ================================================================ */
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 8px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(220, 38, 38, 0.08);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.8);
+  --shadow-glass: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-aura-oud: 0 0 30px rgba(200, 121, 65, 0.2);
+  --shadow-aura-rose: 0 0 30px rgba(201, 123, 123, 0.2);
+  --shadow-aura-musk: 0 0 30px rgba(155, 164, 169, 0.2);
+  --shadow-aura-original: 0 0 30px rgba(184, 168, 138, 0.2);
+
+  /* ================================================================
+     6. ANIMATION TOKENS
+     ================================================================ */
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Duration */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-base: 250ms;
+  --duration-normal: 300ms;
+  --duration-medium: 500ms;
+  --duration-slow: 800ms;
+  --duration-dramatic: 1400ms;
+
+  /* ================================================================
+     7. Z-INDEX SCALE
+     ================================================================ */
+
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-sticky: 40;
+  --z-nav: 50;
+  --z-drawer: 80;
+  --z-modal: 90;
+  --z-overlay: 100;
+  --z-dropdown: 60;
+  --z-toast: 110;
+  --z-noise: 9999;
+
+  /* ================================================================
+     8. LEGACY COMPATIBILITY ALIASES
+     ================================================================
+     These aliases map the previous token namespace to the v2.0
+     design system so existing components continue to work during
+     the migration. Prefer the new v2.0 names in new code.
+     ================================================================ */
+
+  /* Legacy colors */
+  --color-primary: var(--crimson);
+  --color-primary-hover: var(--crimson-light);
+  --color-primary-pressed: var(--crimson-dark);
+  --color-primary-glow: rgba(220, 38, 38, 0.3);
+  --color-gold: var(--original-gold);
+  --color-success: var(--success);
+  --color-success-hover: #8EAE8A;
   --color-warning: #F59E0B;
   --color-info: #3B82F6;
-  --color-error: #EF4444;
+  --color-error: var(--error);
+  --color-live: var(--success);
+  --color-live-fg: var(--success);
+  --color-notification: var(--crimson);
 
-  /* ---------- Accent ---------- */
-  --color-live: #22C55E;
-  --color-live-fg: #34D399;
-  --color-notification: #D21B27;
-
-  /* ---------- Surfaces / Neutrals — Storefront ---------- */
-  --color-bg: #070606;
-  --color-bg-translucent: rgba(7, 6, 6, 0.96);
-  --color-bg-deep: #0A0203;
-  --color-bg-secondary: #1F0D0F;
-  --color-surface: #111111;
-  --color-surface-alt: #0e0e0e;
-  --color-surface-input: #0a0a0a;
+  /* Legacy surfaces */
+  --color-bg: var(--noir);
+  --color-bg-translucent: rgba(10, 10, 10, 0.96);
+  --color-bg-deep: var(--noir-deep);
+  --color-bg-secondary: var(--noir-lift);
+  --color-surface: var(--noir-lift);
+  --color-surface-alt: var(--noir);
+  --color-surface-elevated: var(--noir-lift);
+  --color-surface-input: var(--glass-input);
   --color-surface-overlay: rgba(0, 0, 0, 0.5);
 
-  /* Frosted glass — for UI floating over photography only (header, controls/labels
-     over hero + product imagery). Functional legibility, never decorative card-glass. */
-  --glass-bg: rgba(7, 6, 6, 0.55);
+  /* Legacy glass */
+  --glass-bg: var(--glass-surface);
   --glass-blur: 14px;
 
-  /* ---------- Surfaces / Neutrals — Admin ---------- */
-  --color-admin-bg: #09090b;
-  --color-admin-surface: #18181b;
-  --color-admin-surface-elevated: #27272a;
-  --color-admin-border: rgba(255, 255, 255, 0.05);
+  /* Legacy admin surfaces */
+  --color-admin-bg: var(--noir-deep);
+  --color-admin-surface: var(--noir-lift);
+  --color-admin-surface-elevated: var(--noir);
+  --color-admin-border: var(--glass-border);
   --color-admin-border-subtle: rgba(255, 255, 255, 0.04);
-  --color-admin-border-strong: rgba(255, 255, 255, 0.08);
-  --color-login-overlay: #090203;
-  --color-login-card: rgba(9, 9, 11, 0.6);
+  --color-admin-border-strong: var(--glass-border);
+  --color-login-overlay: var(--noir-deep);
+  --color-login-card: rgba(7, 7, 7, 0.6);
 
-  /* ---------- Text ---------- */
-  --color-text: #FFFFFF;
-  --color-text-secondary: #E7E5E4;
-  --color-text-secondary-alt: #D6D3D1;
-  --color-text-tertiary: #C0C0C0;
-  --color-text-muted: #909090;
-  --color-text-disabled: #44403C;
-  --color-text-inverse: #070606;
-  --color-text-brand: #D21B27;
-  --color-text-live: #34D399;
+  /* Legacy text */
+  --color-text: var(--warm-white);
+  --color-text-secondary: var(--warm-white);
+  --color-text-secondary-alt: var(--warm-white);
+  --color-text-tertiary: var(--muted);
+  --color-text-muted: var(--muted);
+  --color-text-disabled: var(--muted-deep);
+  --color-text-inverse: var(--noir);
+  --color-text-brand: var(--crimson);
+  --color-text-live: var(--success);
   --color-text-warning: #F59E0B;
 
-  /* ---------- Border & Divider ---------- */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.13);
-  --color-border-card-hover: rgba(210, 27, 39, 0.35);
-  --color-border-input-focus: #D21B27;
-  --color-divider: rgba(255, 255, 255, 0.08);
+  /* Legacy borders */
+  --color-border: var(--glass-border);
+  --color-border-strong: var(--glass-border);
+  --color-border-card-hover: var(--crimson-glow);
+  --color-border-input-focus: var(--crimson);
+  --color-divider: var(--glass-border);
 
-  /* ---------- Semantic foreground + bg tint ---------- */
-  --color-success-fg: #22C55E;
-  --color-success-bg: rgba(34, 197, 94, 0.1);
-  --color-error-fg: #EF4444;
-  --color-error-bg: rgba(239, 68, 68, 0.1);
-  --color-error-border: rgba(239, 68, 68, 0.2);
+  /* Legacy semantic foreground + bg tint */
+  --color-success-fg: var(--success);
+  --color-success-bg: rgba(122, 155, 118, 0.1);
+  --color-error-fg: var(--error);
+  --color-error-bg: rgba(220, 38, 38, 0.1);
+  --color-error-border: rgba(220, 38, 38, 0.2);
   --color-warning-fg: #F59E0B;
   --color-warning-bg: rgba(245, 158, 11, 0.1);
   --color-info-fg: #3B82F6;
   --color-info-bg: rgba(59, 130, 246, 0.1);
-  --color-brand-alert-fg: #D21B27;
-  --color-brand-alert-bg: rgba(210, 27, 39, 0.1);
-  --color-brand-alert-border: rgba(210, 27, 39, 0.2);
+  --color-brand-alert-fg: var(--crimson);
+  --color-brand-alert-bg: rgba(220, 38, 38, 0.1);
+  --color-brand-alert-border: rgba(220, 38, 38, 0.2);
 
-  /* ---------- Chart palette ---------- */
-  --chart-1: #D21B27;
-  --chart-2: #22C55E;
+  /* Legacy chart palette */
+  --chart-1: var(--crimson);
+  --chart-2: var(--success);
   --chart-3: #3B82F6;
   --chart-4: #F59E0B;
   --chart-5: #A855F7;
   --chart-6: #06B6D4;
 
-  /* ---------- Typography ---------- */
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Oswald", "Arial Narrow", system-ui, sans-serif;
-  --font-serif: "Cinzel", Georgia, serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.875rem;
-  --fs-base: 1rem;
+  /* Legacy typography */
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --fs-xs: var(--text-overline);
+  --fs-sm: var(--text-body-sm);
+  --fs-base: var(--text-body);
   --fs-lg: 1.125rem;
   --fs-xl: 1.25rem;
-  --fs-2xl: 1.5rem;
+  --fs-2xl: var(--text-headline-sm);
   --fs-3xl: 1.875rem;
   --fs-4xl: 2.25rem;
   --fs-5xl: 3rem;
@@ -117,101 +286,65 @@
   --fw-bold: 700;
   --fw-black: 900;
 
-  --lh-tight: 1.1;
+  --lh-tight: var(--leading-headline);
   --lh-snug: 1.3;
-  --lh-normal: 1.5;
-  --lh-relaxed: 1.7;
+  --lh-normal: var(--leading-body);
+  --lh-relaxed: var(--leading-body);
 
-  --ls-tight: -0.02em;
+  --ls-tight: var(--tracking-headline);
   --ls-normal: 0;
-  --ls-wide: 0.04em;
-  --ls-wider: 0.2em;
+  --ls-wide: var(--tracking-label);
+  --ls-wider: var(--tracking-overline);
   --ls-widest: 0.3em;
 
-  /* ---------- Spacing (4px base) ---------- */
+  /* Legacy spacing */
   --space-0: 0;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
 
-  /* ---------- Radii ---------- */
-  --radius-sm: 3px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-
-  /* ---------- Shadows (dark theme) ---------- */
+  /* Legacy shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --shadow-focus: 0 0 0 3px rgba(210, 27, 39, 0.45);
-  --shadow-glow: 0 4px 20px rgba(210, 27, 39, 0.3);
+  --shadow-md: var(--shadow-card);
+  --shadow-lg: var(--shadow-modal);
+  --shadow-focus: 0 0 0 3px rgba(220, 38, 38, 0.45);
+  --shadow-glow: 0 4px 20px rgba(220, 38, 38, 0.3);
 
-  /* ---------- Z-index ---------- */
-  --z-base: 0;
-  --z-dropdown: 1000;
-  --z-sticky: 1100;
-  --z-overlay: 1200;
-  --z-modal: 1300;
-  --z-toast: 1400;
-
-  /* ---------- Motion ---------- */
-  --duration-fast: 120ms;
-  --duration-base: 200ms;
-  --duration-slow: 320ms;
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-
-  /* ---------- Layout ---------- */
-  --container-max: 1280px;
+  /* Legacy layout */
+  --container-max: var(--content-max);
   --sidebar-width: 256px;
 
-  /* ---------- Scrollbar ---------- */
+  /* Legacy scrollbar */
   --scrollbar-width: 6px;
-  --scrollbar-thumb: #D21B27;
-  --scrollbar-thumb-hover: #B0151E;
-  --scrollbar-track: #0A0203;
-
-  /* ---------- Compatibility aliases ---------- */
-  --color-surface-elevated: var(--color-surface-alt);
-  --font-body: var(--font-sans);
+  --scrollbar-thumb: var(--crimson);
+  --scrollbar-thumb-hover: var(--crimson-dark);
+  --scrollbar-track: var(--noir-deep);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(210, 27, 39, 0); }
-  50% { box-shadow: 0 0 20px 4px rgba(210, 27, 39, 0.3); }
-}
-@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-@keyframes pulse-intense { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.4; } }
+/* ================================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================================ */
 
-.animate-pulse-glow { animation: pulse-glow 6s ease-in-out infinite; }
-.animate-spin-slow { animation: spin-slow 20s linear infinite; }
-.animate-marquee { animation: marquee 45s linear infinite; }
-.animate-marquee:hover { animation-play-state: paused; }
-.animate-pulse-intense { animation: pulse-intense 4s ease-in-out infinite; }
-
-::-webkit-scrollbar { width: var(--scrollbar-width); }
-::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
-
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 768px) {
   :root {
-    --duration-fast: 0ms;
-    --duration-base: 0ms;
-    --duration-slow: 0ms;
+    --section-gap: 80px;
+    --content-padding: 1.5rem;
   }
-  .animate-pulse-glow, .animate-spin-slow, .animate-marquee, .animate-pulse-intense { animation: none; }
+}
+
+/* ================================================================
+   HIGH CONTRAST MODE SUPPORT
+   ================================================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    --glass-surface: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --muted: #C0B8B0;
+  }
+}
+
+/* ================================================================
+   DARK COLOR SCHEME (always dark)
+   ================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  /* Already dark — no changes needed */
 }

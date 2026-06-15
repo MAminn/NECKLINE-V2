@@ -3,144 +3,183 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Fingerprint, CircleDot, Flame, Feather, Infinity } from "lucide-react";
+'use client';
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: string | number; style?: React.CSSProperties }>> = {
-  Fingerprint,
-  CircleDot,
-  Flame,
-  Feather,
-  Infinity,
-};
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Fingerprint, Crosshair, Flame, Wind, RefreshCw, Sparkles } from 'lucide-react';
+import { easeOutExpo, easeOutBack } from '../../lib/motion';
 
-interface HowToApplyProps {
-  config?: {
-    color?: string;
-    steps?: Array<{
-      num: string;
-      title: string;
-      desc: string;
-      iconType: "preset" | "custom";
-      presetName?: string;
-      customIconUrl?: string;
-    }>;
-  };
-}
-
-const DEFAULT_STEPS = [
-  {
-    num: "01",
-    title: "SWIPE",
-    desc: "Use your fingertip to gently swipe a small amount of solid perfume.",
-    iconType: "preset" as const,
-    presetName: "Fingerprint"
-  },
-  {
-    num: "02",
-    title: "DAB",
-    desc: "Apply to pulse points — neck, wrists, behind ears, or chest.",
-    iconType: "preset" as const,
-    presetName: "CircleDot"
-  },
-  {
-    num: "03",
-    title: "MELT",
-    desc: "Let the warmth of your skin melt the perfume naturally.",
-    iconType: "preset" as const,
-    presetName: "Flame"
-  },
-  {
-    num: "04",
-    title: "FEEL",
-    desc: "The scent unfolds throughout the day, intimate and lasting.",
-    iconType: "preset" as const,
-    presetName: "Feather"
-  },
-  {
-    num: "05",
-    title: "REPEAT",
-    desc: "Reapply anytime to refresh your signature scent.",
-    iconType: "preset" as const,
-    presetName: "Infinity"
-  }
+const steps = [
+  { number: '01', title: 'SWIPE', description: 'Use your fingertip to gently swipe a small amount of solid perfume.', icon: Fingerprint },
+  { number: '02', title: 'DAB', description: 'Apply to pulse points — neck, wrists, behind ears, or chest.', icon: Crosshair },
+  { number: '03', title: 'MELT', description: 'Let the warmth of your skin melt the perfume naturally.', icon: Flame },
+  { number: '04', title: 'FEEL', description: 'The scent unfolds throughout the day, intimate and lasting.', icon: Wind },
+  { number: '05', title: 'REPEAT', description: 'Reapply anytime to refresh your signature scent.', icon: RefreshCw },
 ];
 
-export default function HowToApply({ config }: HowToApplyProps) {
-  const color = config?.color || "#D21B27";
-  const stepsData = config?.steps && config.steps.length > 0 ? config.steps : DEFAULT_STEPS;
+export default function HowToApply() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
 
   return (
-    <section className="py-24 bg-bg select-none text-center" id="how-to-apply">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* HEADER */}
-        <div className="mb-14">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl t-headline tracking-[0.02em] leading-[0.95]">
-            <span className="text-white block mb-1">APPLY WITH INTENTION.</span>
-            <span className="block" style={{ color }}>FEEL THE PRESENCE.</span>
-          </h2>
-          <p className="mt-8 text-text-tertiary text-sm font-normal leading-relaxed max-w-2xl mx-auto">
-            NECKLINE Solid Perfume is designed to melt with your body heat
-            and reveal its scent throughout the day. A little goes a long way.
-            Follow these simple steps for the best experience.
-          </p>
+    <section id="ritual" ref={sectionRef} className="py-24 md:py-32 bg-noir relative">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        {/* Section header */}
+        <div className="text-center mb-16">
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: easeOutExpo }}
+            className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] text-warm-white uppercase mb-2"
+          >
+            APPLY WITH INTENTION.
+          </motion.h2>
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.15, ease: easeOutExpo }}
+            className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] text-crimson uppercase mb-6"
+          >
+            FEEL THE PRESENCE.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3, ease: easeOutExpo }}
+            className="text-base text-muted max-w-lg mx-auto"
+          >
+            NECKLINE Solid Perfume is designed to melt with your body heat and reveal its scent throughout the day. A little goes a long way.
+          </motion.p>
         </div>
 
-        {/* STEPS GRID BOX */}
-        <div className="bg-surface border border-white/[0.04] rounded-3xl p-8 md:p-12 mb-10 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-y-12 md:gap-y-0 md:divide-x divide-white/[0.05]">
-            {stepsData.map((step) => {
-              // Resolve the preset Lucide icon
-              const PresetIcon = step.presetName 
-                ? (ICON_MAP[step.presetName] || Fingerprint)
-                : Fingerprint;
+        {/* Steps */}
+        <div className="relative">
+          {/* Desktop: horizontal layout with connecting line */}
+          <div className="hidden md:block relative">
+            {/* SVG connecting line */}
+            <svg
+              className="absolute top-6 left-0 w-full h-2 pointer-events-none"
+              preserveAspectRatio="none"
+              style={{ overflow: 'visible' }}
+            >
+              <line
+                x1="10%"
+                y1="50%"
+                x2="90%"
+                y2="50%"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="1"
+              />
+              <motion.line
+                x1="10%"
+                y1="50%"
+                x2="90%"
+                y2="50%"
+                stroke="#DC2626"
+                strokeWidth="1"
+                initial={{ pathLength: 0 }}
+                animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
+                transition={{ duration: 1.2, ease: 'easeInOut', delay: 0.3 }}
+                style={{
+                  strokeDasharray: 1,
+                  strokeDashoffset: 0,
+                }}
+              />
+            </svg>
 
-              return (
-                <div key={step.num} className="flex flex-col items-center text-center md:px-6 first:pl-0 last:pr-0">
-                  <div className="flex justify-center items-center min-h-[80px] mb-6">
-                    {step.iconType === "custom" && step.customIconUrl ? (
-                      <div className="relative group flex items-center justify-center">
-                        <img 
-                          src={step.customIconUrl} 
-                          alt={step.title} 
-                          className="w-20 h-20 object-contain max-h-[80px] max-w-[80px]"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    ) : (
-                      <PresetIcon className="w-14 h-14 text-primary" strokeWidth={1} style={{ color }} />
-                    )}
+            <div className="grid grid-cols-5 gap-4 relative z-10">
+              {steps.map((step, i) => (
+                <motion.div
+                  key={step.number}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.4,
+                    delay: 0.3 + i * 0.2,
+                    ease: easeOutBack,
+                  }}
+                  className="flex flex-col items-center text-center"
+                >
+                  {/* Circle with icon */}
+                  <div className="w-12 h-12 rounded-full border border-glass-border bg-noir flex items-center justify-center mb-4">
+                    <step.icon size={18} className="text-crimson" />
                   </div>
-                  <h3 className="text-white text-lg t-headline tracking-wider mb-3 flex items-center justify-center gap-2">
-                    <span style={{ color, fontFamily: "system-ui" }}>{step.num}</span>
-                    <span>{step.title}</span>
-                  </h3>
-                  <p className="text-text-tertiary text-sm font-light leading-relaxed max-w-xs mx-auto">
-                    {step.desc}
+                  {/* Number and title */}
+                  <span className="font-mono text-xs text-crimson mb-1">{step.number}</span>
+                  <h4 className="font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
+                    {step.title}
+                  </h4>
+                  <p className="text-xs text-muted leading-relaxed max-w-[160px]">
+                    {step.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile: vertical layout */}
+          <div className="md:hidden space-y-8 relative">
+            {/* Vertical line */}
+            <div className="absolute left-6 top-0 bottom-0 w-[1px] bg-glass-border">
+              <motion.div
+                className="w-full bg-crimson"
+                initial={{ height: '0%' }}
+                animate={isInView ? { height: '100%' } : {}}
+                transition={{ duration: 1.2, ease: 'easeInOut', delay: 0.3 }}
+              />
+            </div>
+
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.number}
+                initial={{ opacity: 0, x: -20 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                transition={{
+                  duration: 0.4,
+                  delay: 0.3 + i * 0.15,
+                  ease: easeOutExpo,
+                }}
+                className="flex items-start gap-4 relative z-10"
+              >
+                <div className="w-12 h-12 rounded-full border border-glass-border bg-noir flex items-center justify-center flex-shrink-0">
+                  <step.icon size={18} className="text-crimson" />
+                </div>
+                <div>
+                  <span className="font-mono text-xs text-crimson">{step.number}</span>
+                  <h4 className="font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-1">
+                    {step.title}
+                  </h4>
+                  <p className="text-xs text-muted leading-relaxed">
+                    {step.description}
                   </p>
                 </div>
-              );
-            })}
+              </motion.div>
+            ))}
           </div>
         </div>
 
-        {/* PRO TIP BANNER */}
-        <div className="inline-flex flex-col lg:flex-row items-center gap-4 lg:gap-6 px-6 py-4 border border-white/[0.04] bg-surface rounded-xl text-left">
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Custom abstract star/spark icon */}
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <path d="M12 2v20 M17 7l-10 10 M22 12H2 M17 17L7 7" />
-            </svg>
-            <span className="text-xs font-bold tracking-[0.15em] uppercase whitespace-nowrap" style={{ color }}>
-              PRO TIP
-            </span>
+        {/* Pro Tip card */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 1.5, ease: easeOutExpo }}
+          className="mt-12 max-w-2xl mx-auto"
+        >
+          <div className="glass-card rounded-lg p-5 flex items-center gap-4">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Sparkles size={16} className="text-crimson" />
+              <span className="text-overline text-crimson">PRO TIP</span>
+            </div>
+            <p className="text-sm text-muted leading-relaxed">
+              For a longer-lasting scent, apply after moisturizing or layering with unscented lotion.
+            </p>
           </div>
-          <div className="hidden lg:block w-[1px] h-6 bg-white/10" />
-          <p className="text-text-tertiary text-sm font-light text-center lg:text-left">
-            For a longer-lasting scent, apply after moisturizing or layering with unscented lotion.
-          </p>
-        </div>
-
+        </motion.div>
       </div>
     </section>
   );
