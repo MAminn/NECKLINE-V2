@@ -1,5 +1,7 @@
 const { Router } = require('express');
 
+// Quiz option values are scent IDs so the frontend can map answers directly
+// to catalog products (oud, rose, musk, original).
 const QUIZ_QUESTIONS = [
   {
     id: 1,
@@ -7,22 +9,22 @@ const QUIZ_QUESTIONS = [
     options: [
       {
         label: "I am desired",
-        value: "seductive intimate",
+        value: "musk",
         description: "A warm, skin-close aura that pulls people in quietly",
       },
       {
         label: "I am powerful",
-        value: "bold smoky",
+        value: "oud",
         description: "Rich, dark, and commanding — a scent that walks in before you do",
       },
       {
         label: "I am romantic",
-        value: "floral rose",
+        value: "rose",
         description: "Soft, warm blooms — feminine, tender, unforgettable up close",
       },
       {
         label: "I am mysterious",
-        value: "musky incense oud",
+        value: "oud",
         description: "Depth and intrigue — resins, shadow, and ancient warmth",
       },
     ],
@@ -33,22 +35,22 @@ const QUIZ_QUESTIONS = [
     options: [
       {
         label: "Oud & Incense",
-        value: "oud incense smoky",
+        value: "oud",
         description: "Ancient, smouldering, reverent — a scent with centuries behind it",
       },
       {
         label: "Amber & Vanilla",
-        value: "amber vanilla warm",
+        value: "original",
         description: "Golden, skin-like, infinitely comforting",
       },
       {
         label: "Rose & Musk",
-        value: "rose floral musk",
+        value: "rose",
         description: "Romantic and soft — a second skin for intimate moments",
       },
       {
         label: "Spices & Cedar",
-        value: "spicy woody cedar",
+        value: "musk",
         description: "Sharp, grounding — warm earth with a spark of heat",
       },
     ],
@@ -59,22 +61,22 @@ const QUIZ_QUESTIONS = [
     options: [
       {
         label: "Date nights",
-        value: "date intimate evening",
+        value: "rose",
         description: "Close evenings when presence matters most",
       },
       {
         label: "Every single day",
-        value: "daily fresh",
+        value: "musk",
         description: "A confident signature that travels with you always",
       },
       {
         label: "Special occasions",
-        value: "special bold",
+        value: "oud",
         description: "Moments when everything needs to be exactly right",
       },
       {
         label: "Before sleep",
-        value: "calm sleep",
+        value: "original",
         description: "A soft ritual — comforting notes to close the day",
       },
     ],
@@ -85,17 +87,17 @@ const QUIZ_QUESTIONS = [
     options: [
       {
         label: "A secret — only for those closest to you",
-        value: "low",
+        value: "musk",
         description: "Barely-there and deeply personal",
       },
       {
         label: "A signature — noticed but never loud",
-        value: "medium",
+        value: "original",
         description: "A quiet, consistent aura",
       },
       {
         label: "A statement — felt before you arrive",
-        value: "high",
+        value: "oud",
         description: "Bold, unmistakable, unforgettable",
       },
     ],
@@ -106,22 +108,22 @@ const QUIZ_QUESTIONS = [
     options: [
       {
         label: "Neck & collarbone",
-        value: "intimate seductive",
+        value: "rose",
         description: "The most personal placement — for those who lean in close",
       },
       {
         label: "Wrists & hands",
-        value: "fresh daily",
+        value: "musk",
         description: "A subtle presence that follows your every gesture",
       },
       {
         label: "Behind the ears",
-        value: "musky warm",
+        value: "original",
         description: "A whisper of warmth — only detectable up close",
       },
       {
         label: "Chest & heartbeat",
-        value: "bold spicy amber",
+        value: "oud",
         description: "Body heat amplifies everything — the deepest bloom",
       },
     ],

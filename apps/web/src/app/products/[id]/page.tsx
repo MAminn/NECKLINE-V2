@@ -107,6 +107,7 @@ export default function ProductDetailPage() {
                 })
             : getLocalRelatedProducts(id)
         );
+        setLoading(false);
       } catch {
         // keep local product already shown
       }

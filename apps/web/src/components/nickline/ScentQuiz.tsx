@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Scent, QuizQuestion } from '../../types/nickline';
 import { useCart } from '../../hooks/useCart';
+import { useRouter } from 'next/navigation';
 import { QUIZ_QUESTIONS, getQuizResult } from '../../data/products';
 import { easeOutExpo } from '../../lib/motion';
 import { formatPrice } from '../../lib/formatPrice';
@@ -22,6 +23,7 @@ interface ScentQuizProps {
 }
 
 export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents = [] }: ScentQuizProps) {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [direction, setDirection] = useState(1);
@@ -84,22 +86,24 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents = [] }:
     }
   }, [step]);
 
+  // Match the quiz result to the live catalog so image/name/price stay in sync
+  const localResult = step >= quizQuestions.length ? getQuizResult(answers) : null;
+  const result = localResult
+    ? scents.find((s) => s.name.toLowerCase().includes(localResult.id.toLowerCase())) || localResult
+    : null;
+
   const handleAddToCart = useCallback(() => {
-    const result = getQuizResult(answers);
     if (result) {
-      const apiScent = scents.find((s) => s.id === result.id);
-      const scentToAdd = apiScent || result;
       if (onAddToCart) {
-        onAddToCart(scentToAdd, 1);
+        onAddToCart(result, 1);
       } else {
-        addItem(scentToAdd.id, 1);
+        addItem(result.id, 1);
       }
     }
     handleClose();
-  }, [answers, scents, onAddToCart, addItem, handleClose]);
+  }, [result, onAddToCart, addItem, handleClose]);
 
   const progress = (step / quizQuestions.length) * 100;
-  const result = step >= quizQuestions.length ? getQuizResult(answers) : null;
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -195,18 +199,18 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents = [] }:
                     <p className="font-mono text-lg text-warm-white mb-6">
                       {formatPrice(result.price, result.currency)}
                     </p>
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center">
                       <button
-                        onClick={handleAddToCart}
-                        className="h-12 px-8 bg-crimson text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-light transition-colors"
+                        onClick={() => { handleClose(); router.push(`/products/${result.id}`); }}
+                        className="h-12 px-6 border border-glass-border text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-glow transition-colors"
                       >
-                        SHOP THIS SCENT
+                        VIEW PRODUCT
                       </button>
                       <button
-                        onClick={handleClose}
-                        className="h-12 px-8 border border-glass-border text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-glow transition-colors"
+                        onClick={handleAddToCart}
+                        className="h-12 px-6 bg-crimson text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-light transition-colors"
                       >
-                        CLOSE
+                        ADD TO CART
                       </button>
                     </div>
                   </motion.div>
