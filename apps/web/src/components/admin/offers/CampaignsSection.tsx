@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAdminOffers, createAdminOffer, deleteAdminOffer } from '../../../lib/admin-api';
 import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
+import AdminSelect from '../AdminSelect';
 import { formatPrice } from '../../../lib/formatPrice';
 
 const EMPTY_FORM = { description: '', type: 'percentage', value: '', minOrderAmount: '', endDate: '' };
@@ -66,10 +67,16 @@ export default function CampaignsSection() {
           <div className="grid grid-cols-2 gap-2">
             <input required placeholder="Description" style={{ ...adminInputSm, gridColumn: '1/-1' }} className="col-span-2"
               value={form.description} onChange={(e) => setField('description', e.target.value)} />
-            <select style={adminInputSm} value={form.type} onChange={(e) => setField('type', e.target.value)}>
-              <option value="percentage">Percentage</option>
-              <option value="fixed">Fixed</option>
-            </select>
+            <AdminSelect
+              value={form.type}
+              onChange={(value) => setField('type', value)}
+              options={[
+                { value: 'percentage', label: 'Percentage' },
+                { value: 'fixed', label: 'Fixed' },
+              ]}
+              className="text-xs"
+              size="sm"
+            />
             <input required type="number" placeholder="Value"            style={adminInputSm} value={form.value}          onChange={(e) => setField('value', e.target.value)} />
             <input          type="number" placeholder="Min order amount" style={adminInputSm} value={form.minOrderAmount} onChange={(e) => setField('minOrderAmount', e.target.value)} />
             <input          type="datetime-local"                         style={adminInputSm} value={form.endDate}        onChange={(e) => setField('endDate', e.target.value)} />

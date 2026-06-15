@@ -462,3 +462,17 @@
     border-color: rgba(255, 255, 255, 0.2) !important;
   }
 }
+
+/* Admin select dropdown — modern dark option list */
+.admin-select option,
+.admin-select optgroup {
+  background: var(--noir-lift);
+  color: var(--warm-white);
+}
+
+.admin-select option:hover,
+.admin-select option:focus,
+.admin-select option:checked {
+  background: var(--crimson);
+  color: #fff;
+}

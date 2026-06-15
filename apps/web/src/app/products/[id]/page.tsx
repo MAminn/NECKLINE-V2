@@ -8,7 +8,7 @@ import { Minus, Plus, Heart, Check, Target, Flame, Wind } from 'lucide-react';
 import { useCart } from '../../../hooks/useCart';
 import { useToast } from '../../../contexts/ToastContext';
 import { apiClient } from '../../../lib/api';
-import { getLocalProductById, getLocalRelatedProducts } from '../../../data/products';
+import { LOCAL_PRODUCTS, getLocalProductById, getLocalRelatedProducts } from '../../../data/products';
 import { Scent } from '../../../types/nickline';
 import AuroraBackground from '../../../components/AuroraBackground';
 import ProductCard from '../../../components/nickline/ProductCard';
@@ -28,6 +28,7 @@ interface ApiProduct {
   _id: string;
   name: string;
   description: string;
+  subtitle?: string;
   price: number;
   currency: string;
   stockOnHand: number;
@@ -54,6 +55,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
 
+  const isLocalId = (value: string) => LOCAL_PRODUCTS.some((p) => p.id === value);
+
   useEffect(() => {
     // Show local product immediately for instant render, then refresh from API
     const local = getLocalProductById(id);
@@ -66,22 +69,27 @@ export default function ProductDetailPage() {
     async function fetchProduct() {
       try {
         const data: ProductResponse = await apiClient(`/products/${id}`);
-        if (!data.product) return;
-        const local = getLocalProductById(id);
-        const image =
-          data.product.images?.[0] && !data.product.images[0].includes('placeholder')
-            ? data.product.images[0]
-            : local?.image || '/images/product.jpg';
+        if (!data.product) {
+          if (!local) setLoading(false);
+          return;
+        }
+
+        const apiImage = data.product.images?.[0] && !data.product.images[0].includes('placeholder')
+          ? data.product.images[0]
+          : '';
+        const fallbackImage = isLocalId(id) ? local?.image : '';
+        const image = apiImage || fallbackImage || '/images/product.jpg';
+
         const scent: Scent = {
           id: data.product._id,
-          name: local?.name || data.product.name,
-          subtitle: local?.subtitle || data.product.description?.substring(0, 60) || 'Solid Perfume',
-          description: local?.description || data.product.description,
+          name: data.product.name,
+          subtitle: data.product.subtitle || data.product.description?.substring(0, 60) || 'Solid Perfume',
+          description: data.product.description,
           price: data.product.price,
           currency: data.product.currency,
           image,
-          tag: data.product.tags?.[0] || local?.tag,
-          category: local?.category || data.product.category,
+          tag: data.product.tags?.[0],
+          category: data.product.category,
         };
         setProduct(scent);
         setRelated(
@@ -90,26 +98,29 @@ export default function ProductDetailPage() {
                 .filter((p) => p._id !== id)
                 .slice(0, 3)
                 .map((p) => {
-                  const l = getLocalProductById(p._id);
-                  const img =
-                    p.images?.[0] && !p.images[0].includes('placeholder') ? p.images[0] : l?.image || '/images/product.jpg';
+                  const relatedLocal = isLocalId(p._id) ? getLocalProductById(p._id) : undefined;
+                  const relatedApiImage = p.images?.[0] && !p.images[0].includes('placeholder') ? p.images[0] : '';
+                  const relatedImage = relatedApiImage || relatedLocal?.image || '/images/product.jpg';
                   return {
                     id: p._id,
-                    name: l?.name || p.name,
-                    subtitle: l?.subtitle || p.description?.substring(0, 60) || 'Solid Perfume',
-                    description: l?.description || p.description,
+                    name: p.name,
+                    subtitle: p.subtitle || p.description?.substring(0, 60) || 'Solid Perfume',
+                    description: p.description,
                     price: p.price,
                     currency: p.currency,
-                    image: img,
-                    tag: p.tags?.[0] || l?.tag,
-                    category: l?.category || p.category,
+                    image: relatedImage,
+                    tag: p.tags?.[0],
+                    category: p.category,
                   };
                 })
-            : getLocalRelatedProducts(id)
+            : isLocalId(id)
+            ? getLocalRelatedProducts(id)
+            : []
         );
         setLoading(false);
       } catch {
-        // keep local product already shown
+        // keep local product already shown; hide loading if no local product was set
+        if (!local) setLoading(false);
       }
     }
     fetchProduct();

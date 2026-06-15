@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AdminMultiImageUploader from '../AdminMultiImageUploader';
+import AdminSelect from '../AdminSelect';
 import type { AdminProduct } from '../../../types/nickline';
 import { adminInput, adminLabel } from '../adminStyles';
 
@@ -24,7 +25,6 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
 
   const [form, setForm] = useState({
     name: initial.name ?? '',
-    sku: initial.sku ?? '',
     category: initial.category ?? '',
     price: initial.price ?? 0,
     stockOnHand: initial.stockOnHand ?? 0,
@@ -47,7 +47,6 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
     try {
       await onSubmit({
         name: form.name,
-        sku: form.sku,
         category: form.category,
         price: Math.round(Number(form.price)),
         stockOnHand: Math.round(Number(form.stockOnHand)),
@@ -67,15 +66,9 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto pr-2">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label style={adminLabel}>Name</label>
-          <input required style={adminInput} value={form.name} onChange={(e) => set('name', e.target.value)} />
-        </div>
-        <div>
-          <label style={adminLabel}>SKU</label>
-          <input required style={adminInput} value={form.sku} onChange={(e) => set('sku', e.target.value)} />
-        </div>
+      <div>
+        <label style={adminLabel}>Name</label>
+        <input required style={adminInput} value={form.name} onChange={(e) => set('name', e.target.value)} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -105,14 +98,12 @@ export default function ProductForm({ initial = {}, onSubmit, submitLabel }: Pro
 
       <div>
         <label style={adminLabel}>Category</label>
-        <select style={adminInput} value={form.category} onChange={(e) => set('category', e.target.value)}>
-          <option value="">— Select —</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <AdminSelect
+          value={form.category}
+          onChange={(value) => set('category', value)}
+          options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+          placeholder="— Select —"
+        />
       </div>
 
       <div>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getAdminProducts, deleteAdminProduct } from '../../../lib/admin-api';
 import type { AdminProduct } from '../../../types/nickline';
+import AdminSelect from '../AdminSelect';
 import EditProductModal from './EditProductModal';
 import { formatPrice } from '../../../lib/formatPrice';
 
@@ -66,17 +67,17 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
           className="rounded-lg px-3 py-1.5 text-xs flex-1"
           style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)', minWidth: 160 }}
         />
-        <select
+        <AdminSelect
           value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-lg px-2 py-1.5 text-xs"
-          style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)' }}
-        >
-          <option value="">All Statuses</option>
-          <option>ACTIVE</option>
-          <option>LOW STOCK</option>
-          <option>OUT OF STOCK</option>
-        </select>
+          onChange={(value) => { setStatus(value); setPage(1); }}
+          options={[
+            { value: '', label: 'All Statuses' },
+            { value: 'ACTIVE', label: 'ACTIVE' },
+            { value: 'LOW STOCK', label: 'LOW STOCK' },
+            { value: 'OUT OF STOCK', label: 'OUT OF STOCK' },
+          ]}
+          size="sm"
+        />
         <button
           onClick={onAddClick}
           className="rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-widest"

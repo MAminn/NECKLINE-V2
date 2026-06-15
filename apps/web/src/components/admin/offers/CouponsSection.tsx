@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAdminCoupons, createAdminCoupon, deleteAdminCoupon } from '../../../lib/admin-api';
 import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
+import AdminSelect from '../AdminSelect';
 import { formatPrice } from '../../../lib/formatPrice';
 
 const EMPTY_FORM = { code: '', type: 'percentage', value: '', minOrderAmount: '', usageLimit: '', endDate: '' };
@@ -62,10 +63,16 @@ export default function CouponsSection() {
           style={{ background: 'var(--color-admin-surface)', border: '1px solid var(--color-admin-border)' }}>
           <div className="grid grid-cols-2 gap-2">
             <input required placeholder="CODE"           style={adminInputSm} value={form.code}           onChange={(e) => setField('code', e.target.value)} />
-            <select                                       style={adminInputSm} value={form.type}           onChange={(e) => setField('type', e.target.value)}>
-              <option value="percentage">Percentage</option>
-              <option value="fixed">Fixed</option>
-            </select>
+            <AdminSelect
+              value={form.type}
+              onChange={(value) => setField('type', value)}
+              options={[
+                { value: 'percentage', label: 'Percentage' },
+                { value: 'fixed', label: 'Fixed' },
+              ]}
+              className="text-xs"
+              size="sm"
+            />
             <input required type="number" placeholder="Value"            style={adminInputSm} value={form.value}           onChange={(e) => setField('value', e.target.value)} />
             <input          type="number" placeholder="Min order amount" style={adminInputSm} value={form.minOrderAmount}  onChange={(e) => setField('minOrderAmount', e.target.value)} />
             <input          type="number" placeholder="Usage limit"      style={adminInputSm} value={form.usageLimit}      onChange={(e) => setField('usageLimit', e.target.value)} />

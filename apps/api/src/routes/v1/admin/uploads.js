@@ -22,6 +22,13 @@ const upload = multer({
   },
 });
 
+function toAbsoluteUrl(req, urlPath) {
+  if (!urlPath.startsWith('/')) return urlPath;
+  const protocol = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return `${protocol}://${host}${urlPath}`;
+}
+
 // POST /api/v1/admin/uploads
 router.post('/', upload.single('file'), async (req, res, next) => {
   try {
@@ -29,7 +36,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
       return res.status(400).json({ error: true, message: 'No file uploaded' });
     }
     const result = await uploadService.uploadImage(req.file.buffer, req.file.mimetype);
-    res.json({ url: result.url });
+    res.json({ url: toAbsoluteUrl(req, result.url) });
   } catch (err) {
     if (err.statusCode === 501) {
       return res.status(501).json({ error: true, message: err.message });

@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -50,6 +51,9 @@ function createApp() {
   );
 
   app.use('/api/v1', v1Routes);
+
+  // Serve uploaded images locally when Cloudinary is not configured.
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
   app.use(errorHandler);
 

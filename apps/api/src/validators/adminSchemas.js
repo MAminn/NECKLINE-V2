@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 const createProductSchema = z.object({
   name:         z.string().trim().min(1),
-  sku:          z.string().trim().min(1),
+  sku:          z.string().trim().min(1).optional(),
   category:     z.string().trim().optional(),
   price:        z.number().int().positive(),
   currency:     z.string().default('EGP'),

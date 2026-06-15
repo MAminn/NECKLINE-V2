@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { getTestimonials, deleteTestimonial, updateTestimonial } from '../../../lib/admin-api';
 import type { Testimonial } from '../../../types/nickline';
 import AdminModal from '../AdminModal';
+import AdminSelect from '../AdminSelect';
 import ReviewForm from './ReviewForm';
 
 function Stars({ rating }: { rating: number }) {
@@ -54,12 +55,15 @@ export default function ReviewsTable({ onAddClick, refresh }: Props) {
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name…"
           className="rounded-lg px-3 py-1.5 text-xs flex-1"
           style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)', minWidth: 160 }} />
-        <select value={starFilter} onChange={(e) => setStarFilter(e.target.value)}
-          className="rounded-lg px-2 py-1.5 text-xs"
-          style={{ background: 'var(--color-surface-input)', border: '1px solid var(--color-admin-border)', color: 'var(--color-text)' }}>
-          <option value="">All Stars</option>
-          {[5, 4, 3, 2, 1].map((s) => <option key={s} value={s}>{s} ★</option>)}
-        </select>
+        <AdminSelect
+          value={starFilter}
+          onChange={(value) => setStarFilter(value)}
+          options={[
+            { value: '', label: 'All Stars' },
+            ...[5, 4, 3, 2, 1].map((s) => ({ value: String(s), label: `${s} ★` })),
+          ]}
+          size="sm"
+        />
         <button onClick={onAddClick} className="rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
           style={{ background: 'var(--color-primary)', color: '#fff' }}>
           + Add Review

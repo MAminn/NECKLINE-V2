@@ -42,6 +42,14 @@ function computeStatus(p) {
   return 'ACTIVE';
 }
 
+function generateSku(name) {
+  const prefix = name
+    ? name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
+    : 'ITEM';
+  const suffix = Date.now().toString(36).slice(-4).toUpperCase();
+  return `${prefix || 'ITEM'}-${suffix}`;
+}
+
 // GET /api/v1/admin/products
 router.get('/', async (req, res, next) => {
   try {
@@ -107,7 +115,11 @@ router.get('/', async (req, res, next) => {
 // POST /api/v1/admin/products
 router.post('/', validateBody(createProductSchema), async (req, res, next) => {
   try {
-    const product = await Product.create(req.body);
+    const body = { ...req.body };
+    if (!body.sku) {
+      body.sku = generateSku(body.name);
+    }
+    const product = await Product.create(body);
     createAuditEvent({
       actor: req.user.id,
       action: 'product.created',
