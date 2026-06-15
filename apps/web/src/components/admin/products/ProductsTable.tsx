@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getAdminProducts, deleteAdminProduct } from '../../../lib/admin-api';
 import type { AdminProduct } from '../../../types/nickline';
 import EditProductModal from './EditProductModal';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const STATUS_COLORS: Record<string, string> = {
   'ACTIVE': '#4ade80',
@@ -110,7 +111,7 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
                 <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{p.name}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>{p.sku}</td>
                 <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{p.category}</td>
-                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{(p.price / 100).toLocaleString()}</td>
+                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{formatPrice(p.price, p.currency || 'EGP')}</td>
                 <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{p.stockOnHand}</td>
                 <td className="px-3 py-2">
                   <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${STATUS_COLORS[p.status] ?? '#999'}1a`, color: STATUS_COLORS[p.status] ?? '#999' }}>

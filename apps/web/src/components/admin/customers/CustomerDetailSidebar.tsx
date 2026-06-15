@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { deleteAdminCustomer, getAdminOrders } from '../../../lib/admin-api';
 import type { AdminCustomer, AdminOrder } from '../../../types/nickline';
 import { useEffect } from 'react';
+import { formatPrice } from '../../../lib/formatPrice';
 
 interface Props {
   customer: AdminCustomer | null;
@@ -65,7 +66,7 @@ export default function CustomerDetailSidebar({ customer, onClose, onDeleted }: 
           </section>
           <section>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Stats</p>
-            <p className="text-xs" style={{ color: 'var(--color-text)' }}>{customer.ordersCount} orders · {(customer.lifetimeValue / 100).toLocaleString()} EGP lifetime</p>
+            <p className="text-xs" style={{ color: 'var(--color-text)' }}>{customer.ordersCount} orders · {formatPrice(customer.lifetimeValue, customer.currency || 'EGP')} lifetime</p>
           </section>
           <section>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-gold)' }}>Order History</p>
@@ -74,7 +75,7 @@ export default function CustomerDetailSidebar({ customer, onClose, onDeleted }: 
               {orders.map((o) => (
                 <li key={o.id} className="flex justify-between text-xs">
                   <span style={{ color: 'var(--color-text)' }}>{o.orderNumber}</span>
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>{(o.total / 100).toLocaleString()} EGP · {o.status}</span>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}>{formatPrice(o.total, o.currency || 'EGP')} · {o.status}</span>
                 </li>
               ))}
             </ul>

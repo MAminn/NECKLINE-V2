@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAdminOffers, createAdminOffer, deleteAdminOffer } from '../../../lib/admin-api';
 import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const EMPTY_FORM = { description: '', type: 'percentage', value: '', minOrderAmount: '', endDate: '' };
 
@@ -96,7 +97,7 @@ export default function CampaignsSection() {
                   </span>
                 </div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {o.type === 'percentage' ? `${o.value}% off` : `${(o.value / 100).toFixed(2)} EGP off`}
+                  {o.type === 'percentage' ? `${o.value}% off` : `${formatPrice(o.value, 'EGP')} off`}
                   {o.endDate ? ` · until ${new Date(o.endDate).toLocaleDateString()}` : ''}
                 </p>
               </div>

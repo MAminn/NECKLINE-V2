@@ -12,6 +12,7 @@ import { Scent, QuizQuestion } from '../../types/nickline';
 import { useCart } from '../../hooks/useCart';
 import { QUIZ_QUESTIONS, getQuizResult } from '../../data/products';
 import { easeOutExpo } from '../../lib/motion';
+import { formatPrice } from '../../lib/formatPrice';
 
 interface ScentQuizProps {
   isOpen: boolean;
@@ -192,7 +193,7 @@ export default function ScentQuiz({ isOpen, onClose, onAddToCart, scents = [] }:
                     </h3>
                     <p className="text-muted text-sm mb-2 max-w-sm mx-auto">{result.description}</p>
                     <p className="font-mono text-lg text-warm-white mb-6">
-                      {result.price.toLocaleString()} {result.currency}
+                      {formatPrice(result.price, result.currency)}
                     </p>
                     <div className="flex gap-3 justify-center">
                       <button

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getAdminOrders } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const FILTER_TABS = ['ALL', 'UNFULFILLED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
 
@@ -96,7 +97,7 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
                 <td className="px-3 py-2 font-mono font-semibold" style={{ color: 'var(--color-text)' }}>{o.orderNumber}</td>
                 <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{o.customerName}</td>
                 <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{o.itemCount}</td>
-                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{(o.total / 100).toLocaleString()} EGP</td>
+                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{formatPrice(o.total, o.currency || 'EGP')}</td>
                 <td className="px-3 py-2">
                   <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: STATUS_COLORS[o.status], background: `${STATUS_COLORS[o.status]}1a` }}>
                     {o.status}

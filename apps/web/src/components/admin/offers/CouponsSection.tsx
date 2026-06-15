@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAdminCoupons, createAdminCoupon, deleteAdminCoupon } from '../../../lib/admin-api';
 import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const EMPTY_FORM = { code: '', type: 'percentage', value: '', minOrderAmount: '', usageLimit: '', endDate: '' };
 
@@ -85,8 +86,8 @@ export default function CouponsSection() {
             <div>
               <p className="text-sm font-bold font-mono" style={{ color: 'var(--color-text)' }}>{c.code}</p>
               <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                {c.type === 'percentage' ? `${c.value}% off` : `${(c.value / 100).toFixed(2)} EGP off`}
-                {c.minOrderAmount ? ` · min ${(c.minOrderAmount / 100).toFixed(0)} EGP` : ''}
+                {c.type === 'percentage' ? `${c.value}% off` : `${formatPrice(c.value, 'EGP')} off`}
+                {c.minOrderAmount ? ` · min ${formatPrice(c.minOrderAmount, 'EGP')}` : ''}
                 {c.usageLimit ? ` · ${c.usageCount}/${c.usageLimit} uses` : ` · ${c.usageCount} uses`}
               </p>
             </div>

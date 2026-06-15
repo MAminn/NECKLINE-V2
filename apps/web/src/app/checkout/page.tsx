@@ -10,6 +10,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { createCheckoutSession, createOrder } from '../../lib/checkout-api';
 import { safePaymentUrl } from '../../lib/safeUrl';
 import PromoCodeInput from '../../components/checkout/PromoCodeInput';
+import { formatPrice } from '../../lib/formatPrice';
 import ShippingStep from '../../components/checkout/ShippingStep';
 import ReviewStep from '../../components/checkout/ReviewStep';
 import PaymentStep from '../../components/checkout/PaymentStep';
@@ -234,7 +235,7 @@ export default function CheckoutPage() {
                       <div key={item.productId} className="flex justify-between text-sm">
                         <span className="text-text-secondary">{item.name} × {item.quantity}</span>
                         <span className="font-display text-text-primary">
-                          {item.lineTotal?.amount} {item.lineTotal?.currency}
+                          {item.lineTotal ? formatPrice(item.lineTotal.amount, item.lineTotal.currency) : '—'}
                         </span>
                       </div>
                     ))}
@@ -242,23 +243,23 @@ export default function CheckoutPage() {
                   {cart.discount && cart.discount.amount > 0 && (
                     <div className="mt-2 flex justify-between text-sm text-primary">
                       <span>Discount {cart.discount.code ? `(${cart.discount.code})` : ''}</span>
-                      <span className="font-display">-{cart.discount.amount} {cart.discount.currency}</span>
+                      <span className="font-display">-{formatPrice(cart.discount.amount, cart.discount.currency)}</span>
                     </div>
                   )}
                   <div className="mt-4 border-t border-border pt-3 flex justify-between font-display text-sm">
                     <span className="text-text-secondary uppercase tracking-wide">Subtotal</span>
-                    <span className="text-text-primary">{cart.subtotal?.amount} {cart.subtotal?.currency}</span>
+                    <span className="text-text-primary">{cart.subtotal ? formatPrice(cart.subtotal.amount, cart.subtotal.currency) : '—'}</span>
                   </div>
                   {cart.shipping && (
                     <div className="mt-1.5 flex justify-between text-sm text-text-secondary">
                       <span>Shipping</span>
-                      <span>{cart.shipping.amount === 0 ? 'Free' : `${cart.shipping.amount} ${cart.shipping.currency}`}</span>
+                      <span>{cart.shipping.amount === 0 ? 'Free' : formatPrice(cart.shipping.amount, cart.shipping.currency)}</span>
                     </div>
                   )}
                   {cart.total && (
                     <div className="mt-3 flex justify-between font-display text-gold border-t border-border pt-3">
                       <span className="uppercase tracking-wide">Total</span>
-                      <span>{cart.total.amount} {cart.total.currency}</span>
+                      <span>{cart.total ? formatPrice(cart.total.amount, cart.total.currency) : '—'}</span>
                     </div>
                   )}
                 </div>

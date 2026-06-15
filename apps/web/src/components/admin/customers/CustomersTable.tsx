@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { getAdminCustomers } from '../../../lib/admin-api';
 import type { AdminCustomer, CustomerTag } from '../../../types/nickline';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const TABS: ReadonlyArray<'ALL' | CustomerTag> = ['ALL', 'NEW', 'VIP'];
 
@@ -99,7 +100,7 @@ export default function CustomersTable({ onSelectCustomer, refresh = 0 }: Props)
                 <td className="px-3 py-2 font-semibold text-text-primary">{c.name}</td>
                 <td className="px-3 py-2 text-text-tertiary">{c.email}</td>
                 <td className="px-3 py-2 text-text-primary">{c.ordersCount}</td>
-                <td className="px-3 py-2 text-text-primary">{(c.lifetimeValue / 100).toLocaleString()} EGP</td>
+                <td className="px-3 py-2 text-text-primary">{formatPrice(c.lifetimeValue, c.currency || 'EGP')}</td>
                 <td className="px-3 py-2">
                   <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${TAG_CLASSES[c.tag]}`}>{c.tag}</span>
                 </td>

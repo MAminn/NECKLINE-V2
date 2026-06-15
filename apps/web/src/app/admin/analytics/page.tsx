@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getMetrics } from '../../../lib/admin-api';
 import type { AdminMetrics } from '../../../types/nickline';
 import AnalyticsChart from '../../../components/admin/analytics/AnalyticsChart';
+import { formatPrice } from '../../../lib/formatPrice';
 import AdminKpiCard from '../../../components/admin/AdminKpiCard';
 
 const TIMEFRAMES = ['7D', '30D', 'ALL'] as const;
@@ -49,7 +50,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <AdminKpiCard label="Conversion Rate" value={`${(metrics.conversionRate * 100).toFixed(1)}%`} />
           <AdminKpiCard label="Returning Rate" value={`${(metrics.returningRate * 100).toFixed(1)}%`} />
-          <AdminKpiCard label="Avg Order Value" value={`${(metrics.averageOrderValue / 100).toLocaleString()} EGP`} />
+          <AdminKpiCard label="Avg Order Value" value={formatPrice(metrics.averageOrderValue, 'EGP')} />
           <AdminKpiCard label="New Customers (7d)" value={metrics.newCustomers} trend="up" />
         </div>
       )}

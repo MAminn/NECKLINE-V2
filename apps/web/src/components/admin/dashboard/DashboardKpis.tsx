@@ -3,10 +3,11 @@
 import AdminKpiCard from '../AdminKpiCard';
 import type { AdminMetrics } from '../../../types/nickline';
 import { adminCard } from '../adminStyles';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const SKELETON_STYLE = { ...adminCard, height: 112, borderRadius: 12 } as const;
 
-function fmtEGP(n: number) { return `${(n / 100).toLocaleString()} EGP`; }
+function fmtEGP(n: number) { return formatPrice(n, 'EGP'); }
 function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%`; }
 
 interface Props { metrics: AdminMetrics | null; }

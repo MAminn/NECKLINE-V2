@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import CartIcon from './CartIcon';
 import HeaderAuth from './HeaderAuth';
@@ -10,6 +11,10 @@ import MobileMenu from './MobileMenu';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  // Hide the storefront navigation inside the admin dashboard
+  const isAdminRoute = pathname?.startsWith('/admin');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +24,8 @@ export default function Navigation() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (isAdminRoute) return null;
 
   return (
     <motion.header

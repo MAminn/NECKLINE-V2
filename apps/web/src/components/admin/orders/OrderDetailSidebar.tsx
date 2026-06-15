@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { updateAdminOrder } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const FULFILLMENT_STEPS = ['unfulfilled', 'processing', 'shipped', 'delivered'] as const;
 type FulfillmentStatus = typeof FULFILLMENT_STEPS[number];
@@ -83,7 +84,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Items</p>
             <p className="text-xs" style={{ color: 'var(--color-text)' }}>{order.itemsSummary}</p>
             <p className="text-sm font-bold mt-1" style={{ color: 'var(--color-text)' }}>
-              Total: {(order.total / 100).toLocaleString()} {order.currency}
+              Total: {formatPrice(order.total, order.currency || 'EGP')}
             </p>
           </section>
 

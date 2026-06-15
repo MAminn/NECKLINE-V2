@@ -14,6 +14,7 @@ import AuroraBackground from '../../../components/AuroraBackground';
 import ProductCard from '../../../components/nickline/ProductCard';
 import { easeOutExpo } from '../../../lib/motion';
 import { getScentColor } from '../../../lib/scent';
+import { formatPrice } from '../../../lib/formatPrice';
 
 const howToWearSteps = [
   { icon: Target, title: 'Apply to pulse points', desc: 'Neck, wrists, collarbone' },
@@ -208,7 +209,7 @@ export default function ProductDetailPage() {
               </h1>
               <div className="flex items-center gap-4 mb-4">
                 <span className="font-mono text-xl text-warm-white">
-                  {product.price.toLocaleString()} {product.currency}
+                  {formatPrice(product.price, product.currency)}
                 </span>
                 {inStock && (
                   <span className="flex items-center gap-1.5 text-xs text-success font-display tracking-wider uppercase">
@@ -261,7 +262,7 @@ export default function ProductDetailPage() {
                 onClick={handleAddToCart}
                 className="w-full h-14 bg-crimson text-warm-white font-display font-semibold text-sm tracking-[0.12em] uppercase rounded-sm hover:bg-crimson-light transition-colors mb-4 active:scale-[0.99]"
               >
-                ADD TO CART — {product.price * quantity} {product.currency}
+                ADD TO CART — {formatPrice(product.price * quantity, product.currency)}
               </button>
 
               {/* Wishlist */}
