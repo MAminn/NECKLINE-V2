@@ -30,7 +30,7 @@ function toAbsoluteUrl(req, urlPath) {
 }
 
 // POST /api/v1/admin/uploads
-router.post('/', upload.single('file'), async (req, res, next) => {
+router.post('/', upload.single('file'), async (req, res, _next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: true, message: 'No file uploaded' });
@@ -38,10 +38,15 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     const result = await uploadService.uploadImage(req.file.buffer, req.file.mimetype);
     res.json({ url: toAbsoluteUrl(req, result.url) });
   } catch (err) {
+    const message = err.message || 'Upload failed';
     if (err.statusCode === 501) {
-      return res.status(501).json({ error: true, message: err.message });
+      return res.status(501).json({ error: true, message });
     }
-    next(err);
+    if (err.statusCode === 400) {
+      return res.status(400).json({ error: true, message });
+    }
+    // Return Cloudinary / service errors with a 500 but include the message for debugging
+    return res.status(500).json({ error: true, message });
   }
 });
 

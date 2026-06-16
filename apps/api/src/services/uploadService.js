@@ -25,6 +25,7 @@ async function uploadCloudinary(buffer, _mimetype) {
   let cloudinary;
   try {
     cloudinary = require('cloudinary').v2;
+    cloudinary.config({ secure: true });
   } catch (err) {
     logger.error({ err }, 'Cloudinary package is not installed');
     const error = new Error('Cloudinary package is missing. Run "npm install cloudinary" in apps/api.');
@@ -65,6 +66,7 @@ async function uploadImage(buffer, mimetype) {
     throw error;
   }
 
+  logger.info('Uploading image to Cloudinary');
   return uploadCloudinary(buffer, mimetype);
 }
 
