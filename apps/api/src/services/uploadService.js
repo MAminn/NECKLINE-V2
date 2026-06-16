@@ -22,7 +22,16 @@ async function uploadLocal(buffer, mimetype) {
 }
 
 async function uploadCloudinary(buffer, _mimetype) {
-  const cloudinary = require('cloudinary').v2;
+  let cloudinary;
+  try {
+    cloudinary = require('cloudinary').v2;
+  } catch (err) {
+    logger.error({ err }, 'Cloudinary package is not installed');
+    const error = new Error('Cloudinary package is missing. Run "npm install cloudinary" in apps/api.');
+    error.statusCode = 501;
+    throw error;
+  }
+
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { resource_type: 'image', folder: 'neckline' },
@@ -38,10 +47,22 @@ async function uploadCloudinary(buffer, _mimetype) {
   });
 }
 
+function isValidCloudinaryUrl(url) {
+  return typeof url === 'string' && url.startsWith('cloudinary://');
+}
+
 async function uploadImage(buffer, mimetype) {
-  if (!process.env.CLOUDINARY_URL) {
+  const cloudinaryUrl = process.env.CLOUDINARY_URL;
+
+  if (!cloudinaryUrl) {
     logger.info('CLOUDINARY_URL not set; using local file storage for upload');
     return uploadLocal(buffer, mimetype);
+  }
+
+  if (!isValidCloudinaryUrl(cloudinaryUrl)) {
+    const error = new Error('CLOUDINARY_URL is set but does not look like a valid Cloudinary URL (expected cloudinary://...).');
+    error.statusCode = 400;
+    throw error;
   }
 
   return uploadCloudinary(buffer, mimetype);
