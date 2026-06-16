@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { Scent } from '../types/nickline';
+import { Scent, AdminHeaderSlide, HowToApply as HowToApplyConfig } from '../types/nickline';
 import { useCart } from '../hooks/useCart';
 import { apiClient } from '../lib/api';
 import { mapProductToScent, LocalProduct } from '../lib/mapProductToScent';
@@ -22,24 +22,34 @@ interface CatalogResponse {
   data: LocalProduct[];
 }
 
+const DEFAULT_HERO_IMAGE = '/images/hero-product.jpg';
+
 export default function LandingPage() {
   const router = useRouter();
   const { addItem } = useCart();
   const { addToast } = useToast();
   const [scentsList, setScentsList] = useState<Scent[]>(LOCAL_PRODUCTS);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
-  const [heroImage] = useState('/images/hero-product.jpg');
+  const [heroSlides, setHeroSlides] = useState<AdminHeaderSlide[]>([]);
+  const [howToApply, setHowToApply] = useState<HowToApplyConfig>({ color: '#D21B27', steps: [] });
+  const [heroImage] = useState(DEFAULT_HERO_IMAGE);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const catalog: CatalogResponse = await apiClient('/products?limit=12&sort=newest');
+        const [catalog, slides, howToApplyData]: [CatalogResponse, AdminHeaderSlide[], HowToApplyConfig] = await Promise.all([
+          apiClient('/products?limit=12&sort=newest'),
+          apiClient('/header-slides').catch(() => []),
+          apiClient('/how-to-apply').catch(() => ({ color: '#D21B27', steps: [] })),
+        ]);
+
         if (catalog.data?.length > 0) {
           setScentsList(catalog.data.map(mapProductToScent));
         }
+        setHeroSlides(slides);
+        setHowToApply(howToApplyData);
       } catch (err) {
-        console.error('Failed to load products:', err);
-        // keep local products
+        console.error('Failed to load homepage data:', err);
       }
     }
     fetchData();
@@ -71,6 +81,7 @@ export default function LandingPage() {
       <Hero
         onScrollToSection={handleScrollToSection}
         heroImage={heroImage}
+        slides={heroSlides}
       />
 
       <Features />
@@ -80,7 +91,7 @@ export default function LandingPage() {
         scents={scentsList}
       />
 
-      <HowToApply />
+      <HowToApply config={howToApply} />
 
       <Reviews />
 

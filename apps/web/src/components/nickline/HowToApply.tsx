@@ -7,10 +7,42 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Fingerprint, Crosshair, Flame, Wind, RefreshCw, Sparkles } from 'lucide-react';
+import {
+  Fingerprint,
+  Crosshair,
+  Flame,
+  Wind,
+  RefreshCw,
+  Sparkles,
+  Heart,
+  Star,
+  Target,
+  Droplets,
+  Moon,
+  Sun,
+  LucideIcon,
+} from 'lucide-react';
 import { easeOutExpo, easeOutBack } from '../../lib/motion';
+import type { HowToApply as HowToApplyConfig } from '../../types/nickline';
 
-const steps = [
+const ICON_MAP: Record<string, LucideIcon> = {
+  Fingerprint,
+  Crosshair,
+  Flame,
+  Wind,
+  RefreshCw,
+  Sparkles,
+  Heart,
+  Star,
+  Target,
+  Droplets,
+  Moon,
+  Sun,
+};
+
+type Step = { number: string; title: string; description: string; icon: LucideIcon };
+
+const DEFAULT_STEPS: Step[] = [
   { number: '01', title: 'SWIPE', description: 'Use your fingertip to gently swipe a small amount of solid perfume.', icon: Fingerprint },
   { number: '02', title: 'DAB', description: 'Apply to pulse points — neck, wrists, behind ears, or chest.', icon: Crosshair },
   { number: '03', title: 'MELT', description: 'Let the warmth of your skin melt the perfume naturally.', icon: Flame },
@@ -18,9 +50,23 @@ const steps = [
   { number: '05', title: 'REPEAT', description: 'Reapply anytime to refresh your signature scent.', icon: RefreshCw },
 ];
 
-export default function HowToApply() {
+interface HowToApplyProps {
+  config?: HowToApplyConfig;
+}
+
+export default function HowToApply({ config }: HowToApplyProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
+
+  const accentColor = config?.color || '#D21B27';
+  const steps: Step[] = config?.steps?.length
+    ? config.steps.map((s) => ({
+        number: s.num,
+        title: s.title,
+        description: s.desc,
+        icon: ICON_MAP[s.presetName || 'Fingerprint'] || Fingerprint,
+      }))
+    : DEFAULT_STEPS;
 
   return (
     <section id="ritual" ref={sectionRef} className="py-24 md:py-32 bg-noir relative">
@@ -41,7 +87,8 @@ export default function HowToApply() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15, ease: easeOutExpo }}
-            className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] text-crimson uppercase mb-6"
+            className="font-display font-bold text-4xl md:text-5xl lg:text-6xl tracking-[-0.03em] uppercase mb-6"
+            style={{ color: accentColor }}
           >
             FEEL THE PRESENCE.
           </motion.h2>
@@ -79,7 +126,7 @@ export default function HowToApply() {
                 y1="50%"
                 x2="90%"
                 y2="50%"
-                stroke="#DC2626"
+                stroke={accentColor}
                 strokeWidth="1"
                 initial={{ pathLength: 0 }}
                 animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
@@ -91,7 +138,10 @@ export default function HowToApply() {
               />
             </svg>
 
-            <div className="grid grid-cols-5 gap-4 relative z-10">
+            <div
+              className="grid gap-4 relative z-10"
+              style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+            >
               {steps.map((step, i) => (
                 <motion.div
                   key={step.number}
@@ -106,10 +156,10 @@ export default function HowToApply() {
                 >
                   {/* Circle with icon */}
                   <div className="w-12 h-12 rounded-full border border-glass-border bg-noir flex items-center justify-center mb-4">
-                    <step.icon size={18} className="text-crimson" />
+                    <step.icon size={18} style={{ color: accentColor }} />
                   </div>
                   {/* Number and title */}
-                  <span className="font-mono text-xs text-crimson mb-1">{step.number}</span>
+                  <span className="font-mono text-xs mb-1" style={{ color: accentColor }}>{step.number}</span>
                   <h4 className="font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
                     {step.title}
                   </h4>
@@ -126,7 +176,8 @@ export default function HowToApply() {
             {/* Vertical line */}
             <div className="absolute left-6 top-0 bottom-0 w-[1px] bg-glass-border">
               <motion.div
-                className="w-full bg-crimson"
+                className="w-full"
+                style={{ background: accentColor }}
                 initial={{ height: '0%' }}
                 animate={isInView ? { height: '100%' } : {}}
                 transition={{ duration: 1.2, ease: 'easeInOut', delay: 0.3 }}
@@ -146,10 +197,10 @@ export default function HowToApply() {
                 className="flex items-start gap-4 relative z-10"
               >
                 <div className="w-12 h-12 rounded-full border border-glass-border bg-noir flex items-center justify-center flex-shrink-0">
-                  <step.icon size={18} className="text-crimson" />
+                  <step.icon size={18} style={{ color: accentColor }} />
                 </div>
                 <div>
-                  <span className="font-mono text-xs text-crimson">{step.number}</span>
+                  <span className="font-mono text-xs" style={{ color: accentColor }}>{step.number}</span>
                   <h4 className="font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-1">
                     {step.title}
                   </h4>
@@ -172,8 +223,8 @@ export default function HowToApply() {
         >
           <div className="glass-card rounded-lg p-5 flex items-center gap-4">
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Sparkles size={16} className="text-crimson" />
-              <span className="text-overline text-crimson">PRO TIP</span>
+              <Sparkles size={16} style={{ color: accentColor }} />
+              <span className="text-overline" style={{ color: accentColor }}>PRO TIP</span>
             </div>
             <p className="text-sm text-muted leading-relaxed">
               For a longer-lasting scent, apply after moisturizing or layering with unscented lotion.

@@ -15,7 +15,7 @@ const headerSlideSchema = z.object({
   subtitle:    z.string().trim().max(200).optional(),
   description: z.string().trim().max(500).optional(),
   buttonText:  z.string().trim().max(50).optional(),
-  linkTo:      z.enum(['collection', 'story', 'reviews']).optional(),
+  linkTo:      z.enum(['collection', 'story', 'reviews', 'shop']).optional(),
   order:       z.number().int().optional(),
   active:      z.boolean().optional(),
 });
