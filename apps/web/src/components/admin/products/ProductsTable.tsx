@@ -40,8 +40,12 @@ export default function ProductsTable({ onAddClick, refresh }: Props) {
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this product?')) return;
-    await deleteAdminProduct(id).catch(() => {});
-    load();
+    try {
+      await deleteAdminProduct(id);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete product');
+    }
   }
 
   const totalPages = Math.ceil(total / 8);

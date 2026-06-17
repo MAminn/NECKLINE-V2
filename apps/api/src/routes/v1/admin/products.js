@@ -57,7 +57,7 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 8));
     const skip = (page - 1) * limit;
 
-    const filter = {};
+    const filter = { deletedAt: null };
     if (typeof req.query.search === 'string' && req.query.search) {
       const search = escapeRegex(req.query.search);
       filter.$or = [
@@ -76,17 +76,17 @@ router.get('/', async (req, res, next) => {
     } else if (req.query.status === 'ACTIVE') {
       filter.stockOnHand = { $gt: 5 };
       filter.purchasable = true;
-      filter.deletedAt = null;
     }
 
     const [products, total, kpiAgg] = await Promise.all([
       Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Product.countDocuments(filter),
       Product.aggregate([
+        { $match: { deletedAt: null } },
         { $group: {
           _id: null,
           total: { $sum: 1 },
-          active: { $sum: { $cond: [{ $and: [{ $gt: ['$stockOnHand', 0] }, '$purchasable', { $eq: ['$deletedAt', null] }] }, 1, 0] } },
+          active: { $sum: { $cond: [{ $and: [{ $gt: ['$stockOnHand', 0] }, '$purchasable'] }, 1, 0] } },
           outOfStock: { $sum: { $cond: [{ $or: [{ $eq: ['$stockOnHand', 0] }, { $eq: ['$purchasable', false] }] }, 1, 0] } },
           totalViews: { $sum: '$views' },
         } },
