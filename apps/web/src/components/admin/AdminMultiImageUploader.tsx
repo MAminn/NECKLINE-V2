@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, ImageIcon } from 'lucide-react';
 import { getCsrfToken, invalidateCsrfToken } from '../../lib/csrf';
+import { refreshAccessToken } from '../../lib/api';
 
 interface AdminMultiImageUploaderProps {
   images: string[];
@@ -31,6 +32,11 @@ export default function AdminMultiImageUploader({
         headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
       });
     let res = await doUpload(await getCsrfToken());
+    // Expired access token (15 min): refresh once and retry, mirroring api.ts
+    if (res.status === 401) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) res = await doUpload(await getCsrfToken());
+    }
     if (res.status === 403) {
       invalidateCsrfToken();
       const csrfToken = await getCsrfToken();

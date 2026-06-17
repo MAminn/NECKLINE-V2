@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { getCsrfToken, invalidateCsrfToken } from '../../lib/csrf';
+import { refreshAccessToken } from '../../lib/api';
 
 interface AdminImageUploaderProps {
   value: string;
@@ -31,6 +32,11 @@ export default function AdminImageUploader({ value, onChange, label = 'Image URL
           headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
         });
       let res = await doUpload(await getCsrfToken());
+      // Expired access token (15 min): refresh once and retry, mirroring api.ts
+      if (res.status === 401) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) res = await doUpload(await getCsrfToken());
+      }
       // Stale/missing CSRF token (e.g. cookie expired): fetch a fresh one and retry once
       if (res.status === 403) {
         invalidateCsrfToken();

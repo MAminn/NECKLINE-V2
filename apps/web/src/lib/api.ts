@@ -119,4 +119,4 @@ async function apiClient(path: string, options: ApiOptions = {}) {
   return data;
 }
 
-export { apiClient, generateCorrelationId };
+export { apiClient, generateCorrelationId, refreshAccessToken };
