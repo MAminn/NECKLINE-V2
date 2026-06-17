@@ -64,10 +64,20 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
     const skip = (page - 1) * limit;
 
+    // Build the filter only from trusted, locally-derived primitives — never
+    // place request values into the query object directly. Booleans are freshly
+    // computed and `type` is taken from the PROMO_TYPES constant, not req.query.
     const filter = {};
-    if (req.query.active !== undefined) filter.active = { $eq: req.query.active === 'true' };
-    if (PROMO_TYPES.includes(req.query.type)) filter.type = { $eq: req.query.type };
-    if (req.query.isAutomatic !== undefined) filter.isAutomatic = { $eq: req.query.isAutomatic === 'true' };
+    if (req.query.active !== undefined) {
+      filter.active = req.query.active === 'true';
+    }
+    const matchedType = PROMO_TYPES.find((t) => t === req.query.type);
+    if (matchedType) {
+      filter.type = matchedType;
+    }
+    if (req.query.isAutomatic !== undefined) {
+      filter.isAutomatic = req.query.isAutomatic === 'true';
+    }
 
     const [promoCodes, total] = await Promise.all([
       PromoCode.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),

@@ -56,6 +56,10 @@ router.get('/', async (req, res, next) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 8));
     const skip = (page - 1) * limit;
 
+    // Build the filter only from trusted, locally-derived primitives — never
+    // place request values into the query object directly. The search term is
+    // regex-escaped and category is coerced to a plain string, so neither can
+    // smuggle a NoSQL operator into the query.
     const filter = { deletedAt: null };
     if (typeof req.query.search === 'string' && req.query.search) {
       const search = escapeRegex(req.query.search);
@@ -65,7 +69,8 @@ router.get('/', async (req, res, next) => {
       ];
     }
     if (typeof req.query.category === 'string' && req.query.category) {
-      filter.category = { $eq: req.query.category };
+      const category = String(req.query.category);
+      filter.category = category;
     }
     if (req.query.status === 'OUT OF STOCK') {
       filter.$or = [{ stockOnHand: 0 }, { purchasable: false }];
