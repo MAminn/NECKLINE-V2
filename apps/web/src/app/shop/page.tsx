@@ -26,6 +26,10 @@ const sortOptions: { label: string; value: SortType }[] = [
   { label: 'PRICE: HIGH TO LOW', value: 'price-high' },
 ];
 
+// Stable keys for the fixed set of loading skeletons, so the list doesn't key
+// off array indexes.
+const SKELETON_KEYS = ['sk-1', 'sk-2', 'sk-3', 'sk-4', 'sk-5', 'sk-6'];
+
 interface CatalogResponse {
   data: LocalProduct[];
   pagination?: {
@@ -153,7 +157,12 @@ export default function ShopPage() {
               </button>
               {sortOpen && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setSortOpen(false)} />
+                  <button
+                    type="button"
+                    aria-label="Close sort menu"
+                    className="fixed inset-0 z-10 cursor-default"
+                    onClick={() => setSortOpen(false)}
+                  />
                   <div className="absolute right-0 top-full mt-2 w-48 bg-noir-lift border border-glass-border rounded-lg shadow-modal z-20 overflow-hidden">
                     {sortOptions.map((option) => (
                       <button
@@ -184,8 +193,8 @@ export default function ShopPage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[4/5] bg-glass-surface border border-glass-border rounded-md animate-pulse" />
+              {SKELETON_KEYS.map((key) => (
+                <div key={key} className="aspect-[4/5] bg-glass-surface border border-glass-border rounded-md animate-pulse" />
               ))}
             </div>
           ) : (
