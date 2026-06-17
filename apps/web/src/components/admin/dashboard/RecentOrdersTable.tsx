@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { getAdminOrders } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
 import { formatPrice } from '../../../lib/formatPrice';
+import { ORDER_STATUS_COLORS } from '../../../lib/statusColors';
+import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 function StatusBadge({ status }: { status: string }) {
-  const color = status === 'confirmed' ? '#4ade80' : status === 'cancelled' ? 'var(--color-primary)' : 'var(--color-gold)';
+  const color = ORDER_STATUS_COLORS[status] ?? 'var(--color-gold)';
   return (
     <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ background: `${color}1a`, color }}>
       {status}
@@ -59,7 +61,7 @@ export default function RecentOrdersTable() {
                 <td className="py-2 pr-4 font-mono" style={{ color: 'var(--color-text)' }}>{o.orderNumber}</td>
                 <td className="py-2 pr-4 truncate max-w-[100px]" style={{ color: 'var(--color-text)' }}>{o.customerName}</td>
                 <td className="py-2 pr-4" style={{ color: 'var(--color-text-tertiary)' }}>{o.itemCount}</td>
-                <td className="py-2 pr-4 font-semibold" style={{ color: 'var(--color-text)' }}>{formatPrice(o.total, o.currency || 'EGP')}</td>
+                <td className="py-2 pr-4 font-semibold" style={{ color: 'var(--color-text)' }}>{formatPrice(o.total, o.currency || DEFAULT_CURRENCY)}</td>
                 <td className="py-2"><StatusBadge status={o.status} /></td>
               </tr>
             ))}

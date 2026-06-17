@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check, Loader2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import { ADD_TO_CART_FEEDBACK_MS } from '../lib/constants';
 
 interface Props {
   productId: string;
@@ -19,7 +20,7 @@ export default function AddToCartButton({ productId, quantity, disabled, size = 
     if (disabled || isLoading) return;
     await addItem(productId, quantity);
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2000);
+    setTimeout(() => setJustAdded(false), ADD_TO_CART_FEEDBACK_MS);
   };
 
   const sizeClasses = size === 'md'

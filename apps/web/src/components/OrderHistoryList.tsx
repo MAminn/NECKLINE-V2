@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '../lib/formatPrice';
+import { apiClient } from '../lib/api';
 
 interface Order {
   orderNumber: string;
@@ -19,19 +20,13 @@ export default function OrderHistoryList() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/orders`, {
-      credentials: 'include',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load orders');
-        return res.json();
-      })
+    apiClient('/orders')
       .then((data) => {
         setOrders(data.orders || []);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        setError(err.message || 'Failed to load orders');
         setLoading(false);
       });
   }, []);

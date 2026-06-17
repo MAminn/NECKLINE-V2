@@ -9,7 +9,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Review } from '../../types/nickline';
-import { LOCAL_REVIEWS } from '../../data/products';
 import { easeOutExpo } from '../../lib/motion';
 
 interface ReviewsProps {
@@ -33,9 +32,9 @@ export default function Reviews({ reviews: reviewsProp }: ReviewsProps) {
           }
         }
       } catch {
-        // fall through to local reviews
+        // fall through to empty state
       }
-      setReviewsList(LOCAL_REVIEWS);
+      setReviewsList([]);
     }
     fetchReviews();
   }, []);

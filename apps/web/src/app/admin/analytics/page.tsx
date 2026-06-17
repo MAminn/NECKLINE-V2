@@ -6,6 +6,7 @@ import { getMetrics } from '../../../lib/admin-api';
 import type { AdminMetrics } from '../../../types/nickline';
 import AnalyticsChart from '../../../components/admin/analytics/AnalyticsChart';
 import { formatPrice } from '../../../lib/formatPrice';
+import { DEFAULT_CURRENCY } from '../../../lib/constants';
 import AdminKpiCard from '../../../components/admin/AdminKpiCard';
 
 const TIMEFRAMES = ['7D', '30D', 'ALL'] as const;
@@ -78,7 +79,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <AdminKpiCard
             label="Total Revenue"
-            value={formatPrice(metrics.totalRevenue, 'EGP')}
+            value={formatPrice(metrics.totalRevenue, DEFAULT_CURRENCY)}
             trend="up"
             history={conversionHistory}
           />
@@ -90,7 +91,7 @@ export default function AnalyticsPage() {
           />
           <AdminKpiCard
             label="Avg Order Value"
-            value={formatPrice(metrics.averageOrderValue, 'EGP')}
+            value={formatPrice(metrics.averageOrderValue, DEFAULT_CURRENCY)}
             trend="up"
           />
           <AdminKpiCard
@@ -121,7 +122,7 @@ export default function AnalyticsPage() {
               </span>
             </div>
             <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-              {formatPrice(metrics.revenueToday, 'EGP')}
+              {formatPrice(metrics.revenueToday, DEFAULT_CURRENCY)}
             </p>
             <p className="mt-1 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
               {metrics.todayOrdersCount} orders today
@@ -237,7 +238,7 @@ export default function AnalyticsPage() {
               <div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Projected Revenue</p>
                 <p className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {formatPrice(metrics.forecast.projectedRevenue, 'EGP')}
+                  {formatPrice(metrics.forecast.projectedRevenue, DEFAULT_CURRENCY)}
                 </p>
               </div>
               <div>

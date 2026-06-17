@@ -6,6 +6,7 @@ import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
 import AdminSelect from '../AdminSelect';
 import { formatPrice } from '../../../lib/formatPrice';
+import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 const EMPTY_FORM = { code: '', type: 'percentage', value: '', minOrderAmount: '', usageLimit: '', endDate: '' };
 
@@ -93,8 +94,8 @@ export default function CouponsSection() {
             <div>
               <p className="text-sm font-bold font-mono" style={{ color: 'var(--color-text)' }}>{c.code}</p>
               <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                {c.type === 'percentage' ? `${c.value}% off` : `${formatPrice(c.value, 'EGP')} off`}
-                {c.minOrderAmount ? ` · min ${formatPrice(c.minOrderAmount, 'EGP')}` : ''}
+                {c.type === 'percentage' ? `${c.value}% off` : `${formatPrice(c.value, DEFAULT_CURRENCY)} off`}
+                {c.minOrderAmount ? ` · min ${formatPrice(c.minOrderAmount, DEFAULT_CURRENCY)}` : ''}
                 {c.usageLimit ? ` · ${c.usageCount}/${c.usageLimit} uses` : ` · ${c.usageCount} uses`}
               </p>
             </div>

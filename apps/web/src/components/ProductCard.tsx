@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import PriceDisplay from './PriceDisplay';
 import AddToCartButton from './AddToCartButton';
+import { LOW_STOCK_THRESHOLD } from '../lib/constants';
 
 interface Product {
   _id: string;
@@ -20,7 +21,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stockOnHand <= 0;
-  const isLowStock = !isOutOfStock && product.stockOnHand <= 5;
+  const isLowStock = !isOutOfStock && product.stockOnHand <= LOW_STOCK_THRESHOLD;
   const imageUrl = product.images[0] || '/placeholder-product.png';
 
   return (

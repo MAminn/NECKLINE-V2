@@ -1,4 +1,4 @@
-import { Scent, Review, QuizQuestion } from '../types/nickline';
+import { Scent, QuizQuestion } from '../types/nickline';
 
 export const LOCAL_PRODUCTS: Scent[] = [
   {
@@ -55,63 +55,6 @@ export const LOCAL_PRODUCTS: Scent[] = [
     image: '/images/product-giftset.jpg',
     tag: 'GIFT',
     category: 'GIFT SET',
-  },
-];
-
-export const LOCAL_REVIEWS: Review[] = [
-  {
-    id: '1',
-    name: 'Sarah M.',
-    product: 'NECKLINE Rose',
-    rating: 5,
-    comment: "This scent stays so close to the skin — my partner only notices when they're near me. That's exactly what I wanted. Intimate, warm, unforgettable.",
-    verified: true,
-    date: '2026-05-12',
-  },
-  {
-    id: '2',
-    name: 'James K.',
-    product: 'NECKLINE Oud',
-    rating: 5,
-    comment: "I've worn liquid colognes for 15 years. This is different. It melts into your skin and becomes part of you. The Oud is deep, resinous, commanding.",
-    verified: true,
-    date: '2026-05-10',
-  },
-  {
-    id: '3',
-    name: 'Elena R.',
-    product: 'NECKLINE Intimacy Collection',
-    rating: 5,
-    comment: 'Bought the gift set for my anniversary. The packaging alone is worth it — matte black, crimson ribbon, pure luxury. Each scent tells a different story.',
-    verified: true,
-    date: '2026-05-08',
-  },
-  {
-    id: '4',
-    name: 'David L.',
-    product: 'NECKLINE Musk',
-    rating: 5,
-    comment: 'The portability is a game changer. I keep it in my pocket and reapply before dinner. The Musk is clean but has depth — never overpowering.',
-    verified: true,
-    date: '2026-05-05',
-  },
-  {
-    id: '5',
-    name: 'Amira T.',
-    product: 'NECKLINE Original',
-    rating: 5,
-    comment: 'I was skeptical about solid perfume. NECKLINE converted me. The Original scent is warm, amber-vanilla perfection. Lasts all day on my pulse points.',
-    verified: true,
-    date: '2026-05-01',
-  },
-  {
-    id: '6',
-    name: 'Noor A.',
-    product: 'NECKLINE Rose',
-    rating: 5,
-    comment: 'The ritual of application is part of the experience. Swipe, dab, melt, feel — it\'s meditative. The Rose is soft sandalwood wrapped in petals.',
-    verified: true,
-    date: '2026-04-28',
   },
 ];
 

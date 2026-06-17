@@ -145,7 +145,7 @@ export default function ImageUploader({ onUploadComplete, initialUrl = "", label
           onClick={onButtonClick}
           className={`relative border border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
             dragActive
-              ? "border-[#D21B27] bg-[#D21B27]/5"
+              ? "border-crimson bg-crimson/5"
               : "border-white/15 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03]"
           }`}
         >
@@ -159,13 +159,13 @@ export default function ImageUploader({ onUploadComplete, initialUrl = "", label
 
           {uploadProgress !== null ? (
             <div className="space-y-3 py-2 flex flex-col items-center">
-              <Loader2 className="w-6 h-6 text-[#D21B27] animate-spin" />
+              <Loader2 className="w-6 h-6 text-crimson animate-spin" />
               <div className="text-xs text-stone-200 font-mono tracking-wide">
                 Uploading Aura: {uploadProgress}%
               </div>
               <div className="w-full max-w-xs bg-white/5 h-1 rounded-full overflow-hidden">
                 <div
-                  className="bg-[#D21B27] h-full transition-all duration-350"
+                  className="bg-crimson h-full transition-all duration-350"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -174,7 +174,7 @@ export default function ImageUploader({ onUploadComplete, initialUrl = "", label
             <div className="space-y-2 flex flex-col items-center">
               <Upload className="w-5 h-5 text-neutral-400" />
               <p className="text-[11px] text-neutral-300 font-light font-sans">
-                Drag and drop scent photo, or <span className="text-[#D21B27] font-semibold underline">browse</span>
+                Drag and drop scent photo, or <span className="text-crimson font-semibold underline">browse</span>
               </p>
               <p className="text-[9px] text-zinc-500 font-mono">
                 Supports JPEG, PNG, or WebP up to 2MB
@@ -185,7 +185,7 @@ export default function ImageUploader({ onUploadComplete, initialUrl = "", label
       )}
 
       {errorInput && (
-        <div className="text-[#D21B27] text-[10px] font-mono flex items-center gap-1 mt-1 bg-red-500/5 p-2 border border-red-500/10 rounded-lg">
+        <div className="text-crimson text-[10px] font-mono flex items-center gap-1 mt-1 bg-red-500/5 p-2 border border-red-500/10 rounded-lg">
           <AlertCircle className="w-3.5 h-3.5" />
           <span>{errorInput}</span>
         </div>

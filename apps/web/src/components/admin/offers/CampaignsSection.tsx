@@ -6,6 +6,7 @@ import type { AdminPromoCode } from '../../../types/nickline';
 import { adminInputSm } from '../adminStyles';
 import AdminSelect from '../AdminSelect';
 import { formatPrice } from '../../../lib/formatPrice';
+import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 const EMPTY_FORM = { description: '', type: 'percentage', value: '', minOrderAmount: '', endDate: '' };
 
@@ -104,7 +105,7 @@ export default function CampaignsSection() {
                   </span>
                 </div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {o.type === 'percentage' ? `${o.value}% off` : `${formatPrice(o.value, 'EGP')} off`}
+                  {o.type === 'percentage' ? `${o.value}% off` : `${formatPrice(o.value, DEFAULT_CURRENCY)} off`}
                   {o.endDate ? ` · until ${new Date(o.endDate).toLocaleDateString()}` : ''}
                 </p>
               </div>

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { updateAdminOrder } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
 import { formatPrice } from '../../../lib/formatPrice';
+import { ORDER_STATUS_COLORS } from '../../../lib/statusColors';
+import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 const FULFILLMENT_STEPS = ['unfulfilled', 'processing', 'shipped', 'delivered'] as const;
 type FulfillmentStatus = typeof FULFILLMENT_STEPS[number];
@@ -13,13 +15,6 @@ interface Props {
   onClose: () => void;
   onUpdated: (order: AdminOrder) => void;
 }
-
-const STATUS_COLOR: Record<string, string> = {
-  confirmed: '#4ade80',
-  cancelled: 'var(--color-primary)',
-  pending: 'var(--color-gold)',
-  pending_payment: 'var(--color-gold)',
-};
 
 export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props) {
   const [tracking, setTracking] = useState(order?.trackingNumber ?? '');
@@ -84,7 +79,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Items</p>
             <p className="text-xs" style={{ color: 'var(--color-text)' }}>{order.itemsSummary}</p>
             <p className="text-sm font-bold mt-1" style={{ color: 'var(--color-text)' }}>
-              Total: {formatPrice(order.total, order.currency || 'EGP')}
+              Total: {formatPrice(order.total, order.currency || DEFAULT_CURRENCY)}
             </p>
           </section>
 
@@ -121,7 +116,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
           {/* Payment */}
           <section>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Payment</p>
-            <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${STATUS_COLOR[order.status] ?? '#999'}1a`, color: STATUS_COLOR[order.status] ?? '#999' }}>
+            <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${ORDER_STATUS_COLORS[order.status] ?? '#999'}1a`, color: ORDER_STATUS_COLORS[order.status] ?? '#999' }}>
               {order.status}
             </span>
           </section>

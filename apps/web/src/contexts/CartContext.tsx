@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { apiClient, generateCorrelationId } from '../lib/api';
 import { LOCAL_PRODUCTS } from '../data/products';
+import { DEFAULT_CURRENCY } from '../lib/constants';
 
 export interface CartItem {
   productId: string;
@@ -107,7 +108,7 @@ function mergeCarts(serverCart: Cart, guestItems: CartItem[]): Cart {
 
   const items = Array.from(itemMap.values());
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const currency = items[0]?.unitPrice.currency || serverCart.subtotal?.currency || 'EGP';
+  const currency = items[0]?.unitPrice.currency || serverCart.subtotal?.currency || DEFAULT_CURRENCY;
   const subtotalAmount = items.reduce((sum, i) => sum + i.lineTotal.amount, 0);
 
   // When we have guest items, totals are based on subtotal only (no server-side shipping/discount).

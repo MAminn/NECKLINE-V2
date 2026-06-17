@@ -23,13 +23,13 @@ const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 function getScentColor(scentId: string): string {
   const map: Record<string, string> = {
-    oud: '#C87941',
-    rose: '#C97B7B',
-    musk: '#9BA4A9',
-    original: '#B8A88A',
-    giftset: '#B8A88A',
+    oud: 'var(--oud-amber)',
+    rose: 'var(--rose-blush)',
+    musk: 'var(--musk-silver)',
+    original: 'var(--original-gold)',
+    giftset: 'var(--original-gold)',
   };
-  return map[scentId.toLowerCase()] || '#DC2626';
+  return map[scentId.toLowerCase()] || 'var(--crimson)';
 }
 
 export default function ProductCard({ product, index = 0, featured = false }: ProductCardProps) {

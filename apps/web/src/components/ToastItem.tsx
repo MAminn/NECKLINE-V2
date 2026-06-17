@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, CheckCircle2, AlertCircle, Info, ShoppingBag } from 'lucide-react';
 import { Toast, ToastType } from '../contexts/ToastContext';
+import { TOAST_DISPLAY_MS, TOAST_DISMISS_ANIMATION_MS } from '../lib/constants';
 
 interface ToastItemProps {
   toast: Toast;
@@ -37,8 +38,8 @@ export default function ToastItem({ toast, onDismiss }: ToastItemProps) {
     requestAnimationFrame(() => setVisible(true));
     timerRef.current = setTimeout(() => {
       setVisible(false);
-      setTimeout(onDismiss, 250);
-    }, 3300);
+      setTimeout(onDismiss, TOAST_DISMISS_ANIMATION_MS);
+    }, TOAST_DISPLAY_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -66,7 +67,7 @@ export default function ToastItem({ toast, onDismiss }: ToastItemProps) {
         <button
           onClick={() => {
             setVisible(false);
-            setTimeout(onDismiss, 250);
+            setTimeout(onDismiss, TOAST_DISMISS_ANIMATION_MS);
           }}
           className="text-muted hover:text-warm-white transition-colors shrink-0 mt-0.5"
           aria-label="Dismiss"
