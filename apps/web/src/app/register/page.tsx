@@ -9,6 +9,17 @@ import { useAuth } from '../../hooks/useAuth';
 import AuroraBackground from '../../components/AuroraBackground';
 import { easeOutExpo } from '../../lib/motion';
 
+// RFC 5321 caps an email address at 254 characters. Bounding the input before
+// running the regex keeps validation cheap and removes any ReDoS vector.
+const EMAIL_MAX_LENGTH = 254;
+// Linear-time email check: each quantified run is delimited by a character it
+// cannot itself match (`@`, then `.`), so there is no ambiguous backtracking.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+\.[^\s@]+$/;
+
+function isValidEmail(value: string): boolean {
+  return value.length <= EMAIL_MAX_LENGTH && EMAIL_PATTERN.test(value);
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
@@ -25,8 +36,8 @@ export default function RegisterPage() {
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
       lowercase: /[a-z]/.test(password),
-      number: /[0-9]/.test(password),
-      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+      number: /\d/.test(password),
+      email: isValidEmail(email),
       name: name.trim().length > 0,
     };
   }, [password, email, name]);
@@ -94,10 +105,11 @@ export default function RegisterPage() {
           )}
 
           <div>
-            <label className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
+            <label htmlFor="register-name" className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
               FULL NAME
             </label>
             <input
+              id="register-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -112,11 +124,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
+            <label htmlFor="register-email" className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
               EMAIL
             </label>
             <div className="relative">
               <input
+                id="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -141,11 +154,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
+            <label htmlFor="register-password" className="block font-display font-medium text-xs tracking-[0.08em] text-warm-white uppercase mb-2">
               PASSWORD
             </label>
             <div className="relative">
               <input
+                id="register-password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
