@@ -13,6 +13,7 @@ const quizRoutes = require('./quiz');
 
 // Phase 6: content routes (public reads + admin writes)
 const testimonialRoutes = require('./testimonials');
+const { publicRouter: headerSlidesPublic, adminRouter: headerSlidesAdmin } = require('./headerSlides');
 
 // Phase 6: admin-only routes
 const adminMetricsRoutes = require('./admin/metrics');
@@ -48,6 +49,8 @@ router.use('/quiz', quizRoutes);
 
 // Phase 6: content routes
 router.use('/testimonials', testimonialRoutes);
+router.use('/header-slides', headerSlidesPublic);
+router.use('/admin/header-slides', headerSlidesAdmin);
 
 // Phase 6: admin-only routes
 router.use('/admin/metrics', adminMetricsRoutes);

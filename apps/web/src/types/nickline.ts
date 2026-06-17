@@ -130,6 +130,18 @@ export interface AdminPromoCode {
   createdAt: string;
 }
 
+export interface AdminHeaderSlide {
+  id: string;
+  image: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  buttonText: string;
+  linkTo: string;
+  order: number;
+  active: boolean;
+}
+
 export interface QuizQuestion {
   id: number;
   question: string;

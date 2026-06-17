@@ -9,4 +9,15 @@ const testimonialSchema = z.object({
   date:     z.string().min(1),
 });
 
-module.exports = { testimonialSchema };
+const headerSlideSchema = z.object({
+  image:       z.string().trim().min(1),
+  title:       z.string().trim().min(1).max(100),
+  subtitle:    z.string().trim().max(200).optional(),
+  description: z.string().trim().max(500).optional(),
+  buttonText:  z.string().trim().max(50).optional(),
+  linkTo:      z.enum(['collection', 'story', 'reviews', 'shop']).optional(),
+  order:       z.number().int().optional(),
+  active:      z.boolean().optional(),
+});
+
+module.exports = { testimonialSchema, headerSlideSchema };

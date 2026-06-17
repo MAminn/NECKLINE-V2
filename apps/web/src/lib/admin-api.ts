@@ -8,6 +8,7 @@ import type {
   AdminOrder,
   AdminCustomer,
   AdminPromoCode,
+  AdminHeaderSlide,
   Testimonial,
 } from '../types/nickline';
 
@@ -150,5 +151,22 @@ export async function updateTestimonial(id: string, body: Partial<Testimonial>):
 
 export async function deleteTestimonial(id: string): Promise<{ success: boolean }> {
   return apiClient(`/testimonials/${id}`, { method: 'DELETE' });
+}
+
+// Header Slides
+export async function getHeaderSlides(): Promise<AdminHeaderSlide[]> {
+  return apiClient('/header-slides');
+}
+
+export async function createHeaderSlide(body: Omit<AdminHeaderSlide, 'id'>): Promise<AdminHeaderSlide> {
+  return apiClient('/admin/header-slides', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateHeaderSlide(id: string, body: Partial<AdminHeaderSlide>): Promise<AdminHeaderSlide> {
+  return apiClient(`/admin/header-slides/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+}
+
+export async function deleteHeaderSlide(id: string): Promise<{ success: boolean }> {
+  return apiClient(`/admin/header-slides/${id}`, { method: 'DELETE' });
 }
 
