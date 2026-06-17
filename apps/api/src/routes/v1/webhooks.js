@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Order = require('../../models/Order');
 const PaymentTransaction = require('../../models/PaymentTransaction');
 const orderService = require('../../services/orderService');
-const { createAuditEvent } = require('../../domain/audit');
+const { emitAuditFromMeta } = require('../../domain/audit');
 const logger = require('../../config/logger');
 
 const router = Router();
@@ -116,17 +116,15 @@ router.post('/', async (req, res) => {
       await mongoSession.endSession();
     }
 
-    // 5. Audit event
-    createAuditEvent({
+    // 5. Audit event (webhook has no authenticated user — actor is the system)
+    emitAuditFromMeta({ requestId: req.id, ip: req.ip }, {
       actor: 'system',
       action: 'payment.webhook_confirmed',
       target: order._id.toString(),
       targetType: 'Order',
       before: { status: order.status, paymentStatus: order.paymentStatus },
       after: { status: 'confirmed', paymentStatus: 'succeeded', transactionId },
-      requestId: req.id,
-      ip: req.ip,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
 
     logger.info(
       { orderId: order._id, orderNumber: order.orderNumber, transactionId },

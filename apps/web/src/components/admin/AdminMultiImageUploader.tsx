@@ -2,8 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, ImageIcon } from 'lucide-react';
-import { getCsrfToken, invalidateCsrfToken } from '../../lib/csrf';
-import { refreshAccessToken } from '../../lib/api';
+import { uploadAdminImage } from '../../lib/admin-api';
 
 interface AdminMultiImageUploaderProps {
   images: string[];
@@ -20,43 +19,13 @@ export default function AdminMultiImageUploader({
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function uploadFile(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const uploadUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/admin/uploads`;
-    const doUpload = async (csrfToken: string | null) =>
-      fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-        headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
-      });
-    let res = await doUpload(await getCsrfToken());
-    // Expired access token (15 min): refresh once and retry, mirroring api.ts
-    if (res.status === 401) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) res = await doUpload(await getCsrfToken());
-    }
-    if (res.status === 403) {
-      invalidateCsrfToken();
-      const csrfToken = await getCsrfToken();
-      if (csrfToken) res = await doUpload(csrfToken);
-    }
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Upload failed');
-    }
-    const data = await res.json();
-    return data.url;
-  }
-
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     setError('');
     setUploading(true);
     try {
-      const urls = await Promise.all(files.map(uploadFile));
+      const urls = await Promise.all(files.map(uploadAdminImage));
       onChange([...images, ...urls]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');

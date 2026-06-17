@@ -7,6 +7,7 @@ jest.mock('../../src/services/discountService');
 jest.mock('../../src/services/shippingService');
 jest.mock('../../src/domain/audit', () => ({
   createAuditEvent: jest.fn().mockResolvedValue(undefined),
+  emitAuditFromMeta: jest.fn(),
 }));
 jest.mock('../../src/config/logger', () => ({
   error: jest.fn(),

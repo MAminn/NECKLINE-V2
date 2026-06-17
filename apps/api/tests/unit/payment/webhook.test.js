@@ -21,7 +21,7 @@ const leanResolving = (value) => ({ lean: () => Promise.resolve(value) });
 const Order = require('../../../src/models/Order');
 const PaymentTransaction = require('../../../src/models/PaymentTransaction');
 const orderService = require('../../../src/services/orderService');
-const { createAuditEvent } = require('../../../src/domain/audit');
+const { emitAuditFromMeta } = require('../../../src/domain/audit');
 
 describe('POST /webhooks/paymob', () => {
   let app;
@@ -135,7 +135,7 @@ describe('POST /webhooks/paymob', () => {
 
     PaymentTransaction.findOneAndUpdate.mockResolvedValue({});
     Order.findByIdAndUpdate.mockResolvedValue({});
-    createAuditEvent.mockResolvedValue({});
+    emitAuditFromMeta.mockReturnValue(undefined);
 
     const res = await request(app)
       .post('/webhooks/paymob')

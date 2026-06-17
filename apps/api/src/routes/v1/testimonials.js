@@ -5,8 +5,7 @@ const requirePermission = require('../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../middleware/rateLimitAdmin');
 const { validateBody } = require('../../middleware/validate');
 const { testimonialSchema } = require('../../validators/contentSchemas');
-const { createAuditEvent } = require('../../domain/audit');
-const logger = require('../../config/logger');
+const { emitAudit } = require('../../domain/audit');
 
 const router = Router();
 
@@ -30,16 +29,12 @@ adminRouter.use(authenticate, requirePermission('admin:access'), rateLimiterAdmi
 adminRouter.post('/', validateBody(testimonialSchema), async (req, res, next) => {
   try {
     const doc = await Testimonial.create(req.body);
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'testimonial.created',
       target: doc._id.toString(),
       targetType: 'Testimonial',
       after: { name: doc.name, product: doc.product },
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.status(201).json(formatTestimonial(doc));
   } catch (err) {
     next(err);
@@ -51,16 +46,12 @@ adminRouter.put('/:id', validateBody(testimonialSchema.partial()), async (req, r
   try {
     const doc = await Testimonial.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!doc) return res.status(404).json({ error: true, message: 'Testimonial not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'testimonial.updated',
       target: doc._id.toString(),
       targetType: 'Testimonial',
       after: req.body,
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json(formatTestimonial(doc));
   } catch (err) {
     next(err);
@@ -76,15 +67,11 @@ adminRouter.delete('/:id', async (req, res, next) => {
       { new: true }
     );
     if (!doc) return res.status(404).json({ error: true, message: 'Testimonial not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'testimonial.deleted',
       target: doc._id.toString(),
       targetType: 'Testimonial',
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

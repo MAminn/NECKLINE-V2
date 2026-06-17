@@ -4,8 +4,7 @@ const Order = require('../../../models/Order');
 const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
-const { createAuditEvent } = require('../../../domain/audit');
-const logger = require('../../../config/logger');
+const { emitAudit } = require('../../../domain/audit');
 const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
@@ -99,16 +98,12 @@ router.delete('/:email', async (req, res, next) => {
   try {
     const user = await User.findOneAndDelete({ email: req.params.email.toLowerCase() });
     if (!user) return res.status(404).json({ error: true, message: 'Customer not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'customer.deleted',
       target: user._id.toString(),
       targetType: 'User',
       after: { email: user.email },
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

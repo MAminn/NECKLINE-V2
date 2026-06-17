@@ -13,7 +13,7 @@ const { getDefaultShippingMethod } = require('./shippingService');
 const cartService = require('./cartService');
 const discountService = require('./discountService');
 const { DiscountError } = require('./discountService');
-const { createAuditEvent } = require('../domain/audit');
+const { createAuditEvent, emitAuditFromMeta } = require('../domain/audit');
 const logger = require('../config/logger');
 
 // Checkout sessions are persisted (CheckoutSession model) with a Mongo TTL index so they
@@ -299,15 +299,14 @@ async function clearCartAndReservations(cartId, mongoSession) {
 // Emits one best-effort 'inventory.decremented' audit event per line item.
 function emitInventoryDecrementedAudit(lineItems, orderId, requestId) {
   for (const item of lineItems) {
-    createAuditEvent({
+    emitAuditFromMeta({ requestId }, {
       actor: 'system',
       action: 'inventory.decremented',
       target: item.productId,
       targetType: 'Product',
       before: { quantity: item.quantity },
       after: { orderId: orderId.toString(), sku: item.sku, qtyDecremented: item.quantity },
-      requestId,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
   }
 }
 
@@ -394,17 +393,14 @@ async function executeRedirectFlow({ session, provider, checkoutToken, paymentMe
   }
 
   if (meta.requestId) {
-    createAuditEvent({
+    emitAuditFromMeta(meta, {
       actor: userId || 'guest',
       action: 'payment.intent_created',
       target: order._id.toString(),
       targetType: 'Order',
       before: { status: 'pending_payment' },
       after: { intentId: intent.id, provider: 'paymob', amount: total, currency },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
   }
 
@@ -448,29 +444,23 @@ async function persistPaymentAndConfirmOrder({ order, paymentMethod, paymentResu
 // Emits the order.created, order.payment_confirmed, and inventory.decremented audit events.
 function emitSyncOrderSuccessAudit({ order, lineItems, userId, total, currency, paymentResult, meta }) {
   if (!meta.requestId) return;
-  createAuditEvent({
+  emitAuditFromMeta(meta, {
     actor: userId || 'guest',
     action: 'order.created',
     target: order._id.toString(),
     targetType: 'Order',
     before: { status: 'pending' },
     after: { status: 'confirmed', orderNumber: order.orderNumber, total, currency },
-    requestId: meta.requestId,
-    ip: meta.ip,
-    userAgent: meta.userAgent,
-  }).catch((err) => logger.error({ err }, 'Audit event failed'));
+  });
 
-  createAuditEvent({
+  emitAuditFromMeta(meta, {
     actor: userId || 'guest',
     action: 'order.payment_confirmed',
     target: order._id.toString(),
     targetType: 'Order',
     before: { paymentStatus: 'pending' },
     after: { paymentStatus: 'succeeded', transactionId: paymentResult.transactionId },
-    requestId: meta.requestId,
-    ip: meta.ip,
-    userAgent: meta.userAgent,
-  }).catch((err) => logger.error({ err }, 'Audit event failed'));
+  });
 
   emitInventoryDecrementedAudit(lineItems, order._id, meta.requestId);
 }
@@ -514,19 +504,14 @@ async function executeSyncFlow({ session, provider, checkoutToken, paymentMethod
   const paymentResult = await provider.confirmPayment(intent.id);
 
   if (!paymentResult.success) {
-    if (meta.requestId) {
-      createAuditEvent({
-        actor: userId || 'guest',
-        action: 'order.payment_failed',
-        target: order._id.toString(),
-        targetType: 'Order',
-        before: { total, currency },
-        after: { errorCode: paymentResult.errorCode, errorMessage: paymentResult.errorMessage },
-        requestId: meta.requestId,
-        ip: meta.ip,
-        userAgent: meta.userAgent,
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
-    }
+    emitAuditFromMeta(meta, {
+      actor: userId || 'guest',
+      action: 'order.payment_failed',
+      target: order._id.toString(),
+      targetType: 'Order',
+      before: { total, currency },
+      after: { errorCode: paymentResult.errorCode, errorMessage: paymentResult.errorMessage },
+    });
     await compensateFailedPayment({ order, lineItems, promoCode });
     throw new CheckoutError(
       paymentResult.errorMessage || 'Payment failed',

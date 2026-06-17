@@ -1,6 +1,7 @@
 'use client';
 
-import { apiClient } from './api';
+import { apiClient, refreshAccessToken } from './api';
+import { getCsrfToken, invalidateCsrfToken } from './csrf';
 import type {
   AdminMetrics,
   ActivityEvent,
@@ -168,5 +169,39 @@ export async function updateHeaderSlide(id: string, body: Partial<AdminHeaderSli
 
 export async function deleteHeaderSlide(id: string): Promise<{ success: boolean }> {
   return apiClient(`/admin/header-slides/${id}`, { method: 'DELETE' });
+}
+
+// Uploads
+// Sends a single file to /admin/uploads as multipart/form-data. Uses raw fetch
+// (not apiClient) because the body is FormData and CSRF is sent explicitly.
+export async function uploadAdminImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const uploadUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/admin/uploads`;
+  const doUpload = (csrfToken: string | null) =>
+    fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
+    });
+  let res = await doUpload(await getCsrfToken());
+  // Expired access token (15 min): refresh once and retry, mirroring api.ts
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) res = await doUpload(await getCsrfToken());
+  }
+  // Stale/missing CSRF token (e.g. cookie expired): fetch a fresh one and retry once
+  if (res.status === 403) {
+    invalidateCsrfToken();
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) res = await doUpload(csrfToken);
+  }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || 'Upload failed');
+  }
+  const data = await res.json();
+  return data.url;
 }
 

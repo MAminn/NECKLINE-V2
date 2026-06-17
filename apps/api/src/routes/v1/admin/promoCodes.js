@@ -5,8 +5,7 @@ const authenticate = require('../../../middleware/authenticate');
 const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { createPromoCodeSchema, updatePromoCodeSchema } = require('../../../validators/promoCodeSchemas');
-const { createAuditEvent } = require('../../../domain/audit');
-const logger = require('../../../config/logger');
+const { emitAudit } = require('../../../domain/audit');
 
 const PROMO_TYPES = ['percentage', 'fixed', 'free_shipping'];
 
@@ -95,16 +94,12 @@ router.post('/', validate(createPromoCodeSchema), async (req, res, next) => {
     const promoCode = await PromoCode.create(data);
 
     if (req.id) {
-      createAuditEvent({
-        actor: req.user.id,
+      emitAudit(req, {
         action: 'promoCode.created',
         target: promoCode._id.toString(),
         targetType: 'PromoCode',
         after: { code: promoCode.code, type: promoCode.type, value: promoCode.value },
-        requestId: req.id,
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
+      });
     }
 
     res.status(201).json(serializePromo(promoCode));
@@ -147,16 +142,12 @@ router.patch('/:id', validate(updatePromoCodeSchema), async (req, res, next) => 
     await promoCode.save();
 
     if (req.id) {
-      createAuditEvent({
-        actor: req.user.id,
+      emitAudit(req, {
         action: 'promoCode.updated',
         target: promoCode._id.toString(),
         targetType: 'PromoCode',
         after: { code: promoCode.code, active: promoCode.active },
-        requestId: req.id,
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
+      });
     }
 
     res.json(serializePromo(promoCode));
@@ -178,16 +169,12 @@ router.delete('/:id', async (req, res, next) => {
     await promoCode.save();
 
     if (req.id) {
-      createAuditEvent({
-        actor: req.user.id,
+      emitAudit(req, {
         action: 'promoCode.deactivated',
         target: promoCode._id.toString(),
         targetType: 'PromoCode',
         after: { code: promoCode.code, active: false },
-        requestId: req.id,
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      }).catch((err) => logger.error({ err }, 'Audit event failed'));
+      });
     }
 
     res.status(204).send();

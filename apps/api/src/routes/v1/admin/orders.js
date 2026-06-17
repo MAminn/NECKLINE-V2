@@ -5,8 +5,7 @@ const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { validateBody } = require('../../../middleware/validate');
 const { updateOrderSchema } = require('../../../validators/adminSchemas');
-const { createAuditEvent } = require('../../../domain/audit');
-const logger = require('../../../config/logger');
+const { emitAudit } = require('../../../domain/audit');
 const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
@@ -88,17 +87,13 @@ router.put('/:id', validateBody(updateOrderSchema), async (req, res, next) => {
     const before = await Order.findById(req.params.id).lean();
     if (!before) return res.status(404).json({ error: true, message: 'Order not found' });
     const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'order.updated',
       target: order._id.toString(),
       targetType: 'Order',
       before: { fulfillmentStatus: before.fulfillmentStatus, trackingNumber: before.trackingNumber },
       after: req.body,
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json(formatOrder(order));
   } catch (err) {
     next(err);
@@ -110,15 +105,11 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const order = await Order.findByIdAndDelete(req.params.id);
     if (!order) return res.status(404).json({ error: true, message: 'Order not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'order.deleted',
       target: order._id.toString(),
       targetType: 'Order',
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

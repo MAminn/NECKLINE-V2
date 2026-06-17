@@ -5,8 +5,7 @@ const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { validateBody } = require('../../../middleware/validate');
 const { createOfferSchema } = require('../../../validators/adminSchemas');
-const { createAuditEvent } = require('../../../domain/audit');
-const logger = require('../../../config/logger');
+const { emitAudit } = require('../../../domain/audit');
 
 const router = Router();
 
@@ -42,16 +41,12 @@ router.post('/', validateBody(createOfferSchema), async (req, res, next) => {
     const data = { ...req.body, isAutomatic: true };
     if (data.endDate) data.endDate = new Date(data.endDate);
     const offer = await PromoCode.create(data);
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'offer.created',
       target: offer._id.toString(),
       targetType: 'PromoCode',
       after: { description: offer.description, type: offer.type, value: offer.value },
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.status(201).json(formatOffer(offer));
   } catch (err) {
     next(err);
@@ -63,15 +58,11 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const offer = await PromoCode.findOneAndDelete({ _id: req.params.id, isAutomatic: true });
     if (!offer) return res.status(404).json({ error: true, message: 'Offer not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'offer.deleted',
       target: offer._id.toString(),
       targetType: 'PromoCode',
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

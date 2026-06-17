@@ -4,7 +4,7 @@ const Product = require('../models/Product');
 const reservationService = require('./reservationService');
 const discountService = require('./discountService');
 const shippingService = require('./shippingService');
-const { createAuditEvent } = require('../domain/audit');
+const { emitAuditFromMeta } = require('../domain/audit');
 const logger = require('../config/logger');
 
 class CartError extends Error {
@@ -240,19 +240,14 @@ async function addItem(cartId, productId, quantity, meta = {}) {
   await clearInvalidPromoCode(cart);
   if (cart.isModified('appliedPromoCode')) await cart.save();
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: 'guest',
-      action: 'cart.addItem',
-      target: cart._id.toString(),
-      targetType: 'Cart',
-      before: { quantity: currentQty },
-      after: { quantity: newTotalQty, productId },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: 'guest',
+    action: 'cart.addItem',
+    target: cart._id.toString(),
+    targetType: 'Cart',
+    before: { quantity: currentQty },
+    after: { quantity: newTotalQty, productId },
+  });
 
   const availabilityMap = await buildAvailabilityMap(cart);
   const discountInfo = await computeCartDiscount(cart);
@@ -292,19 +287,14 @@ async function updateItem(cartId, productId, quantity, meta = {}) {
   await clearInvalidPromoCode(cart);
   if (cart.isModified('appliedPromoCode')) await cart.save();
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: 'guest',
-      action: 'cart.updateItem',
-      target: cart._id.toString(),
-      targetType: 'Cart',
-      before: { quantity: beforeQty },
-      after: { quantity, productId },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: 'guest',
+    action: 'cart.updateItem',
+    target: cart._id.toString(),
+    targetType: 'Cart',
+    before: { quantity: beforeQty },
+    after: { quantity, productId },
+  });
 
   const availabilityMap = await buildAvailabilityMap(cart);
   const discountInfo = await computeCartDiscount(cart);
@@ -334,19 +324,14 @@ async function removeItem(cartId, productId, meta = {}) {
   await clearInvalidPromoCode(cart);
   if (cart.isModified('appliedPromoCode')) await cart.save();
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: 'guest',
-      action: 'cart.removeItem',
-      target: cart._id.toString(),
-      targetType: 'Cart',
-      before: { itemCount: beforeLength },
-      after: { itemCount: cart.items.length, productId },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: 'guest',
+    action: 'cart.removeItem',
+    target: cart._id.toString(),
+    targetType: 'Cart',
+    before: { itemCount: beforeLength },
+    after: { itemCount: cart.items.length, productId },
+  });
 
   const availabilityMap = await buildAvailabilityMap(cart);
   const discountInfo = await computeCartDiscount(cart);
@@ -364,19 +349,14 @@ async function clearCart(cartId, meta = {}) {
   await cart.save();
   await reservationService.releaseAll(cart._id);
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: 'guest',
-      action: 'cart.clear',
-      target: cart._id.toString(),
-      targetType: 'Cart',
-      before: { itemCount: beforeCount },
-      after: { itemCount: 0 },
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: 'guest',
+    action: 'cart.clear',
+    target: cart._id.toString(),
+    targetType: 'Cart',
+    before: { itemCount: beforeCount },
+    after: { itemCount: 0 },
+  });
 
   const shipping = await getDefaultShippingCost();
   return {

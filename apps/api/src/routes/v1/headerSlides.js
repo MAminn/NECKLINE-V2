@@ -5,8 +5,7 @@ const requirePermission = require('../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../middleware/rateLimitAdmin');
 const { validateBody } = require('../../middleware/validate');
 const { headerSlideSchema } = require('../../validators/contentSchemas');
-const { createAuditEvent } = require('../../domain/audit');
-const logger = require('../../config/logger');
+const { emitAudit } = require('../../domain/audit');
 
 const router = Router();
 
@@ -30,16 +29,12 @@ adminRouter.use(authenticate, requirePermission('admin:access'), rateLimiterAdmi
 adminRouter.post('/', validateBody(headerSlideSchema), async (req, res, next) => {
   try {
     const doc = await HeaderSlide.create(req.body);
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'headerSlide.created',
       target: doc._id.toString(),
       targetType: 'HeaderSlide',
       after: { title: doc.title },
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.status(201).json(formatSlide(doc));
   } catch (err) {
     next(err);
@@ -51,16 +46,12 @@ adminRouter.put('/:id', validateBody(headerSlideSchema.partial()), async (req, r
   try {
     const doc = await HeaderSlide.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!doc) return res.status(404).json({ error: true, message: 'Slide not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'headerSlide.updated',
       target: doc._id.toString(),
       targetType: 'HeaderSlide',
       after: req.body,
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json(formatSlide(doc));
   } catch (err) {
     next(err);
@@ -72,15 +63,11 @@ adminRouter.delete('/:id', async (req, res, next) => {
   try {
     const doc = await HeaderSlide.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ error: true, message: 'Slide not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'headerSlide.deleted',
       target: doc._id.toString(),
       targetType: 'HeaderSlide',
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

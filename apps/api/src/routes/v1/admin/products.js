@@ -5,8 +5,7 @@ const requirePermission = require('../../../middleware/requirePermission');
 const { rateLimiterAdmin } = require('../../../middleware/rateLimitAdmin');
 const { validateBody } = require('../../../middleware/validate');
 const { createProductSchema, updateProductSchema } = require('../../../validators/adminSchemas');
-const { createAuditEvent } = require('../../../domain/audit');
-const logger = require('../../../config/logger');
+const { emitAudit } = require('../../../domain/audit');
 const escapeRegex = require('../../../utils/escapeRegex');
 
 const router = Router();
@@ -120,16 +119,12 @@ router.post('/', validateBody(createProductSchema), async (req, res, next) => {
       body.sku = generateSku(body.name);
     }
     const product = await Product.create(body);
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'product.created',
       target: product._id.toString(),
       targetType: 'Product',
       after: { name: product.name, sku: product.sku },
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.status(201).json(formatProduct(product));
   } catch (err) {
     if (err.code === 11000) {
@@ -162,17 +157,13 @@ router.put('/:id', validateBody(updateProductSchema), async (req, res, next) => 
       return res.status(409).json({ error: true, message: 'Product was updated concurrently, please retry' });
     }
 
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'product.updated',
       target: product._id.toString(),
       targetType: 'Product',
       before: { name: before.name, price: before.price, stockOnHand: before.stockOnHand },
       after: req.body,
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json(formatProduct(product));
   } catch (err) {
     next(err);
@@ -188,15 +179,11 @@ router.delete('/:id', async (req, res, next) => {
       { new: true }
     );
     if (!product) return res.status(404).json({ error: true, message: 'Product not found' });
-    createAuditEvent({
-      actor: req.user.id,
+    emitAudit(req, {
       action: 'product.deleted',
       target: product._id.toString(),
       targetType: 'Product',
-      requestId: req.id,
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
     res.json({ success: true });
   } catch (err) {
     next(err);

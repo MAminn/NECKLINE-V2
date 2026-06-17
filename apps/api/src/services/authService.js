@@ -4,7 +4,7 @@ const RefreshToken = require('../models/RefreshToken');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const { hashPassword, comparePassword } = require('../utils/passwordUtils');
 const { generateTokenPair, hashToken } = require('../utils/tokenUtils');
-const { createAuditEvent } = require('../domain/audit');
+const { emitAuditFromMeta } = require('../domain/audit');
 const logger = require('../config/logger');
 
 class AuthError extends Error {
@@ -79,17 +79,12 @@ async function register({ name, email, password }, meta = {}) {
   const { accessToken, refreshToken } = generateTokenPair(user);
   await createRefreshTokenDoc(user._id, refreshToken, meta);
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: user._id.toString(),
-      action: 'auth.register',
-      target: user._id.toString(),
-      targetType: 'User',
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: user._id.toString(),
+    action: 'auth.register',
+    target: user._id.toString(),
+    targetType: 'User',
+  });
 
   return {
     user: sanitizeUser(user),
@@ -112,17 +107,12 @@ async function login({ email, password }, meta = {}) {
   const { accessToken, refreshToken } = generateTokenPair(user);
   await createRefreshTokenDoc(user._id, refreshToken, meta);
 
-  if (meta.requestId) {
-    createAuditEvent({
-      actor: user._id.toString(),
-      action: 'auth.login',
-      target: user._id.toString(),
-      targetType: 'User',
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
-  }
+  emitAuditFromMeta(meta, {
+    actor: user._id.toString(),
+    action: 'auth.login',
+    target: user._id.toString(),
+    targetType: 'User',
+  });
 
   return {
     user: sanitizeUser(user),
@@ -136,16 +126,13 @@ async function logout(rawRefreshToken, meta = {}) {
   const tokenHash = hashToken(rawRefreshToken);
   const token = await revokeTokenByHash(tokenHash);
 
-  if (token && meta.requestId) {
-    createAuditEvent({
+  if (token) {
+    emitAuditFromMeta(meta, {
       actor: token.userId.toString(),
       action: 'auth.logout',
       target: token.userId.toString(),
       targetType: 'User',
-      requestId: meta.requestId,
-      ip: meta.ip,
-      userAgent: meta.userAgent,
-    }).catch((err) => logger.error({ err }, 'Audit event failed'));
+    });
   }
 
   return { success: true };
