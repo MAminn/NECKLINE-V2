@@ -14,6 +14,50 @@ try {
   axios = null;
 }
 
+// Paymob intention/transaction identifiers are short opaque tokens. Restricting
+// them to a strict allowlist before they are interpolated into any request URL
+// guarantees a forged or malformed id can never alter the request target (SSRF).
+const SAFE_PAYMOB_ID = /^[A-Za-z0-9_-]{1,128}$/;
+
+function assertSafePaymobId(value, label = 'Paymob identifier') {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    throw new Error(`Invalid ${label}`);
+  }
+  const id = String(value);
+  if (!SAFE_PAYMOB_ID.test(id)) {
+    throw new Error(`Invalid ${label}`);
+  }
+  return id;
+}
+
+const DEFAULT_PAYMOB_BASE_URL = 'https://accept.paymob.com';
+// Paymob serves its Accept API only from these regional hosts. Pinning the
+// request target to an allowlist ensures a misconfigured or injected
+// PAYMOB_BASE_URL cannot redirect API calls — which carry the secret API key —
+// to an attacker-controlled host (request forging / SSRF).
+const ALLOWED_PAYMOB_HOSTS = new Set([
+  'accept.paymob.com',
+  'uae.paymob.com',
+  'ksa.paymob.com',
+  'oman.paymob.com',
+  'pakistan.paymob.com',
+]);
+
+function resolvePaymobBaseUrl(raw) {
+  let url;
+  try {
+    url = new URL(raw || DEFAULT_PAYMOB_BASE_URL);
+  } catch {
+    throw new Error('PAYMOB_BASE_URL is not a valid URL');
+  }
+  if (url.protocol !== 'https:' || !ALLOWED_PAYMOB_HOSTS.has(url.hostname)) {
+    throw new Error(`PAYMOB_BASE_URL host is not an allowed Paymob endpoint: ${url.hostname}`);
+  }
+  // Normalize to the bare origin so request URLs are built from a fixed,
+  // path-free base regardless of how the env var was formatted.
+  return url.origin;
+}
+
 class PaymobPaymentProvider extends PaymentProvider {
   constructor() {
     super();
@@ -22,7 +66,7 @@ class PaymobPaymentProvider extends PaymentProvider {
     this.integrationId = env.PAYMOB_INTEGRATION_ID;
     this.iframeId = env.PAYMOB_IFRAME_ID;
     this.hmacSecret = env.PAYMOB_HMAC_SECRET;
-    this.baseUrl = env.PAYMOB_BASE_URL || 'https://accept.paymob.com';
+    this.baseUrl = resolvePaymobBaseUrl(env.PAYMOB_BASE_URL);
 
     if (!this.apiKey || this.apiKey.length < 10) {
       throw new Error(
@@ -88,7 +132,7 @@ class PaymobPaymentProvider extends PaymentProvider {
     };
 
     try {
-      const response = await axios.post(`${this.baseUrl}/v1/intention`, payload, {
+      const response = await axios.post(this._apiUrl('/v1/intention'), payload, {
         headers: {
           Authorization: `Token ${this.apiKey}`,
           'Content-Type': 'application/json',
@@ -97,16 +141,19 @@ class PaymobPaymentProvider extends PaymentProvider {
       });
 
       const intention = response.data;
+      // Validate the id from the provider response up front so the value we
+      // persist and later feed back into request URLs is always a safe token.
+      const intentionId = assertSafePaymobId(intention.id, 'Paymob intention id');
       const clientSecret = intention.client_secret;
-      const payUrl = `${this.baseUrl}/unifiedcheckout/?publicKey=${encodeURIComponent(this._publicKeyFromApiKey())}&clientSecret=${encodeURIComponent(clientSecret)}`;
+      const payUrl = `${this._apiUrl('/unifiedcheckout/')}?publicKey=${encodeURIComponent(this._publicKeyFromApiKey())}&clientSecret=${encodeURIComponent(clientSecret)}`;
 
       logger.info(
-        { orderNumber, intentionId: intention.id, provider: 'paymob' },
+        { orderNumber, intentionId, provider: 'paymob' },
         'Paymob intention created'
       );
 
       return {
-        id: intention.id,
+        id: intentionId,
         status: 'requires_confirmation',
         clientSecret,
         amount: total,
@@ -129,7 +176,8 @@ class PaymobPaymentProvider extends PaymentProvider {
    */
   async confirmPayment(intentId) {
     try {
-      const response = await axios.get(`${this.baseUrl}/v1/intention/${encodeURIComponent(intentId)}`, {
+      const safeIntentId = assertSafePaymobId(intentId, 'Paymob intention id');
+      const response = await axios.get(this._apiUrl(`/v1/intention/${encodeURIComponent(safeIntentId)}`), {
         headers: {
           Authorization: `Token ${this.apiKey}`,
         },
@@ -173,7 +221,7 @@ class PaymobPaymentProvider extends PaymentProvider {
   async refund(transactionId, amount) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/v1/transaction/refund`,
+        this._apiUrl('/v1/transaction/refund'),
         {
           transaction_id: transactionId,
           amount_cents: amount,
@@ -205,6 +253,13 @@ class PaymobPaymentProvider extends PaymentProvider {
         errorMessage: err.message,
       };
     }
+  }
+
+  // Builds a fully-qualified Paymob URL. The host is validated once at
+  // construction (resolvePaymobBaseUrl), so this.baseUrl is already a trusted,
+  // allowlisted origin — this just joins it with the request path.
+  _apiUrl(path) {
+    return `${this.baseUrl}${path}`;
   }
 
   _publicKeyFromApiKey() {
