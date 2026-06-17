@@ -8,10 +8,7 @@ import type {
   AdminOrder,
   AdminCustomer,
   AdminPromoCode,
-  AdminHeaderSlide,
   Testimonial,
-  HowToApply,
-  AuditEventRecord,
 } from '../types/nickline';
 
 // Dashboard
@@ -155,39 +152,3 @@ export async function deleteTestimonial(id: string): Promise<{ success: boolean 
   return apiClient(`/testimonials/${id}`, { method: 'DELETE' });
 }
 
-// Header Slides
-export async function getHeaderSlides(): Promise<AdminHeaderSlide[]> {
-  return apiClient('/header-slides');
-}
-
-export async function createHeaderSlide(body: Omit<AdminHeaderSlide, 'id'>): Promise<AdminHeaderSlide> {
-  return apiClient('/admin/header-slides', { method: 'POST', body: JSON.stringify(body) });
-}
-
-export async function updateHeaderSlide(id: string, body: Partial<AdminHeaderSlide>): Promise<AdminHeaderSlide> {
-  return apiClient(`/admin/header-slides/${id}`, { method: 'PUT', body: JSON.stringify(body) });
-}
-
-export async function deleteHeaderSlide(id: string): Promise<{ success: boolean }> {
-  return apiClient(`/admin/header-slides/${id}`, { method: 'DELETE' });
-}
-
-// How to Apply
-export async function getHowToApply(): Promise<HowToApply> {
-  return apiClient('/how-to-apply');
-}
-
-export async function updateHowToApply(body: HowToApply): Promise<HowToApply> {
-  return apiClient('/admin/how-to-apply', { method: 'POST', body: JSON.stringify(body) });
-}
-
-// Activity Log
-export async function getAdminActivityLog(params?: {
-  page?: number;
-  limit?: number;
-}): Promise<{ events: AuditEventRecord[]; total: number; page: number; totalPages: number }> {
-  const q = new URLSearchParams();
-  if (params?.page) q.set('page', String(params.page));
-  if (params?.limit) q.set('limit', String(params.limit));
-  return apiClient(`/admin/activity-log${q.toString() ? `?${q}` : ''}`);
-}

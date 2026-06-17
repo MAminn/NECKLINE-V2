@@ -9,11 +9,9 @@ import {
   Users,
   BarChart3,
   Tag,
-  FileText,
   Star,
   Settings,
   Store,
-  Monitor,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -24,8 +22,6 @@ const NAV_ITEMS = [
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/offers',    label: 'Offers',    icon: Tag },
-  { href: '/admin/homepage',  label: 'Homepage',  icon: Monitor },
-  { href: '/admin/reports',   label: 'Reports',   icon: FileText },
   { href: '/admin/reviews',   label: 'Reviews',   icon: Star },
   { href: '/admin/settings',  label: 'Settings',  icon: Settings },
 ];

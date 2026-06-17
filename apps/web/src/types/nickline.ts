@@ -36,17 +36,6 @@ export interface Testimonial {
   deletedAt?: string | null;
 }
 
-export interface HowToApplyStep {
-  num: string;
-  title: string;
-  desc: string;
-  iconType: 'preset' | 'custom';
-  presetName?: string;
-  customIconUrl?: string;
-}
-
-export interface HowToApply { color: string; steps: HowToApplyStep[]; }
-
 export interface AdminMetrics {
   revenueToday: number;
   totalRevenue: number;
@@ -139,30 +128,6 @@ export interface AdminPromoCode {
   isAutomatic: boolean;
   description?: string;
   createdAt: string;
-}
-
-export interface AdminHeaderSlide {
-  id: string;
-  image: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  buttonText: string;
-  linkTo: string;
-  order: number;
-  active: boolean;
-}
-
-export interface AuditEventRecord {
-  id: string;
-  actor: string;
-  action: string;
-  target: string;
-  targetType: string;
-  before?: Record<string, unknown> | null;
-  after?: Record<string, unknown> | null;
-  timestamp: string;
-  requestId: string;
 }
 
 export interface QuizQuestion {
