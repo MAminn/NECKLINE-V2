@@ -25,7 +25,7 @@ router.post('/:name/toggle', async (req, res, next) => {
   try {
     const { name } = req.params;
     const { enabled } = req.body;
-    const changedBy = req.user?.id || req.headers['x-admin-id'] || 'unknown';
+    const changedBy = req.user.id;
 
     if (typeof enabled !== 'boolean') {
       return res.status(400).json({ error: true, message: 'enabled must be a boolean' });

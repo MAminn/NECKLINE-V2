@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getAdminOrders } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
 import { formatPrice } from '../../../lib/formatPrice';
-import { ORDER_STATUS_COLORS } from '../../../lib/statusColors';
+import { ORDER_PAYMENT_STATUS_COLORS, ORDER_FULFILLMENT_STATUS_COLORS } from '../../../lib/statusColors';
 import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 const FILTER_TABS = ['ALL', 'UNFULFILLED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
@@ -90,12 +90,12 @@ export default function OrdersTable({ onSelectOrder, refresh = 0 }: Props) {
                 <td className="px-3 py-2" style={{ color: 'var(--color-text-tertiary)' }}>{o.itemCount}</td>
                 <td className="px-3 py-2 font-semibold" style={{ color: 'var(--color-text)' }}>{formatPrice(o.total, o.currency || DEFAULT_CURRENCY)}</td>
                 <td className="px-3 py-2">
-                  <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: ORDER_STATUS_COLORS[o.status], background: `${ORDER_STATUS_COLORS[o.status]}1a` }}>
+                  <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: ORDER_PAYMENT_STATUS_COLORS[o.status], background: `${ORDER_PAYMENT_STATUS_COLORS[o.status]}1a` }}>
                     {o.status}
                   </span>
                 </td>
                 <td className="px-3 py-2">
-                  <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: ORDER_STATUS_COLORS[o.fulfillmentStatus], background: `${ORDER_STATUS_COLORS[o.fulfillmentStatus]}1a` }}>
+                  <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: ORDER_FULFILLMENT_STATUS_COLORS[o.fulfillmentStatus], background: `${ORDER_FULFILLMENT_STATUS_COLORS[o.fulfillmentStatus]}1a` }}>
                     {o.fulfillmentStatus}
                   </span>
                 </td>

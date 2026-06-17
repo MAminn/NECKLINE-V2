@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { getAdminOrders } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
 import { formatPrice } from '../../../lib/formatPrice';
-import { ORDER_STATUS_COLORS } from '../../../lib/statusColors';
+import { ORDER_PAYMENT_STATUS_COLORS } from '../../../lib/statusColors';
 import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 function StatusBadge({ status }: { status: string }) {
-  const color = ORDER_STATUS_COLORS[status] ?? 'var(--color-gold)';
+  const color = ORDER_PAYMENT_STATUS_COLORS[status] ?? 'var(--color-gold)';
   return (
     <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ background: `${color}1a`, color }}>
       {status}

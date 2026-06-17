@@ -1,17 +1,16 @@
-const crypto = require('node:crypto');
 const PaymentProvider = require('./PaymentProvider');
 const env = require('../../config/env');
 const logger = require('../../config/logger');
 
 // PaymobPaymentProvider — integrates with Paymob's Intention API (v2)
 // Uses direct REST calls via axios (paymob-node is not published to npm).
-// When credentials are missing, falls back to mock responses for development/testing.
+// Dev/test mock behavior lives in StubPaymentProvider (PAYMENT_PROVIDER=stub) —
+// this class always talks to the real Paymob API and never silently auto-approves.
 
 let axios;
 try {
   axios = require('axios');
 } catch {
-  // If axios is not available, mock mode only
   axios = null;
 }
 
@@ -24,20 +23,14 @@ class PaymobPaymentProvider extends PaymentProvider {
     this.iframeId = env.PAYMOB_IFRAME_ID;
     this.hmacSecret = env.PAYMOB_HMAC_SECRET;
     this.baseUrl = env.PAYMOB_BASE_URL || 'https://accept.paymob.com';
-    this.mockMode = !this.apiKey || this.apiKey.length < 10;
 
-    if (this.mockMode) {
-      // Mock confirmPayment approves every payment, so silently falling back to it
-      // in production would let orders complete without being paid.
-      if (env.NODE_ENV === 'production') {
-        throw new Error(
-          'PaymobPaymentProvider cannot run in mock mode in production — set a valid PAYMOB_API_KEY'
-        );
-      }
-      logger.warn(
-        { provider: 'paymob' },
-        'PaymobPaymentProvider running in MOCK mode — no real API calls will be made. Set PAYMOB_API_KEY to enable live mode.'
+    if (!this.apiKey || this.apiKey.length < 10) {
+      throw new Error(
+        'PaymobPaymentProvider requires a valid PAYMOB_API_KEY — use PAYMENT_PROVIDER=stub for dev/test instead of an unconfigured paymob provider'
       );
+    }
+    if (!axios) {
+      throw new Error('PaymobPaymentProvider requires the axios package to be installed');
     }
   }
 
@@ -60,10 +53,6 @@ class PaymobPaymentProvider extends PaymentProvider {
 
     // Convert integer minor units to decimal string (Paymob expects "10.00" for 1000 piastres)
     const amountDecimal = (total / 100).toFixed(2);
-
-    if (this.mockMode) {
-      return this._mockCreateIntent({ orderNumber, total, currency, customerEmail });
-    }
 
     const payload = {
       amount: amountDecimal,
@@ -139,10 +128,6 @@ class PaymobPaymentProvider extends PaymentProvider {
    * Used as a polling fallback when webhooks are delayed.
    */
   async confirmPayment(intentId) {
-    if (this.mockMode) {
-      return this._mockConfirmIntent(intentId);
-    }
-
     try {
       const response = await axios.get(`${this.baseUrl}/v1/intention/${encodeURIComponent(intentId)}`, {
         headers: {
@@ -186,10 +171,6 @@ class PaymobPaymentProvider extends PaymentProvider {
    * Refund a previously successful payment.
    */
   async refund(transactionId, amount) {
-    if (this.mockMode) {
-      return this._mockRefund(transactionId, amount);
-    }
-
     try {
       const response = await axios.post(
         `${this.baseUrl}/v1/transaction/refund`,
@@ -224,50 +205,6 @@ class PaymobPaymentProvider extends PaymentProvider {
         errorMessage: err.message,
       };
     }
-  }
-
-  // ─── Mock implementations for development / CI ───
-
-  _mockCreateIntent({ orderNumber, total, currency }) {
-    const intentId = `paymob_mock_intent_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
-    const clientSecret = `cs_mock_${crypto.randomBytes(7).toString('hex')}`;
-    const payUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=mock&clientSecret=${clientSecret}`;
-
-    logger.info(
-      { orderNumber, intentId, provider: 'paymob', mode: 'mock' },
-      'Paymob intention created (MOCK)'
-    );
-
-    return {
-      id: intentId,
-      status: 'requires_confirmation',
-      clientSecret,
-      amount: total,
-      currency: currency || 'EGP',
-      payUrl,
-      raw: { mock: true },
-    };
-  }
-
-  _mockConfirmIntent(_intentId) {
-    // In mock mode, simulate success for any intent that exists
-    return {
-      success: true,
-      transactionId: `paymob_mock_txn_${Date.now()}`,
-      status: 'succeeded',
-      amount: 0,
-      currency: 'EGP',
-    };
-  }
-
-  _mockRefund(transactionId, amount) {
-    return {
-      success: true,
-      refundId: `paymob_mock_refund_${Date.now()}`,
-      amount,
-      currency: 'EGP',
-      status: 'succeeded',
-    };
   }
 
   _publicKeyFromApiKey() {

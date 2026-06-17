@@ -2,7 +2,6 @@
 
 interface DataPoint {
   date: string;
-  visits: number;
   checkouts: number;
 }
 
@@ -30,8 +29,7 @@ export default function AnalyticsChart({ data }: Props) {
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
 
-  const allValues = data.flatMap((d) => [d.visits, d.checkouts]);
-  const maxVal = Math.max(...allValues, 1);
+  const maxVal = Math.max(...data.map((d) => d.checkouts), 1);
 
   function toX(i: number) {
     return PAD.left + (i / Math.max(data.length - 1, 1)) * chartW;
@@ -40,10 +38,7 @@ export default function AnalyticsChart({ data }: Props) {
     return PAD.top + chartH - (v / maxVal) * chartH;
   }
 
-  const visitPoints = data.map((d, i) => `${toX(i)},${toY(d.visits)}`).join(' ');
   const checkoutPoints = data.map((d, i) => `${toX(i)},${toY(d.checkouts)}`).join(' ');
-
-  const visitAreaPoints = `${PAD.left},${PAD.top + chartH} ${visitPoints} ${toX(data.length - 1)},${PAD.top + chartH}`;
   const checkoutAreaPoints = `${PAD.left},${PAD.top + chartH} ${checkoutPoints} ${toX(data.length - 1)},${PAD.top + chartH}`;
 
   const labelEvery = Math.ceil(data.length / 7);
@@ -55,12 +50,9 @@ export default function AnalyticsChart({ data }: Props) {
     >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--color-gold)' }}>
-          Traffic & Checkouts
+          Checkouts
         </h3>
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-gold)' }}>
-            <span className="inline-block h-2 w-3 rounded-sm" style={{ background: 'var(--color-gold)' }} /> Visits
-          </span>
           <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-primary)' }}>
             <span className="inline-block h-2 w-3 rounded-sm" style={{ background: 'var(--color-primary)' }} /> Checkouts
           </span>
@@ -69,10 +61,6 @@ export default function AnalyticsChart({ data }: Props) {
 
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet" style={{ height: 280 }}>
         <defs>
-          <linearGradient id="visitGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-gold)" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="var(--color-gold)" stopOpacity="0" />
-          </linearGradient>
           <linearGradient id="checkoutGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.25" />
             <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
@@ -100,19 +88,10 @@ export default function AnalyticsChart({ data }: Props) {
           );
         })}
 
-        {/* Area fills */}
-        <polygon points={visitAreaPoints} fill="url(#visitGradient)" />
+        {/* Area fill */}
         <polygon points={checkoutAreaPoints} fill="url(#checkoutGradient)" />
 
-        {/* Data lines */}
-        <polyline
-          points={visitPoints}
-          fill="none"
-          stroke="var(--color-gold)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        {/* Data line */}
         <polyline
           points={checkoutPoints}
           fill="none"
@@ -124,10 +103,7 @@ export default function AnalyticsChart({ data }: Props) {
 
         {/* Dots */}
         {data.map((d, i) => (
-          <g key={`dot-${i}`}>
-            <circle cx={toX(i)} cy={toY(d.visits)} r="3" fill="var(--color-gold)" stroke="var(--color-admin-surface)" strokeWidth="1.5" />
-            <circle cx={toX(i)} cy={toY(d.checkouts)} r="3" fill="var(--color-primary)" stroke="var(--color-admin-surface)" strokeWidth="1.5" />
-          </g>
+          <circle key={`dot-${i}`} cx={toX(i)} cy={toY(d.checkouts)} r="3" fill="var(--color-primary)" stroke="var(--color-admin-surface)" strokeWidth="1.5" />
         ))}
 
         {/* X labels */}

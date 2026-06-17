@@ -140,11 +140,28 @@ router.post('/', validateBody(createProductSchema), async (req, res, next) => {
 });
 
 // PUT /api/v1/admin/products/:id
+// Uses optimistic locking (AD-1) so a concurrent checkout stock decrement
+// can't be silently overwritten by this admin edit.
 router.put('/:id', validateBody(updateProductSchema), async (req, res, next) => {
   try {
     const before = await Product.findById(req.params.id).lean();
     if (!before) return res.status(404).json({ error: true, message: 'Product not found' });
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    const MAX_RETRIES = 3;
+    let product = null;
+    for (let attempt = 0; attempt < MAX_RETRIES && !product; attempt++) {
+      const current = attempt === 0 ? before : await Product.findById(req.params.id).lean();
+      if (!current) return res.status(404).json({ error: true, message: 'Product not found' });
+      product = await Product.findOneAndUpdate(
+        { _id: req.params.id, version: current.version },
+        { $set: req.body, $inc: { version: 1 } },
+        { new: true }
+      );
+    }
+    if (!product) {
+      return res.status(409).json({ error: true, message: 'Product was updated concurrently, please retry' });
+    }
+
     createAuditEvent({
       actor: req.user.id,
       action: 'product.updated',

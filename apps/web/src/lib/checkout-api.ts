@@ -40,13 +40,15 @@ export async function createCheckoutSession({
 export async function createOrder({
   checkoutToken,
   paymentMethod = 'stub',
+  idempotencyKey,
 }: {
   checkoutToken: string;
   paymentMethod?: string;
+  idempotencyKey: string;
 }) {
   return apiClient('/orders', {
     method: 'POST',
-    idempotencyKey: `ord-${Date.now()}`,
+    idempotencyKey,
     body: JSON.stringify({
       checkoutToken,
       paymentMethod,

@@ -45,8 +45,12 @@ export default function CouponsSection() {
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this coupon?')) return;
-    await deleteAdminCoupon(id).catch(() => {});
-    load();
+    try {
+      await deleteAdminCoupon(id);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete coupon');
+    }
   }
 
   return (

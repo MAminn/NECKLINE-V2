@@ -44,6 +44,10 @@ const envSchema = z.object({
   PAYMOB_IFRAME_ID: z.string().default(''),
   PAYMOB_HMAC_SECRET: z.string().default(''),
   PAYMOB_BASE_URL: z.string().default('https://accept.paymob.com'),
+  // Explicit opt-in to accept Paymob webhooks without HMAC verification when
+  // PAYMOB_HMAC_SECRET is unset (local dev only). Must never be true in production —
+  // see the superRefine guard below.
+  ALLOW_UNSIGNED_WEBHOOKS: z.string().transform((v) => v === 'true').default('false'),
   FEATURE_FLAG_CACHE_SECONDS: z.string().transform(Number).default('30'),
   CART_TTL_DAYS: z.string().transform(Number).default('7'),
   RESERVATION_TTL_MINUTES: z.string().transform(Number).default('15'),
@@ -66,6 +70,13 @@ const envSchema = z.object({
         path: ['JWT_SECRET'],
         message:
           'JWT_SECRET must be set to a unique value of at least 32 characters in production',
+      });
+    }
+    if (data.ALLOW_UNSIGNED_WEBHOOKS) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['ALLOW_UNSIGNED_WEBHOOKS'],
+        message: 'ALLOW_UNSIGNED_WEBHOOKS must not be true in production',
       });
     }
   }

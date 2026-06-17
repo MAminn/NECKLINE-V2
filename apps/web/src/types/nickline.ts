@@ -41,16 +41,16 @@ export interface AdminMetrics {
   totalRevenue: number;
   ordersCount: number;
   todayOrdersCount: number;
-  conversionRate: number;
+  conversionRate: number | null;
   returningRate: number;
   newCustomers: number;
   pendingCount: number;
   processingCount: number;
   averageOrderValue: number;
-  liveSessions: number;
-  visitsHistory: { date: string; visits: number; checkouts: number }[];
+  liveSessions: number | null;
+  visitsHistory: { date: string; checkouts: number }[];
   productShare: { name: string; share: number; color: string }[];
-  forecast: { increase: number; recommendedStock: number; topProduct: string; projectedRevenue: number; };
+  forecast: { increase: number | null; recommendedStock: number | null; topProduct: string; projectedRevenue: number | null; };
 }
 
 export interface ActivityEvent {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { updateAdminOrder } from '../../../lib/admin-api';
 import type { AdminOrder } from '../../../types/nickline';
 import { formatPrice } from '../../../lib/formatPrice';
-import { ORDER_STATUS_COLORS } from '../../../lib/statusColors';
+import { ORDER_PAYMENT_STATUS_COLORS } from '../../../lib/statusColors';
 import { DEFAULT_CURRENCY } from '../../../lib/constants';
 
 const FULFILLMENT_STEPS = ['unfulfilled', 'processing', 'shipped', 'delivered'] as const;
@@ -116,7 +116,7 @@ export default function OrderDetailSidebar({ order, onClose, onUpdated }: Props)
           {/* Payment */}
           <section>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-gold)' }}>Payment</p>
-            <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${ORDER_STATUS_COLORS[order.status] ?? '#999'}1a`, color: ORDER_STATUS_COLORS[order.status] ?? '#999' }}>
+            <span className="rounded px-2 py-0.5 text-[10px] font-bold" style={{ background: `${ORDER_PAYMENT_STATUS_COLORS[order.status] ?? '#999'}1a`, color: ORDER_PAYMENT_STATUS_COLORS[order.status] ?? '#999' }}>
               {order.status}
             </span>
           </section>

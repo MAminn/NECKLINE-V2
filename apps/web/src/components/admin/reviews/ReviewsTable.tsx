@@ -39,8 +39,12 @@ export default function ReviewsTable({ onAddClick, refresh }: Props) {
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this review?')) return;
-    await deleteTestimonial(id).catch(() => {});
-    load();
+    try {
+      await deleteTestimonial(id);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete review');
+    }
   }
 
   async function handleEdit(data: Omit<Testimonial, 'id' | 'deletedAt'>) {

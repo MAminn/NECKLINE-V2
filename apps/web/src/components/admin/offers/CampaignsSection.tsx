@@ -48,8 +48,12 @@ export default function CampaignsSection() {
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this campaign offer?')) return;
-    await deleteAdminOffer(id).catch(() => {});
-    load();
+    try {
+      await deleteAdminOffer(id);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete campaign offer');
+    }
   }
 
   return (

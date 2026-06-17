@@ -12,9 +12,9 @@ import AdminKpiCard from '../../../components/admin/AdminKpiCard';
 const TIMEFRAMES = ['7D', '30D', 'ALL'] as const;
 type Timeframe = typeof TIMEFRAMES[number];
 
-function deriveSparkline(history: { date: string; visits: number; checkouts: number }[], field: 'visits' | 'checkouts') {
+function deriveSparkline(history: { date: string; checkouts: number }[]) {
   if (!history?.length) return [];
-  return history.map((d) => d[field]);
+  return history.map((d) => d.checkouts);
 }
 
 function classNames(...c: (string | false | undefined)[]) {
@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
     return metrics.productShare.map((p) => ({ ...p, width: `${(p.share / total) * 100}%` }));
   }, [metrics?.productShare]);
 
-  const conversionHistory = useMemo(() => deriveSparkline(history, 'checkouts'), [history]);
+  const conversionHistory = useMemo(() => deriveSparkline(history), [history]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
             label="Orders"
             value={metrics.ordersCount}
             trend="neutral"
-            history={deriveSparkline(history, 'visits')}
+            history={deriveSparkline(history)}
           />
           <AdminKpiCard
             label="Avg Order Value"
@@ -232,18 +232,28 @@ export default function AnalyticsPage() {
               <div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Projected Growth</p>
                 <p className="text-xl font-bold flex items-center gap-1.5" style={{ color: 'var(--success)' }}>
-                  <TrendingUp size={16} /> +{metrics.forecast.increase}%
+                  {metrics.forecast.increase != null ? (
+                    <>
+                      <TrendingUp size={16} /> +{metrics.forecast.increase}%
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--color-text-tertiary)' }}>Not tracked yet</span>
+                  )}
                 </p>
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Projected Revenue</p>
                 <p className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {formatPrice(metrics.forecast.projectedRevenue, DEFAULT_CURRENCY)}
+                  {metrics.forecast.projectedRevenue != null
+                    ? formatPrice(metrics.forecast.projectedRevenue, DEFAULT_CURRENCY)
+                    : '—'}
                 </p>
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Recommended Stock</p>
-                <p className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{metrics.forecast.recommendedStock}</p>
+                <p className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
+                  {metrics.forecast.recommendedStock ?? '—'}
+                </p>
               </div>
               <div>
                 <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Top Product</p>
@@ -271,8 +281,8 @@ export default function AnalyticsPage() {
               Live Sessions
             </span>
           </div>
-          <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-            {metrics.liveSessions || 0}
+          <span className="text-sm font-bold" style={{ color: metrics.liveSessions != null ? 'var(--color-text)' : 'var(--color-text-tertiary)' }}>
+            {metrics.liveSessions != null ? metrics.liveSessions : 'Not tracked yet'}
           </span>
         </div>
       )}

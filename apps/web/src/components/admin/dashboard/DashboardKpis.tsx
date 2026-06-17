@@ -9,7 +9,7 @@ import { DEFAULT_CURRENCY } from '../../../lib/constants';
 const SKELETON_STYLE = { ...adminCard, height: 112, borderRadius: 12 } as const;
 
 function fmtEGP(n: number) { return formatPrice(n, DEFAULT_CURRENCY); }
-function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%`; }
+function fmtPct(n: number | null) { return n == null ? '—' : `${(n * 100).toFixed(1)}%`; }
 
 interface Props { metrics: AdminMetrics | null; }
 

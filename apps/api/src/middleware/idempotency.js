@@ -147,15 +147,21 @@ function persistResponseOnFinish(res, key) {
  * (if the original already completed) or rejected with 409 (if still in flight).
  */
 async function idempotencyMiddleware(req, res, next) {
-  const key = req.get('idempotency-key');
+  const rawKey = req.get('idempotency-key');
 
-  if (!key) {
+  if (!rawKey) {
     return next();
   }
 
-  if (typeof key !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(key)) {
+  if (typeof rawKey !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(rawKey)) {
     return res.status(400).json({ error: true, message: 'Invalid Idempotency-Key format' });
   }
+
+  // Scope the key to the requester (authenticated user, or the anonymous
+  // cartId cookie, falling back to IP) so a guessed/reused Idempotency-Key
+  // from another client can never replay that client's stored response.
+  const scope = req.user?.id || req.cookies?.cartId || req.ip;
+  const key = `${scope}:${rawKey}`;
 
   const result = await reserveKey(key);
 

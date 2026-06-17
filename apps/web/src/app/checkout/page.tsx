@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   const { addToast } = useToast();
   const [step, setStep] = useState<Step>('shipping');
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
+  const [orderIdempotencyKey, setOrderIdempotencyKey] = useState<string | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [contact, setContact] = useState<any>(null);
   const [shippingAddress, setShippingAddress] = useState<any>(null);
@@ -81,6 +82,9 @@ export default function CheckoutPage() {
       });
 
       setCheckoutToken(result.checkoutToken);
+      // Generated once per checkout attempt and reused across Pay Now retries below,
+      // so a retry after a failed/timed-out payment can't create a duplicate order.
+      setOrderIdempotencyKey(`ord-${crypto.randomUUID()}`);
       setPreview(result.orderPreview);
       setStep('review');
     } catch (err: any) {
@@ -91,12 +95,17 @@ export default function CheckoutPage() {
   }
 
   async function handlePay() {
-    if (!checkoutToken) return;
+    if (!checkoutToken || !orderIdempotencyKey || isProcessing) return;
     setIsProcessing(true);
     setPaymentError(null);
+    setStep('payment');
 
     try {
-      const result = await createOrder({ checkoutToken, paymentMethod: 'paymob' });
+      const result = await createOrder({
+        checkoutToken,
+        paymentMethod: 'paymob',
+        idempotencyKey: orderIdempotencyKey,
+      });
 
       if (result.payUrl) {
         const validatedPayUrl = safePaymentUrl(result.payUrl);

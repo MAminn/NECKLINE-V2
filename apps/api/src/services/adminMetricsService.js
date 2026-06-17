@@ -89,9 +89,7 @@ async function getMetrics() {
         },
       },
       { $sort: { _id: 1 } },
-      // visits has no real source yet, so it mirrors checkouts to keep the chart's two
-      // series populated. Replace '$checkouts' with a real visit count when tracking exists.
-      { $project: { _id: 0, date: '$_id', visits: '$checkouts', checkouts: '$checkouts' } },
+      { $project: { _id: 0, date: '$_id', checkouts: '$checkouts' } },
     ]),
   ]);
 
@@ -120,23 +118,22 @@ async function getMetrics() {
     totalRevenue,
     ordersCount,
     todayOrdersCount,
-    conversionRate: 0, // TODO: no session/visit tracking yet — placeholder until analytics lands
+    conversionRate: null, // no session/visit tracking yet
     returningRate,
     newCustomers,
     pendingCount,
     processingCount,
     averageOrderValue,
-    liveSessions: 0, // TODO: requires real-time session tracking — placeholder
-    // visits mirrors checkouts until visit tracking exists (see visitsHistory $project below)
+    liveSessions: null, // requires real-time session tracking, not implemented
     visitsHistory: visitsHistoryAgg,
     productShare,
-    // TODO: forecast figures (increase/recommendedStock/projectedRevenue) are hardcoded
-    // heuristics — replace with a real forecasting model. topProduct is derived from data.
+    // increase/recommendedStock/projectedRevenue need a real forecasting model;
+    // topProduct is derived from actual order data so it stays.
     forecast: {
-      increase: 12,
-      recommendedStock: 45,
+      increase: null,
+      recommendedStock: null,
       topProduct: topItem,
-      projectedRevenue: Math.round(totalRevenue * 1.12),
+      projectedRevenue: null,
     },
   };
 }
