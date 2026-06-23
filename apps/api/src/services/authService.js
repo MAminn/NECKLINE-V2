@@ -62,6 +62,16 @@ async function findValidRefreshToken(rawToken) {
   return token;
 }
 
+// Used by guest checkout to decide whether to prompt the visitor to log in.
+// Returns true when a registered account already uses this email. The $eq guard keeps
+// an attacker-supplied object from being interpreted as a MongoDB query operator.
+async function emailExists(email) {
+  if (typeof email !== 'string' || !email.trim()) return false;
+  const normalized = email.toLowerCase().trim();
+  const existing = await User.findOne({ email: { $eq: normalized } }).select('_id').lean();
+  return Boolean(existing);
+}
+
 async function register({ name, email, password }, meta = {}) {
   const existing = await User.findOne({ email: email.toLowerCase() }).lean();
   if (existing) {
@@ -251,6 +261,7 @@ module.exports = {
   register,
   login,
   logout,
+  emailExists,
   refresh,
   getMe,
   updateProfile,

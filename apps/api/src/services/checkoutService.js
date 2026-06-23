@@ -11,6 +11,7 @@ const { isEnabled } = require('../domain/features');
 const { generateOrderNumber } = require('../utils/generateOrderNumber');
 const { getDefaultShippingMethod } = require('./shippingService');
 const cartService = require('./cartService');
+const authService = require('./authService');
 const discountService = require('./discountService');
 const { DiscountError } = require('./discountService');
 const { createAuditEvent, emitAuditFromMeta } = require('../domain/audit');
@@ -73,6 +74,18 @@ async function validateCheckout({ cartId, userId }) {
 }
 
 async function createCheckoutSession({ cartId, userId, contact, shippingAddress, promoCode }) {
+  // A visitor checking out as a guest may not use an email that already belongs to a
+  // registered account — prompt them to log in instead, so the order lands in their
+  // account. Logged-in users (userId set) bypass this. Enforced server-side so it can't
+  // be skipped from the client; the /checkout rate limiter throttles email probing.
+  if (!userId && (await authService.emailExists(contact?.email))) {
+    throw new CheckoutError(
+      'An account already exists for this email. Please log in to continue.',
+      409,
+      'LOGIN_REQUIRED'
+    );
+  }
+
   const cart = await validateCheckout({ cartId, userId });
 
   const shippingMethod = await getDefaultShippingMethod();

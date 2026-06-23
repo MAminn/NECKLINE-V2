@@ -9,6 +9,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../contexts/ToastContext';
 import { createCheckoutSession, createOrder } from '../../lib/checkout-api';
 import { safePaymentUrl } from '../../lib/safeUrl';
+import LoginForm from '../../components/LoginForm';
 import PromoCodeInput from '../../components/checkout/PromoCodeInput';
 import { formatPrice } from '../../lib/formatPrice';
 import ShippingStep from '../../components/checkout/ShippingStep';
@@ -26,7 +27,7 @@ const STEPS: { id: Step; label: string }[] = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, isLoading, applyPromoCode, removePromoCode } = useCart();
+  const { cart, isLoading, applyPromoCode, removePromoCode, refresh } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
   const [step, setStep] = useState<Step>('shipping');
@@ -38,6 +39,10 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
+  // When a guest enters an email that already has an account, the API rejects the
+  // checkout with LOGIN_REQUIRED; we surface a login prompt and replay the form after.
+  const [loginPromptEmail, setLoginPromptEmail] = useState<string | null>(null);
+  const [pendingShipping, setPendingShipping] = useState<any>(null);
 
   if (!isLoading && cart.items.length === 0 && !checkoutToken) {
     return (
@@ -88,10 +93,26 @@ export default function CheckoutPage() {
       setPreview(result.orderPreview);
       setStep('review');
     } catch (err: any) {
+      if (err.code === 'LOGIN_REQUIRED') {
+        // Stash the form so we can replay it once the visitor logs in.
+        setPendingShipping(data);
+        setLoginPromptEmail(data.email);
+        return;
+      }
       const msg = err.message || 'Failed to start checkout. Please try again.';
       setShippingError(msg);
       addToast(msg, { type: 'error' });
     }
+  }
+
+  async function handleLoginSuccess() {
+    const data = pendingShipping;
+    setLoginPromptEmail(null);
+    setPendingShipping(null);
+    // Now authenticated: pull the merged cart, then replay the shipping submission.
+    // The retried request carries the auth cookie, so it bypasses the guest-email guard.
+    await refresh();
+    if (data) await handleShippingSubmit(data);
   }
 
   async function handlePay() {
@@ -129,6 +150,44 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-bg text-text-primary">
+      {loginPromptEmail && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="login-prompt-title"
+        >
+          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-xl">
+            <h2 id="login-prompt-title" className="font-display text-xl uppercase tracking-wide text-text-primary">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              An account already exists for{' '}
+              <span className="text-text-primary">{loginPromptEmail}</span>. Please log in to
+              continue your order.
+            </p>
+            <div className="mt-5">
+              <LoginForm initialEmail={loginPromptEmail} onSuccess={handleLoginSuccess} />
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs uppercase tracking-widest text-text-muted">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginPromptEmail(null);
+                  setPendingShipping(null);
+                }}
+                className="transition-colors hover:text-text-secondary"
+              >
+                Use a different email
+              </button>
+              <Link href="/forgot-password" className="text-gold transition-colors hover:brightness-110">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-container px-4 py-12">
         <h1 className="font-display text-3xl uppercase tracking-wide">Checkout</h1>
 

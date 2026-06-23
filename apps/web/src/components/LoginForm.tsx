@@ -4,9 +4,15 @@ import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
-export default function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function LoginForm({
+  onSuccess,
+  initialEmail,
+}: {
+  onSuccess?: () => void;
+  initialEmail?: string;
+}) {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail || '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
