@@ -1,20 +1,21 @@
-jest.mock('../../src/models/IdempotencyKey');
-jest.mock('../../src/config/logger', () => ({
+jest.mock("../../src/models/IdempotencyKey");
+jest.mock("../../src/config/logger", () => ({
   info: jest.fn(),
   error: jest.fn(),
 }));
 
-const IdempotencyKey = require('../../src/models/IdempotencyKey');
-const idempotencyMiddleware = require('../../src/middleware/idempotency');
+const IdempotencyKey = require("../../src/models/IdempotencyKey");
+const idempotencyMiddleware = require("../../src/middleware/idempotency");
 
 function flushAsync() {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
-function makeReqRes(key = 'test-key-1') {
+function makeReqRes(key = "test-key-1") {
   const req = {
-    id: 'req-1',
-    get: (name) => (name.toLowerCase() === 'idempotency-key' ? key : undefined),
+    id: "req-1",
+    ip: "127.0.0.1",
+    get: (name) => (name.toLowerCase() === "idempotency-key" ? key : undefined),
   };
   const sent = { body: undefined, statusCode: undefined };
   const res = {
@@ -33,19 +34,19 @@ function makeReqRes(key = 'test-key-1') {
   return { req, res, sent };
 }
 
-describe('idempotency middleware response persistence (AD-3)', () => {
+describe("idempotency middleware response persistence (AD-3)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default: we win the reservation.
     IdempotencyKey.create.mockResolvedValue({});
   });
 
-  it('awaits the completed write before sending a 2xx response', async () => {
+  it("awaits the completed write before sending a 2xx response", async () => {
     let resolvePersist;
     IdempotencyKey.findOneAndUpdate.mockReturnValue(
       new Promise((resolve) => {
         resolvePersist = resolve;
-      })
+      }),
     );
 
     const { req, res, sent } = makeReqRes();
@@ -59,14 +60,14 @@ describe('idempotency middleware response persistence (AD-3)', () => {
     await flushAsync();
     expect(sent.body).toEqual({ ok: true });
     expect(IdempotencyKey.findOneAndUpdate).toHaveBeenCalledWith(
-      { key: { $eq: 'test-key-1' } },
-      { status: 'completed', statusCode: 200, response: { ok: true } }
+      { key: { $eq: "127.0.0.1:test-key-1" } },
+      { status: "completed", statusCode: 200, response: { ok: true } },
     );
     expect(IdempotencyKey.deleteOne).not.toHaveBeenCalled();
   });
 
-  it('releases the reservation and still responds when the completed write fails', async () => {
-    IdempotencyKey.findOneAndUpdate.mockRejectedValue(new Error('db down'));
+  it("releases the reservation and still responds when the completed write fails", async () => {
+    IdempotencyKey.findOneAndUpdate.mockRejectedValue(new Error("db down"));
     IdempotencyKey.deleteOne.mockResolvedValue({});
 
     const { req, res, sent } = makeReqRes();
@@ -75,13 +76,15 @@ describe('idempotency middleware response persistence (AD-3)', () => {
     res.json({ ok: true });
     await flushAsync();
 
-    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith({ key: { $eq: 'test-key-1' } });
+    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith({
+      key: { $eq: "127.0.0.1:test-key-1" },
+    });
     expect(sent.body).toEqual({ ok: true }); // client still gets the success response
   });
 
-  it('still responds when both the completed write and the release fail (TTL backstop)', async () => {
-    IdempotencyKey.findOneAndUpdate.mockRejectedValue(new Error('db down'));
-    IdempotencyKey.deleteOne.mockRejectedValue(new Error('db still down'));
+  it("still responds when both the completed write and the release fail (TTL backstop)", async () => {
+    IdempotencyKey.findOneAndUpdate.mockRejectedValue(new Error("db down"));
+    IdempotencyKey.deleteOne.mockRejectedValue(new Error("db still down"));
 
     const { req, res, sent } = makeReqRes();
     await idempotencyMiddleware(req, res, jest.fn());
@@ -92,7 +95,7 @@ describe('idempotency middleware response persistence (AD-3)', () => {
     expect(sent.body).toEqual({ ok: true });
   });
 
-  it('releases the reservation before sending a non-2xx response', async () => {
+  it("releases the reservation before sending a non-2xx response", async () => {
     IdempotencyKey.deleteOne.mockResolvedValue({});
 
     const { req, res, sent } = makeReqRes();
@@ -101,17 +104,19 @@ describe('idempotency middleware response persistence (AD-3)', () => {
     res.status(500).json({ error: true });
     await flushAsync();
 
-    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith({ key: { $eq: 'test-key-1' } });
+    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith({
+      key: { $eq: "127.0.0.1:test-key-1" },
+    });
     expect(IdempotencyKey.findOneAndUpdate).not.toHaveBeenCalled();
     expect(sent.statusCode).toBe(500);
     expect(sent.body).toEqual({ error: true });
   });
 
-  it('rejects a concurrent duplicate with 409 while the original is in flight', async () => {
-    const duplicateErr = Object.assign(new Error('dup'), { code: 11000 });
+  it("rejects a concurrent duplicate with 409 while the original is in flight", async () => {
+    const duplicateErr = Object.assign(new Error("dup"), { code: 11000 });
     IdempotencyKey.create.mockRejectedValue(duplicateErr);
     IdempotencyKey.findOne.mockReturnValue({
-      lean: () => Promise.resolve({ key: 'test-key-1', status: 'in_progress' }),
+      lean: () => Promise.resolve({ key: "test-key-1", status: "in_progress" }),
     });
 
     const next = jest.fn();
@@ -120,19 +125,19 @@ describe('idempotency middleware response persistence (AD-3)', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(sent.statusCode).toBe(409);
-    expect(sent.body.code).toBe('IDEMPOTENCY_IN_PROGRESS');
+    expect(sent.body.code).toBe("IDEMPOTENCY_IN_PROGRESS");
   });
 
-  it('replays the stored response once the original has completed', async () => {
-    const duplicateErr = Object.assign(new Error('dup'), { code: 11000 });
+  it("replays the stored response once the original has completed", async () => {
+    const duplicateErr = Object.assign(new Error("dup"), { code: 11000 });
     IdempotencyKey.create.mockRejectedValue(duplicateErr);
     IdempotencyKey.findOne.mockReturnValue({
       lean: () =>
         Promise.resolve({
-          key: 'test-key-1',
-          status: 'completed',
+          key: "test-key-1",
+          status: "completed",
           statusCode: 201,
-          response: { orderId: 'abc' },
+          response: { orderId: "abc" },
         }),
     });
 
@@ -142,6 +147,6 @@ describe('idempotency middleware response persistence (AD-3)', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(sent.statusCode).toBe(201);
-    expect(sent.body).toEqual({ orderId: 'abc' });
+    expect(sent.body).toEqual({ orderId: "abc" });
   });
 });
